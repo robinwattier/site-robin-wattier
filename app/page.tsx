@@ -1,7 +1,21 @@
+import PortfolioHero from "@/components/ui/portfolio-hero";
+import ZoomSlider from "@/components/ui/zoom-slider";
+import ContactSection from "@/components/ui/contact-section";
+
 export default function Home() {
   return (
-    <main>
-      <div>Hello world!</div>
-    </main>
+    <div className="relative w-full bg-[#fafafa] dark:bg-black text-[#0a0a0a] dark:text-white selection:bg-[#C3E41D] selection:text-black transition-colors duration-300">
+      <PortfolioHero />
+      <ZoomSlider
+        title="PROJECTS"
+        subheading="Scroll or drag to explore"
+        scaleOnHover
+        textOnHover
+        size={1}
+        easeScrollPercentage={100}
+      />
+      <ContactSection />
+    </div>
   );
 }
+

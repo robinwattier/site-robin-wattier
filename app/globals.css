@@ -1,1 +1,122 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+  font-family: "KCY2KBanger-Bold";
+  src: url("/fonts/KCY2KBanger-Bold.otf") format("opentype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================
+   DESIGN SYSTEM — Robin Wattier Portfolio
+============================================ */
+
+@theme {
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-accent: #C3E41D;
+  --color-muted: #737373;
+  --color-surface: #0a0a0a;
+  --color-surface-light: #fafafa;
+  --color-foreground-light: #0a0a0a;
+  --color-muted-light: #a3a3a3;
+  --color-border-dark: #1a1a1a;
+  --color-border-light: #e5e5e5;
+
+  --font-display: "Fira Code", monospace;
+  --font-body: "Montserrat", sans-serif;
+  --font-ui: "Montserrat", system-ui, -apple-system, sans-serif;
+  --font-logo: var(--font-banger), "KCY2KBanger-Bold", sans-serif;
+}
+
+/* ============================================
+   RESET & BASE
+============================================ */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: auto;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   SCROLL INDICATOR BOUNCE
+============================================ */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0) translateX(-50%);
+  }
+  50% {
+    transform: translateY(8px) translateX(-50%);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2.5s ease-in-out infinite;
+}
+
+/* ============================================
+   MENU TOGGLE ICON (21st.dev / @efferd)
+============================================ */
+.menu-toggle-svg {
+  transform-origin: center;
+  transition: transform 400ms ease-in-out;
+}
+.menu-toggle-svg.open {
+  transform: rotate(-45deg);
+}
+
+.menu-toggle-path {
+  transition: stroke-dasharray 400ms ease-in-out, stroke-dashoffset 400ms ease-in-out;
+  stroke-dasharray: 12 63;
+  stroke-dashoffset: 0px;
+}
+.menu-toggle-path.open {
+  stroke-dasharray: 20 300;
+  stroke-dashoffset: -32.42px;
+}
+
+/* ============================================
+   TYPEWRITER CURSOR BLINK
+============================================ */
+@keyframes cursor-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 0.8s ease-in-out infinite;
+}

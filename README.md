@@ -1,34 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Robin Wattier — Creative Portfolio
 
-## Getting Started
+> **Designing human experiences in code.**  
+> A cutting-edge, high-performance creative developer portfolio exploring AI, Audio, and Visual digital experiences.
 
-First, run the development server:
+---
+
+## ✨ Features
+
+- **🎯 Buttermax-Inspired Kinetic Custom Cursor**  
+  Smooth spring physics, magnetic snap onto Project 1 on scroll, contextual hover labels, and dynamic cursor states.
+- **🎞️ GSAP Cinematic Vault Zoom Slider**  
+  Fluid horizontal scroll projection powered by GSAP, SplitText, and ScrollToPlugin with progressive titles.
+- **⚡ Ultra-Fast Static Export (Zero Lag)**  
+  Pure static pre-rendering (`output: "export"`) with optimized asset loading, WebP/JPEG assets, and no bloated base64 bundles.
+- **🌗 Seamless Light & Dark Mode**  
+  Custom color system with instant theme switching and tailored contrast for typography, cards, and navigation.
+- **🚀 Dual Deployment Ready**  
+  Runs out-of-the-box on both **GitHub Pages** (automated GitHub Actions workflow included) and **Vercel** (custom domains / root path).
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Static Export)
+- **UI Runtime**: [React 19](https://react.dev/) & [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Animations & Physics**: [Framer Motion](https://www.framer.com/motion/) & [GSAP](https://gsap.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Typography**: KCY2KBanger-Bold, Fira Code, Montserrat
+
+---
+
+## 🚀 Getting Started Locally
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/<your-username>/site-robin-wattier.git
+cd site-robin-wattier
+npm install
+```
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-## Learn More
+## 📦 Production Build
 
-To learn more about Next.js, take a look at the following resources:
+To build the static export locally:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The exported site will be generated in the `./out` directory.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🌐 Online Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Option A: GitHub Pages (Automated via GitHub Actions)
+1. Push this repository to GitHub as a **Public** repository.
+2. In your GitHub repository:
+   - Go to **Settings** > **Pages**.
+   - Under **Build and deployment** > **Source**, select **GitHub Actions**.
+3. Push to `main` (or `master`) — the `.github/workflows/deploy.yml` workflow will automatically build and deploy your site to `https://<your-username>.github.io/<repo-name>/`!
+
+### Option B: Vercel (1-Click)
+1. Import your GitHub repository on [Vercel](https://vercel.com/new).
+2. Framework preset will automatically detect Next.js.
+3. Click **Deploy**. Vercel deploys directly at the root URL with edge CDN.
+
+---
+
+## 👤 Author
+
+**Robin Wattier**  
+- Portfolio: [Robin Wattier](https://github.com)
+- Copyright © ROBIN WATTIER. All rights reserved.

@@ -9,6 +9,7 @@ interface BlurTextProps {
   direction?: "top" | "bottom";
   className?: string;
   style?: React.CSSProperties;
+  trigger?: boolean;
 }
 
 const BlurText: React.FC<BlurTextProps> = ({
@@ -18,6 +19,7 @@ const BlurText: React.FC<BlurTextProps> = ({
   direction = "top",
   className = "",
   style,
+  trigger,
 }) => {
   const [inView, setInView] = useState(false);
   const ref = useRef<HTMLParagraphElement>(null);
@@ -42,6 +44,8 @@ const BlurText: React.FC<BlurTextProps> = ({
     };
   }, []);
 
+  const shouldAnimate = inView && (trigger !== undefined ? trigger : true);
+
   const segments = useMemo(() => {
     return animateBy === "words" ? text.split(" ") : text.split("");
   }, [text, animateBy]);
@@ -57,12 +61,13 @@ const BlurText: React.FC<BlurTextProps> = ({
           key={i}
           style={{
             display: "inline-block",
-            filter: inView ? "blur(0px)" : "blur(10px)",
-            opacity: inView ? 1 : 0,
-            transform: inView
+            filter: shouldAnimate ? "blur(0px)" : "blur(14px)",
+            opacity: shouldAnimate ? 1 : 0,
+            transform: shouldAnimate
               ? "translateY(0)"
-              : `translateY(${direction === "top" ? "-20px" : "20px"})`,
-            transition: `all 0.5s ease-out ${i * delay}ms`,
+              : `translateY(${direction === "top" ? "-32px" : "32px"})`,
+            transition: `all 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * delay}ms`,
+            willChange: "transform, filter, opacity",
           }}
         >
           {segment}

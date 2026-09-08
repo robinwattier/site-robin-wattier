@@ -14,6 +14,7 @@ interface TypewriterProps {
   cursorColor?: string;
   phraseClassName?: string;
   style?: React.CSSProperties;
+  active?: boolean;
 }
 
 export const Typewriter: React.FC<TypewriterProps> = ({
@@ -33,13 +34,14 @@ export const Typewriter: React.FC<TypewriterProps> = ({
   cursorColor,
   phraseClassName,
   style,
+  active = true,
 }) => {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (!phrases || phrases.length === 0) return;
+    if (!active || !phrases || phrases.length === 0) return;
 
     const fullText = phrases[currentPhraseIndex];
     let timer: NodeJS.Timeout;
@@ -72,7 +74,7 @@ export const Typewriter: React.FC<TypewriterProps> = ({
     }
 
     return () => clearTimeout(timer);
-  }, [displayedText, isDeleting, currentPhraseIndex, phrases, typingSpeed, deletingSpeed, pauseDuration]);
+  }, [active, displayedText, isDeleting, currentPhraseIndex, phrases, typingSpeed, deletingSpeed, pauseDuration]);
 
   const renderPrefix = () => {
     if (typeof prefix === "string" && prefix === "AI and I create:") {
@@ -86,11 +88,13 @@ export const Typewriter: React.FC<TypewriterProps> = ({
     return prefix;
   };
 
+  const textToShow = active ? displayedText : "";
+
   return (
     <div
       className={`inline-flex items-center justify-center flex-wrap gap-x-2 text-center select-none ${className}`}
       style={style}
-      aria-label={`AI and I create: ${phrases[currentPhraseIndex] || ""}`}
+      aria-label={`AI and I create: ${textToShow || ""}`}
     >
       {prefix && (
         <span
@@ -100,29 +104,24 @@ export const Typewriter: React.FC<TypewriterProps> = ({
           &quot;{renderPrefix()}
         </span>
       )}
-
-      <span className="inline-flex items-center">
+      <span
+        className={`font-normal transition-colors duration-300 ${phraseClassName || ""}`}
+        style={{ color: textColor }}
+      >
+        <span className="font-bold">{textToShow}</span>
         <span
-          className={`font-bold transition-colors duration-300 ${phraseClassName || ""}`}
-          style={{ color: textColor }}
-        >
-          {displayedText}
-        </span>
-
-        {/* Blinking Typewriter Cursor */}
-        <span
-          className="inline-block w-[2px] h-[1.15em] ml-0.5 align-middle animate-cursor-blink"
-          style={{ backgroundColor: cursorColor || textColor || "#C3E41D" }}
-          aria-hidden="true"
+          className="inline-block w-[2px] h-[1em] ml-0.5 align-middle animate-cursor-blink"
+          style={{ backgroundColor: cursorColor || "#C3E41D" }}
         />
-
+      </span>
+      {prefix && (
         <span
-          className="font-normal transition-colors duration-300 ml-0.5"
-          style={{ color: prefixColor || textColor }}
+          className="font-normal transition-colors duration-300"
+          style={{ color: prefixColor }}
         >
           &quot;
         </span>
-      </span>
+      )}
     </div>
   );
 };

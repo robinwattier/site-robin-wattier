@@ -276,9 +276,10 @@ export default function PortfolioHero() {
             <div>
               <BlurText
                 text="ROBIN"
-                delay={100}
+                delay={90}
                 animateBy="letters"
                 direction="top"
+                trigger={!isLoading}
                 className="font-bold text-[72px] xs:text-[90px] sm:text-[120px] md:text-[160px] lg:text-[200px] xl:text-[220px] leading-[0.75] tracking-tighter uppercase justify-center whitespace-nowrap"
                 style={{
                   color: "#C3E41D",
@@ -289,9 +290,10 @@ export default function PortfolioHero() {
             <div>
               <BlurText
                 text="WATTIER"
-                delay={100}
+                delay={90}
                 animateBy="letters"
                 direction="top"
+                trigger={!isLoading}
                 className="font-bold text-[72px] xs:text-[90px] sm:text-[120px] md:text-[160px] lg:text-[200px] xl:text-[220px] leading-[0.75] tracking-tighter uppercase justify-center whitespace-nowrap"
                 style={{
                   color: "#C3E41D",
@@ -305,14 +307,20 @@ export default function PortfolioHero() {
               {!isScrolled && (
                 <motion.div
                   layoutId="profile-photo-avatar"
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.96 }}
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{
+                    scale: isLoading ? 0.7 : 1,
+                    opacity: isLoading ? 0 : 1,
+                  }}
                   transition={{
                     type: "spring",
-                    stiffness: 260,
-                    damping: 24,
+                    stiffness: 240,
+                    damping: 22,
                     mass: 0.8,
+                    delay: 0.15,
                   }}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.96 }}
                   className="w-[55px] h-[95px] xs:w-[65px] xs:h-[110px] sm:w-[85px] sm:h-[143px] md:w-[100px] md:h-[170px] lg:w-[120px] lg:h-[205px] xl:w-[135px] xl:h-[228px] rounded-full overflow-hidden shadow-2xl cursor-pointer select-none"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -332,6 +340,7 @@ export default function PortfolioHero() {
         <div className="absolute bottom-20 sm:bottom-24 md:bottom-28 lg:bottom-32 xl:bottom-36 left-1/2 -translate-x-1/2 w-full px-4 sm:px-6">
           <div className="flex justify-center">
             <Typewriter
+              active={!isLoading}
               prefix={
                 <>
                   <span className="font-bold">AI</span> and{" "}
@@ -354,9 +363,11 @@ export default function PortfolioHero() {
         {/* Scroll Indicator with buttery spring physics */}
         <motion.button
           type="button"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: isLoading ? 0 : 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.45 }}
           whileHover={{ scale: 1.15, y: 3 }}
           whileTap={{ scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 350, damping: 20 }}
           className="absolute bottom-6 sm:bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 animate-bounce-slow transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C3E41D] rounded-full p-1"
           style={{ color: isDark ? "#737373" : "#a3a3a3" }}
           aria-label="Défiler vers le bas"

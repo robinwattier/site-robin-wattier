@@ -43,4 +43,6 @@ next-env.d.ts
 # raw assets & prototypes
 /assets/*
 !/assets/KCY2KBanger-Bold.otf
+!/assets/fiv-icon.jpg
+
 

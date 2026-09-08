@@ -11,11 +11,11 @@
 }
 
 :root {
-  --font-logo: var(--font-banger), "KCY2KBanger-Bold", sans-serif;
+  --font-logo: var(--font-banger), "kcy2kBanger", "KCY2KBanger-Bold", sans-serif;
 }
 
 .font-logo {
-  font-family: var(--font-banger), "KCY2KBanger-Bold", sans-serif;
+  font-family: var(--font-banger), "kcy2kBanger", "KCY2KBanger-Bold", sans-serif;
 }
 
 /* ============================================

@@ -202,7 +202,7 @@ export default function PortfolioHero() {
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl sm:text-2xl font-bold select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C3E41D] rounded-lg px-2 py-1 flex items-center justify-center font-logo tracking-wide"
               style={{
                 color: isDark ? "#ffffff" : "#0a0a0a",
-                fontFamily: "var(--font-banger), 'KCY2KBanger-Bold', sans-serif",
+                fontFamily: "var(--font-banger), 'kcy2kBanger', 'KCY2KBanger-Bold', sans-serif",
               }}
               aria-label="Robin Wattier — RW"
             >

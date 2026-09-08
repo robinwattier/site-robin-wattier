@@ -30,7 +30,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ isLoading }) => {
               }}
               className="text-2xl xs:text-3xl sm:text-4xl md:text-4xl font-bold select-none cursor-default tracking-wide font-logo"
               style={{
-                fontFamily: "var(--font-banger), 'KCY2KBanger-Bold', sans-serif",
+                fontFamily: "var(--font-banger), 'kcy2kBanger', 'KCY2KBanger-Bold', sans-serif",
                 color: "#ffffff",
               }}
             >

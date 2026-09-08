@@ -7,6 +7,7 @@ export interface ProjectItem {
   desc: string;
   link?: string;
   linkLabel?: string;
+  linkPrefix?: string;
 }
 
 const SOON_IMAGE = assetUrl("/projects/soon.jpg");
@@ -20,6 +21,7 @@ export const PROJECTS_DATA: ProjectItem[] = [
     desc: "web site",
     link: "https://danelec.be/",
     linkLabel: "danelec.be",
+    linkPrefix: "visit:",
   },
   {
     number: "02",

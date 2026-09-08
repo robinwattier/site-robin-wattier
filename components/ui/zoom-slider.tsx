@@ -56,6 +56,7 @@ export interface ZoomSliderItem {
   desc: string;
   link?: string;
   linkLabel?: string;
+  linkPrefix?: string;
 }
 
 interface ZoomSliderCompProps {
@@ -993,11 +994,16 @@ export function ZoomSliderComp({
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold tracking-wide bg-black/75 hover:bg-[#C3E41D] text-white hover:text-black border border-white/20 hover:border-[#C3E41D] backdrop-blur-md shadow-xl transition-all duration-300 group/link cursor-pointer select-none"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide bg-black/80 hover:bg-[#C3E41D] text-white hover:text-black border border-white/20 hover:border-[#C3E41D] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 group/link cursor-pointer select-none whitespace-nowrap"
                   aria-label={`Visiter le site ${item.title}`}
                 >
-                  <span>{item.linkLabel || 'Visit site'}</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                  <span className="opacity-75 font-normal tracking-normal">
+                    {item.linkPrefix || 'visit:'}
+                  </span>
+                  <span className="font-bold tracking-normal">
+                    {item.linkLabel || 'danelec.be'}
+                  </span>
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
                 </a>
               ) : null}
             </div>

@@ -10,6 +10,7 @@ if (typeof window !== 'undefined') {
 }
 
 import { assetUrl } from '@/lib/utils';
+import { PROJECTS_DATA } from '@/lib/projects';
 
 const VAULT_IMAGES = [
   assetUrl('/projects/project-1.jpg'),
@@ -22,18 +23,7 @@ const VAULT_IMAGES = [
   assetUrl('/projects/project-8.jpg'),
 ];
 
-const DEFAULT_SLIDER_DATA: ZoomSliderItem[] = [
-  { number: "01", src: VAULT_IMAGES[0 % VAULT_IMAGES.length], title: "AURA", desc: "Soft light and atmospheric tones" },
-  { number: "02", src: VAULT_IMAGES[1 % VAULT_IMAGES.length], title: "DRIFT", desc: "Floating through silence" },
-  { number: "03", src: VAULT_IMAGES[2 % VAULT_IMAGES.length], title: "FORM", desc: "Shapes carved by light" },
-  { number: "04", src: VAULT_IMAGES[3 % VAULT_IMAGES.length], title: "FLOW", desc: "Smooth transitions in motion" },
-  { number: "05", src: VAULT_IMAGES[4 % VAULT_IMAGES.length], title: "DEPTH", desc: "Layers and visual weight" },
-  { number: "06", src: VAULT_IMAGES[5 % VAULT_IMAGES.length], title: "ENERGY", desc: "Movement captured in time" },
-  { number: "07", src: VAULT_IMAGES[6 % VAULT_IMAGES.length], title: "GLITCH", desc: "Breaking visual boundaries" },
-  { number: "08", src: VAULT_IMAGES[7 % VAULT_IMAGES.length], title: "FRAME-X", desc: "Cinematic still frame" },
-  { number: "09", src: VAULT_IMAGES[8 % VAULT_IMAGES.length], title: "LIGHTPLAY", desc: "Contrast and highlights" },
-  { number: "10", src: VAULT_IMAGES[9 % VAULT_IMAGES.length], title: "MINIMAL", desc: "Less but stronger" },
-];
+const DEFAULT_SLIDER_DATA: ZoomSliderItem[] = PROJECTS_DATA;
 
 const SCROLL_PER_PX = 1.0;
 const LERP_FACTOR = 0.08;

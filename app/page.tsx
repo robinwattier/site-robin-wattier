@@ -1,6 +1,7 @@
 import PortfolioHero from "@/components/ui/portfolio-hero";
 import ZoomSlider from "@/components/ui/zoom-slider";
 import ContactSection from "@/components/ui/contact-section";
+import { PROJECTS_DATA } from "@/lib/projects";
 
 export default function Home() {
   return (
@@ -9,6 +10,7 @@ export default function Home() {
       <ZoomSlider
         title="PROJECTS"
         subheading="Scroll or drag to explore"
+        sliderData={PROJECTS_DATA}
         scaleOnHover
         textOnHover
         size={1}

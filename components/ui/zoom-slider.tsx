@@ -52,6 +52,7 @@ const lerp = (a: number, b: number, n: number): number => a + (b - a) * n;
 export interface ZoomSliderItem {
   number: string;
   src: string;
+  isVideo?: boolean;
   title: string;
   desc: string;
   descLink?: {
@@ -743,10 +744,10 @@ export function ZoomSliderComp({
       gsap.set(split.lines, { yPercent: 100 });
       gsap.set(textElement, { autoAlpha: 0 });
 
-      const imageElement = imageWrap.querySelector('img');
+      const mediaElement = imageWrap.querySelector('img, video');
 
-      if (imageElement) {
-        gsap.set(imageElement, { opacity: 1 });
+      if (mediaElement) {
+        gsap.set(mediaElement, { opacity: 1 });
       }
 
       const onEnter = () => {
@@ -772,9 +773,9 @@ export function ZoomSliderComp({
           }
         }
 
-        if (!imageElement || !scaleOnHover || reduceMotion) return;
+        if (!mediaElement || !scaleOnHover || reduceMotion) return;
 
-        gsap.to(imageElement, {
+        gsap.to(mediaElement, {
           scale: 1.05,
           duration: 0.6,
           ease: 'power2.out',
@@ -806,9 +807,9 @@ export function ZoomSliderComp({
           gsap.set(split.lines, { yPercent: 100 });
         }
 
-        if (!imageElement || !scaleOnHover) return;
+        if (!mediaElement || !scaleOnHover) return;
 
-        gsap.to(imageElement, {
+        gsap.to(mediaElement, {
           scale: 1,
           duration: 0.6,
           ease: 'power2.out',
@@ -1031,18 +1032,43 @@ export function ZoomSliderComp({
                 willChange: 'width, height',
               }}
             >
-              <img
-                src={item.src}
-                alt={item.title}
-                draggable={false}
-                className="pointer-events-none absolute inset-0 select-none object-cover opacity-0 w-full h-full"
-                style={{
-                  transform: 'none',
-                  objectPosition: 'center',
-                  transition: 'none',
-                  willChange: 'auto',
-                }}
-              />
+              {item.isVideo || item.src?.endsWith('.mp4') ? (
+                <video
+                  ref={(el) => {
+                    if (el) {
+                      el.muted = true;
+                      el.play().catch(() => {});
+                    }
+                  }}
+                  src={item.src}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  controls={false}
+                  preload="auto"
+                  className="pointer-events-none absolute inset-0 select-none object-cover opacity-0 w-full h-full"
+                  style={{
+                    transform: 'none',
+                    objectPosition: 'center',
+                    transition: 'none',
+                    willChange: 'auto',
+                  }}
+                />
+              ) : (
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  draggable={false}
+                  className="pointer-events-none absolute inset-0 select-none object-cover opacity-0 w-full h-full"
+                  style={{
+                    transform: 'none',
+                    objectPosition: 'center',
+                    transition: 'none',
+                    willChange: 'auto',
+                  }}
+                />
+              )}
 
               {item.link ? (
                 <a

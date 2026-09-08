@@ -3,6 +3,7 @@ import { assetUrl } from "@/lib/utils";
 export interface ProjectItem {
   number: string;
   src: string;
+  isVideo?: boolean;
   title: string;
   desc: string;
   descLink?: {
@@ -42,9 +43,13 @@ export const PROJECTS_DATA: ProjectItem[] = [
   },
   {
     number: "03",
-    src: assetUrl("/projects/project-3.jpg"),
-    title: "FORM",
-    desc: "Shapes carved by light",
+    src: assetUrl("/projects/trap-city.mp4"),
+    isVideo: true,
+    title: "Trap City",
+    desc: "audiovisual",
+    link: "https://youtu.be/oydJdu7i1Lc?list=RDMMoydJdu7i1Lc",
+    linkLabel: "Trap City",
+    linkPrefix: "visit:",
   },
   {
     number: "04",

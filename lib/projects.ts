@@ -26,8 +26,11 @@ export const PROJECTS_DATA: ProjectItem[] = [
   {
     number: "02",
     src: assetUrl("/projects/project-2.jpg"),
-    title: "DRIFT",
-    desc: "Floating through silence",
+    title: "OTO color",
+    desc: "landing page, AI software",
+    link: "https://robinwattier.github.io/rw-gems-oto-color-landing-page/",
+    linkLabel: "OTO color",
+    linkPrefix: "visit:",
   },
   {
     number: "03",

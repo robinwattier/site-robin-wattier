@@ -1001,7 +1001,7 @@ export function ZoomSliderComp({
                     {item.linkPrefix || 'visit:'}
                   </span>
                   <span className="font-bold tracking-normal">
-                    {item.linkLabel || 'danelec.be'}
+                    {item.linkLabel || item.title || 'visit site'}
                   </span>
                   <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
                 </a>

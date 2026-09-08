@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowUpRight } from 'lucide-react';
 import gsap from 'gsap';
 import { SplitText } from 'gsap/SplitText';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -53,6 +54,8 @@ export interface ZoomSliderItem {
   src: string;
   title: string;
   desc: string;
+  link?: string;
+  linkLabel?: string;
 }
 
 interface ZoomSliderCompProps {
@@ -981,6 +984,22 @@ export function ZoomSliderComp({
                   willChange: 'auto',
                 }}
               />
+
+              {item.link ? (
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold tracking-wide bg-black/75 hover:bg-[#C3E41D] text-white hover:text-black border border-white/20 hover:border-[#C3E41D] backdrop-blur-md shadow-xl transition-all duration-300 group/link cursor-pointer select-none"
+                  aria-label={`Visiter le site ${item.title}`}
+                >
+                  <span>{item.linkLabel || 'Visit site'}</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                </a>
+              ) : null}
             </div>
           </div>
         ))}

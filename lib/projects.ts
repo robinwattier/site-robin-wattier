@@ -5,6 +5,8 @@ export interface ProjectItem {
   src: string;
   title: string;
   desc: string;
+  link?: string;
+  linkLabel?: string;
 }
 
 const SOON_IMAGE = assetUrl("/projects/soon.jpg");
@@ -13,9 +15,11 @@ export const PROJECTS_DATA: ProjectItem[] = [
   // ─── Vos 4 vrais projets (1 à 4) ───────────────────────────
   {
     number: "01",
-    src: assetUrl("/projects/project-1.jpg"),
-    title: "AURA",
-    desc: "Soft light and atmospheric tones",
+    src: assetUrl("/projects/danelec.jpg"),
+    title: "Danelec",
+    desc: "web site",
+    link: "https://danelec.be/",
+    linkLabel: "danelec.be",
   },
   {
     number: "02",

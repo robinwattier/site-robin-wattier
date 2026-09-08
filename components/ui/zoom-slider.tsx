@@ -966,7 +966,7 @@ export function ZoomSliderComp({
               ref={(element) => {
                 imageWrapRefs.current[index] = element;
               }}
-              className="relative overflow-hidden shadow-xl shadow-black/10 dark:shadow-none transition-shadow duration-300"
+              className="group/card relative overflow-hidden shadow-xl shadow-black/10 dark:shadow-none transition-shadow duration-300"
               style={{
                 width: cardWidthMin,
                 height: cardHeightMax,
@@ -994,7 +994,7 @@ export function ZoomSliderComp({
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide bg-black/80 hover:bg-[#C3E41D] text-white hover:text-black border border-white/20 hover:border-[#C3E41D] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 group/link cursor-pointer select-none whitespace-nowrap"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide bg-black/80 hover:bg-[#C3E41D] text-white hover:text-black border border-white/20 hover:border-[#C3E41D] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] opacity-0 pointer-events-none scale-90 blur-[4px] group-hover/card:opacity-100 group-hover/card:pointer-events-auto group-hover/card:scale-100 group-hover/card:blur-none hover:!scale-105 active:!scale-95 transition-all duration-300 ease-out group/link cursor-pointer select-none whitespace-nowrap"
                   aria-label={`Visiter le site ${item.title}`}
                 >
                   <span className="opacity-75 font-normal tracking-normal">

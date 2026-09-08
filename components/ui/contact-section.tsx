@@ -26,29 +26,6 @@ export default function ContactSection({
     const updateTitleProgress = () => {
       if (!containerRef.current || typeof window === "undefined") return;
 
-      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-      if (reduceMotion) {
-        ALL_LETTERS.forEach((_, i) => {
-          const el = letterRefs.current[i];
-          if (el) {
-            el.style.opacity = "1";
-            el.style.transform = "none";
-            el.style.filter = "none";
-          }
-        });
-        if (cardRef.current) {
-          cardRef.current.style.opacity = "1";
-          cardRef.current.style.transform = "none";
-          cardRef.current.style.filter = "none";
-        }
-        if (footerRef.current) {
-          footerRef.current.style.opacity = "1";
-          footerRef.current.style.transform = "none";
-          footerRef.current.style.filter = "none";
-        }
-        return;
-      }
-
       const rect = containerRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 

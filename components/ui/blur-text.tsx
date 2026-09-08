@@ -25,21 +25,28 @@ const BlurText: React.FC<BlurTextProps> = ({
   const ref = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
+    // Failsafe fallback: guarantee inView becomes true even if IntersectionObserver is delayed or throttled by browser shields
+    const fallbackTimer = setTimeout(() => {
+      setInView(true);
+    }, 150);
+
     const currentElement = ref.current;
-    if (!currentElement) return;
+    if (!currentElement) return () => clearTimeout(fallbackTimer);
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setInView(true);
+          clearTimeout(fallbackTimer);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.01 }
     );
 
     observer.observe(currentElement);
 
     return () => {
+      clearTimeout(fallbackTimer);
       observer.unobserve(currentElement);
     };
   }, []);

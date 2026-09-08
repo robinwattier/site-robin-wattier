@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { kcy2kBanger } from "@/lib/fonts";
+import MotionProvider from "@/components/providers/motion-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -43,7 +44,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`font-(--font-body) ${kcy2kBanger.variable}`}>{children}</body>
+      <body className={`font-(--font-body) ${kcy2kBanger.variable}`}>
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }

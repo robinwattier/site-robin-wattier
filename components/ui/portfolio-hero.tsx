@@ -24,13 +24,6 @@ export default function PortfolioHero() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
       if (heroContentRef.current) {
-        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-        if (reduceMotion) {
-          heroContentRef.current.style.opacity = "1";
-          heroContentRef.current.style.transform = "none";
-          heroContentRef.current.style.filter = "none";
-          return;
-        }
         const vh = window.innerHeight;
         const p = Math.max(0, Math.min(1, window.scrollY / (vh * 0.75)));
         heroContentRef.current.style.opacity = String((1 - p).toFixed(3));

@@ -45,12 +45,12 @@ const MOBILE_BREAKPOINT = 640;
 const TABLET_BREAKPOINT = 1025;
 const SLIDER_BOTTOM_OFFSET = 0;
 
-const REDUCED_MOTION_LERP_FACTOR = 1;
+const REDUCED_MOTION_LERP_FACTOR = 0.08;
 const REDUCED_MOTION_FADE_DURATION = 0.18;
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
-  window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
+  false;
 
 const lerp = (a: number, b: number, n: number): number => a + (b - a) * n;
 

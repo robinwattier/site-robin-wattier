@@ -5,6 +5,10 @@ export interface ProjectItem {
   src: string;
   title: string;
   desc: string;
+  descLink?: {
+    text: string;
+    url: string;
+  };
   link?: string;
   linkLabel?: string;
   linkPrefix?: string;
@@ -27,7 +31,11 @@ export const PROJECTS_DATA: ProjectItem[] = [
     number: "02",
     src: assetUrl("/projects/oto-color.jpg"),
     title: "OTO color",
-    desc: "landing page, AI software",
+    desc: "landing page, AI software, feat ",
+    descLink: {
+      text: "nico gems",
+      url: "https://www.instagram.com/nico_gems/?hl=en",
+    },
     link: "https://robinwattier.github.io/rw-gems-oto-color-landing-page/",
     linkLabel: "OTO color",
     linkPrefix: "visit:",

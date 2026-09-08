@@ -54,6 +54,10 @@ export interface ZoomSliderItem {
   src: string;
   title: string;
   desc: string;
+  descLink?: {
+    text: string;
+    url: string;
+  };
   link?: string;
   linkLabel?: string;
   linkPrefix?: string;
@@ -554,6 +558,7 @@ export function ZoomSliderComp({
 
     const onMouseDown = (event: MouseEvent) => {
       if (!containerRef.current?.contains(event.target as Node)) return;
+      if ((event.target as HTMLElement)?.closest('a, button')) return;
       beginDrag(event.clientX, event.clientY);
     };
     const onMouseMove = (event: MouseEvent) => moveDrag(event.clientX, event.clientY);
@@ -563,6 +568,7 @@ export function ZoomSliderComp({
     let touchStartX = 0;
 
     const onTouchStart = (event: TouchEvent) => {
+      if ((event.target as HTMLElement)?.closest('a, button')) return;
       if (event.touches.length > 0) {
         touchStartY = event.touches[0].clientY;
         touchStartX = event.touches[0].clientX;
@@ -809,12 +815,50 @@ export function ZoomSliderComp({
         });
       };
 
-      imageWrap.addEventListener('mouseenter', onEnter);
-      imageWrap.addEventListener('mouseleave', onLeave);
+      let isHovered = false;
+      let leaveTimeout: ReturnType<typeof setTimeout> | null = null;
+
+      const cancelLeave = () => {
+        if (leaveTimeout) {
+          clearTimeout(leaveTimeout);
+          leaveTimeout = null;
+        }
+      };
+
+      const handleEnter = () => {
+        cancelLeave();
+        if (isHovered) return;
+        isHovered = true;
+        onEnter();
+      };
+
+      const handleLeave = (e: MouseEvent) => {
+        const relatedTarget = e.relatedTarget as Node | null;
+        if (
+          (card && card.contains(relatedTarget)) ||
+          (imageWrap && imageWrap.contains(relatedTarget)) ||
+          (textElement && textElement.contains(relatedTarget))
+        ) {
+          return;
+        }
+        cancelLeave();
+        leaveTimeout = setTimeout(() => {
+          isHovered = false;
+          onLeave();
+        }, 180);
+      };
+
+      imageWrap.addEventListener('mouseenter', handleEnter);
+      imageWrap.addEventListener('mouseleave', handleLeave);
+      textElement.addEventListener('mouseenter', handleEnter);
+      textElement.addEventListener('mouseleave', handleLeave);
 
       cleanups.push(() => {
-        imageWrap.removeEventListener('mouseenter', onEnter);
-        imageWrap.removeEventListener('mouseleave', onLeave);
+        cancelLeave();
+        imageWrap.removeEventListener('mouseenter', handleEnter);
+        imageWrap.removeEventListener('mouseleave', handleLeave);
+        textElement.removeEventListener('mouseenter', handleEnter);
+        textElement.removeEventListener('mouseleave', handleLeave);
         split.revert();
       });
     });
@@ -925,18 +969,18 @@ export function ZoomSliderComp({
             ref={(element) => {
               cardRefs.current[index] = element;
             }}
-            className="absolute left-0 top-0"
+            className="group/card absolute left-0 top-0"
             style={{ willChange: 'transform' }}
           >
             <div
               ref={(element) => {
                 textRefs.current[index] = element;
               }}
-              className="absolute z-10 flex w-full flex-col gap-1.25"
+              className="absolute z-30 flex w-full flex-col gap-1.25 pointer-events-auto"
               style={{
-                bottom: 'calc(100% + 10px)',
+                bottom: '100%',
                 left: 0,
-                padding: '0 0 4px',
+                padding: '0 0 10px',
                 visibility: 'hidden',
               }}
             >
@@ -956,9 +1000,23 @@ export function ZoomSliderComp({
 
               <p
                 data-desc
-                className="overflow-hidden text-[10px] select-none font-normal leading-normal tracking-[0.04em] text-neutral-600 dark:text-white/60 transition-colors duration-300"
+                className="overflow-hidden text-[10px] font-normal leading-normal tracking-[0.04em] text-neutral-600 dark:text-white/60 transition-colors duration-300 pointer-events-auto"
               >
-                {item.desc}
+                <span className="select-none">{item.desc}</span>
+                {item.descLink ? (
+                  <a
+                    href={item.descLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="inline-block text-[#0a0a0a] dark:text-white font-semibold underline underline-offset-2 decoration-neutral-400 dark:decoration-neutral-500 hover:text-[#84a30a] dark:hover:text-[#C3E41D] hover:decoration-[#84a30a] dark:hover:decoration-[#C3E41D] transition-colors cursor-pointer pointer-events-auto select-auto"
+                    aria-label={`${item.descLink.text} on Instagram`}
+                  >
+                    {item.descLink.text}
+                  </a>
+                ) : null}
               </p>
             </div>
 

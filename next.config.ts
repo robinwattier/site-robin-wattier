@@ -1,12 +1,7 @@
 import type { NextConfig } from "next";
 
-const isGithubActions = process.env.GITHUB_ACTIONS === "true";
-const repoName = process.env.GITHUB_REPOSITORY
-  ? process.env.GITHUB_REPOSITORY.split("/")[1]
-  : "site-robin-wattier";
-
-// In GitHub Actions (GitHub Pages default), use repository subpath unless overridden
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? (isGithubActions ? `/${repoName}` : "");
+// GitHub Pages with custom domain (www.robinwattier.com) serves at root /
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const nextConfig: NextConfig = {
   output: "export",

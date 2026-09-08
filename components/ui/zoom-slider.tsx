@@ -52,6 +52,10 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   false;
 
+const LINE1_PROJECTS = ['P', 'R', 'O'];
+const LINE2_PROJECTS = ['J', 'E', 'C', 'T', 'S'];
+const ALL_PROJECTS_LETTERS = [...LINE1_PROJECTS, ...LINE2_PROJECTS];
+
 const lerp = (a: number, b: number, n: number): number => a + (b - a) * n;
 
 export interface ZoomSliderItem {
@@ -146,9 +150,7 @@ export function ZoomSliderComp({
     );
 
     const syncReducedMotion = (event: MediaQueryList | MediaQueryListEvent) => {
-      setReduceMotion(
-        'matches' in event ? event.matches : prefersReducedMotion()
-      );
+      setReduceMotion(false);
     };
 
     if (!mediaQuery) return;
@@ -228,33 +230,12 @@ export function ZoomSliderComp({
     const updateTitleProgress = () => {
       if (!containerRef.current || typeof window === 'undefined') return;
 
-      if (reduceMotion) {
-        for (let i = 0; i < 8; i++) {
-          const el = letterRefs.current[i];
-          if (el) {
-            el.style.opacity = '1';
-            el.style.transform = 'none';
-            el.style.filter = 'none';
-          }
-        }
-        if (subheadingRef.current) {
-          subheadingRef.current.style.opacity = '0.65';
-          subheadingRef.current.style.transform = 'none';
-          subheadingRef.current.style.filter = 'none';
-        }
-        if (titleWrapRef.current) {
-          titleWrapRef.current.style.opacity = '1';
-          titleWrapRef.current.style.transform = 'none';
-        }
-        return;
-      }
-
       const rect = containerRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
       // 1. Entrance (Home -> Projects):
       // When at Home: rect.top = viewportHeight -> enterProgress = 0
-      // When at Projects: rect.top = 0 -> enterProgress = 1
+      // When at Projects: rect.top <= 0 -> enterProgress = 1
       const rawEnter = (viewportHeight - rect.top) / viewportHeight;
       const enterProgress = Math.max(0, Math.min(1, rawEnter));
 
@@ -264,19 +245,19 @@ export function ZoomSliderComp({
       const rawExit = -rect.top / (viewportHeight * 0.7);
       const exitProgress = Math.max(0, Math.min(1, rawExit));
 
-      // Progressive character reveal for each of the 8 letters (P-R-O-J-E-C-T-S)
-      // Letters stagger across the scroll progress with unblur + float
-      for (let i = 0; i < 8; i++) {
+      // Progressive character reveal for each of the 8 letters (P-R-O / J-E-C-T-S)
+      // Exactly matching the Contact section staggered kinetic unblur
+      ALL_PROJECTS_LETTERS.forEach((_, i) => {
         const el = letterRefs.current[i];
-        if (!el) continue;
+        if (!el) return;
 
-        // Entrance window for letter i: starts at 0.05 + i * 0.08, duration 0.22
-        const startEnter = 0.05 + i * 0.08;
-        const pEnter = Math.max(0, Math.min(1, (enterProgress - startEnter) / 0.22));
+        // Entrance window staggered across 8 characters (matching Contact physics):
+        const start = 0.05 + i * 0.055;
+        const range = 0.18;
+        const pEnter = Math.max(0, Math.min(1, (enterProgress - start) / range));
 
-        // Exit window for letter i: starts at i * 0.06, duration 0.24
-        const startExit = i * 0.06;
-        const pExit = Math.max(0, Math.min(1, (exitProgress - startExit) / 0.24));
+        // Smooth exit when scrolling down towards Contact:
+        const pExit = Math.max(0, Math.min(1, (exitProgress - i * 0.04) / 0.20));
 
         const pFinal = Math.max(0, pEnter * (1 - pExit));
         const yOffset = (1 - pEnter) * 36 - pExit * 28;
@@ -286,13 +267,13 @@ export function ZoomSliderComp({
         el.style.opacity = String(pFinal.toFixed(3));
         el.style.transform = `translateY(${yOffset.toFixed(1)}px) scale(${scale.toFixed(3)})`;
         el.style.filter = blur > 0.1 ? `blur(${blur.toFixed(1)}px)` : 'none';
-      }
+      });
 
-      // Subheading reveal (appears after letters are revealed)
+      // Subheading reveal: floats and unblurs smoothly in sync with scroll
       if (subheadingRef.current) {
-        const pSubEnter = Math.max(0, Math.min(1, (enterProgress - 0.72) / 0.24));
+        const pSubEnter = Math.max(0, Math.min(1, (enterProgress - 0.45) / 0.35));
         const pSubFinal = Math.max(0, pSubEnter * (1 - exitProgress));
-        const subY = (1 - pSubEnter) * 18 - exitProgress * 16;
+        const subY = (1 - pSubEnter) * 20 - exitProgress * 16;
         const subBlur = (1 - pSubFinal) * 8;
 
         subheadingRef.current.style.opacity = String((pSubFinal * 0.75).toFixed(3));
@@ -700,6 +681,7 @@ export function ZoomSliderComp({
     };
 
     updateTitleProgress();
+    const initTimer = setTimeout(updateTitleProgress, 50);
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
@@ -717,6 +699,7 @@ export function ZoomSliderComp({
 
     return () => {
       cancelAnimationFrame(state.raf as number);
+      clearTimeout(initTimer);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
@@ -871,8 +854,9 @@ export function ZoomSliderComp({
           >
             {typeof title === "string" && title.toUpperCase() === "PROJECTS" ? (
               <span aria-label="PROJECTS">
+                {/* Line 1: PRO */}
                 <span className="block overflow-visible whitespace-nowrap">
-                  {['P', 'R', 'O'].map((char, i) => (
+                  {LINE1_PROJECTS.map((char, i) => (
                     <span
                       key={i}
                       ref={(el) => {
@@ -891,25 +875,30 @@ export function ZoomSliderComp({
                     </span>
                   ))}
                 </span>
-                <span className="block overflow-visible whitespace-nowrap">
-                  {['J', 'E', 'C', 'T', 'S'].map((char, i) => (
-                    <span
-                      key={i + 3}
-                      ref={(el) => {
-                        letterRefs.current[i + 3] = el;
-                      }}
-                      aria-hidden="true"
-                      className="inline-block will-change-[opacity,transform,filter]"
-                      style={{
-                        opacity: 0,
-                        transform: 'translateY(36px) scale(0.92)',
-                        filter: 'blur(12px)',
-                        display: 'inline-block',
-                      }}
-                    >
-                      {char}
-                    </span>
-                  ))}
+
+                {/* Line 2: JECTS */}
+                <span className="block overflow-visible whitespace-nowrap mt-1 sm:mt-2">
+                  {LINE2_PROJECTS.map((char, i) => {
+                    const letterIndex = LINE1_PROJECTS.length + i;
+                    return (
+                      <span
+                        key={letterIndex}
+                        ref={(el) => {
+                          letterRefs.current[letterIndex] = el;
+                        }}
+                        aria-hidden="true"
+                        className="inline-block will-change-[opacity,transform,filter]"
+                        style={{
+                          opacity: 0,
+                          transform: 'translateY(36px) scale(0.92)',
+                          filter: 'blur(12px)',
+                          display: 'inline-block',
+                        }}
+                      >
+                        {char}
+                      </span>
+                    );
+                  })}
                 </span>
               </span>
             ) : (

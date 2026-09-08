@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import BlurText from "@/components/ui/blur-text";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
 import Typewriter from "@/components/ui/typewriter";
@@ -93,7 +93,11 @@ export default function PortfolioHero() {
   const menuItems = [
     { label: "HOME", href: "#" },
     { label: "PROJECTS", href: "#projects" },
-    { label: "CONTACT / FOLLOW", href: "#contact", lines: ["CONTACT", "/ FOLLOW"] },
+    {
+      label: "CONTACT / FOLLOW",
+      href: "https://linktr.ee/robinwattier",
+      lines: ["CONTACT", "/ FOLLOW"],
+    },
   ];
 
   return (
@@ -195,10 +199,10 @@ export default function PortfolioHero() {
                   new CustomEvent("rw-nav", { detail: { target: "home" } })
                 );
               }}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl sm:text-2xl select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C3E41D] rounded-lg px-2 py-1 flex items-center justify-center"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl sm:text-2xl font-bold select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C3E41D] rounded-lg px-2 py-1 flex items-center justify-center font-logo tracking-wide"
               style={{
                 color: isDark ? "#ffffff" : "#0a0a0a",
-                fontFamily: "var(--font-logo), 'KCY2KBanger-Bold', sans-serif",
+                fontFamily: "var(--font-banger), 'KCY2KBanger-Bold', sans-serif",
               }}
               aria-label="Robin Wattier — RW"
             >

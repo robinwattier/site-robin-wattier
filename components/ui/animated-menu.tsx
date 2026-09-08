@@ -15,7 +15,8 @@ export interface MenuItem {
 }
 
 interface TextRollProps {
-  children: string;
+  children?: string;
+  lines?: string[];
   className?: string;
   center?: boolean;
 }
@@ -23,81 +24,95 @@ interface TextRollProps {
 /**
  * TextRoll component from 21st.dev (koustubhayadiyala36/animated-menu)
  * Staggers letter roll-up animation outward from the center on hover.
+ * Supports multi-line layout with unified synchronization.
  */
 export const TextRoll: React.FC<TextRollProps> = ({
   children,
+  lines,
   className,
   center = true,
 }) => {
+  const lineArray = lines && lines.length > 0 ? lines : children ? [children] : [];
+
   return (
-    <motion.span
-      initial="initial"
-      whileHover="hovered"
-      className={cn("relative block overflow-hidden select-none cursor-pointer", className)}
+    <span
+      className={cn(
+        "relative block select-none pointer-events-none",
+        lineArray.length > 1 ? "flex flex-col items-start leading-[0.84]" : "",
+        className
+      )}
       style={{
-        lineHeight: 0.85,
+        lineHeight: 0.86,
       }}
     >
-      {/* Top Text (Slides up) */}
-      <div className="flex justify-center">
-        {children.split("").map((l, i) => {
-          const delay = center
-            ? STAGGER * Math.abs(i - (children.length - 1) / 2)
-            : STAGGER * i;
+      {lineArray.map((lineText, lineIdx) => (
+        <span
+          key={lineIdx}
+          className="relative block overflow-hidden"
+          style={{ lineHeight: 0.86 }}
+        >
+          {/* Top Text (Slides up) */}
+          <span className="flex justify-start">
+            {lineText.split("").map((l, i) => {
+              const delay = center
+                ? STAGGER * Math.abs(i - (lineText.length - 1) / 2)
+                : STAGGER * i;
 
-          return (
-            <motion.span
-              variants={{
-                initial: {
-                  y: 0,
-                },
-                hovered: {
-                  y: "-100%",
-                },
-              }}
-              transition={{
-                ease: "easeInOut",
-                delay,
-              }}
-              className="inline-block"
-              key={i}
-            >
-              {l === " " ? "\u00A0" : l}
-            </motion.span>
-          );
-        })}
-      </div>
+              return (
+                <motion.span
+                  variants={{
+                    initial: {
+                      y: 0,
+                    },
+                    hovered: {
+                      y: "-100%",
+                    },
+                  }}
+                  transition={{
+                    ease: "easeInOut",
+                    delay,
+                  }}
+                  className="inline-block"
+                  key={i}
+                >
+                  {l === " " ? "\u00A0" : l}
+                </motion.span>
+              );
+            })}
+          </span>
 
-      {/* Bottom Text (Slides in from bottom) */}
-      <div className="absolute inset-0 flex justify-center">
-        {children.split("").map((l, i) => {
-          const delay = center
-            ? STAGGER * Math.abs(i - (children.length - 1) / 2)
-            : STAGGER * i;
+          {/* Bottom Text (Slides in from bottom) */}
+          <span className="absolute inset-0 flex justify-start">
+            {lineText.split("").map((l, i) => {
+              const delay = center
+                ? STAGGER * Math.abs(i - (lineText.length - 1) / 2)
+                : STAGGER * i;
 
-          return (
-            <motion.span
-              variants={{
-                initial: {
-                  y: "100%",
-                },
-                hovered: {
-                  y: 0,
-                },
-              }}
-              transition={{
-                ease: "easeInOut",
-                delay,
-              }}
-              className="inline-block"
-              key={i}
-            >
-              {l === " " ? "\u00A0" : l}
-            </motion.span>
-          );
-        })}
-      </div>
-    </motion.span>
+              return (
+                <motion.span
+                  variants={{
+                    initial: {
+                      y: "100%",
+                    },
+                    hovered: {
+                      y: 0,
+                    },
+                  }}
+                  transition={{
+                    ease: "easeInOut",
+                    delay,
+                  }}
+                  className="inline-block"
+                  key={i}
+                >
+                  {l === " " ? "\u00A0" : l}
+                </motion.span>
+              );
+            })}
+          </span>
+        </span>
+      ))}
+    </span>
   );
 };
 
@@ -142,67 +157,58 @@ export const AnimatedMenu: React.FC<AnimatedMenuProps> = ({
             role="menu"
             aria-label="Navigation principale"
           >
-            {items.map((item, index) => (
-              <motion.li
-                key={item.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{
-                  duration: 0.25,
-                  delay: index * 0.04 + 0.05,
-                  ease: "easeOut",
-                }}
-                className="relative flex cursor-pointer flex-col items-center overflow-visible"
-                role="none"
-              >
-                <motion.a
-                  initial="initial"
-                  whileHover="hovered"
-                  whileTap={{ scale: 0.95 }}
-                  href={item.href}
-                  onClick={(e) => {
-                    onClose();
-                    e.preventDefault();
-                    if (item.href === "#" || item.href === "#home") {
-                      window.dispatchEvent(
-                        new CustomEvent("rw-nav", { detail: { target: "home" } })
-                      );
-                    } else if (item.href === "#projects") {
-                      window.dispatchEvent(
-                        new CustomEvent("rw-nav", { detail: { target: "projects" } })
-                      );
-                    } else if (item.href === "#contact") {
-                      window.dispatchEvent(
-                        new CustomEvent("rw-nav", { detail: { target: "contact" } })
-                      );
-                    }
+            {items.map((item, index) => {
+              const isExternal = item.href.startsWith("http");
+
+              return (
+                <motion.li
+                  key={item.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{
+                    duration: 0.25,
+                    delay: index * 0.04 + 0.05,
+                    ease: "easeOut",
                   }}
-                  className="group relative flex flex-col items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C3E41D] rounded-xl px-6 py-2 transition-transform duration-200"
-                  role="menuitem"
+                  className="relative flex cursor-pointer flex-col items-center overflow-visible"
+                  role="none"
                 >
-                  {item.lines || item.name === "CONTACT / FOLLOW" ? (
-                    <div className="flex flex-col items-center leading-[0.85]">
-                      {(item.lines || ["CONTACT", "/ FOLLOW"]).map((line, lIdx) => (
-                        <TextRoll
-                          key={lIdx}
-                          center
-                          className={cn(
-                            "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold uppercase leading-[0.86] tracking-[-0.03em] transition-colors duration-200",
-                            isDark
-                              ? "text-white group-hover:text-[#C3E41D] group-focus-visible:text-[#C3E41D]"
-                              : "text-[#0a0a0a] group-hover:text-[#C3E41D] group-focus-visible:text-[#C3E41D]"
-                          )}
-                        >
-                          {line}
-                        </TextRoll>
-                      ))}
-                    </div>
-                  ) : (
+                  <motion.a
+                    initial="initial"
+                    whileHover="hovered"
+                    whileTap={{ scale: 0.95 }}
+                    href={item.href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    onClick={(e) => {
+                      onClose();
+                      if (isExternal) {
+                        return;
+                      }
+                      e.preventDefault();
+                      if (item.href === "#" || item.href === "#home") {
+                        window.dispatchEvent(
+                          new CustomEvent("rw-nav", { detail: { target: "home" } })
+                        );
+                      } else if (item.href === "#projects") {
+                        window.dispatchEvent(
+                          new CustomEvent("rw-nav", { detail: { target: "projects" } })
+                        );
+                      } else if (item.href === "#contact") {
+                        window.dispatchEvent(
+                          new CustomEvent("rw-nav", { detail: { target: "contact" } })
+                        );
+                      }
+                    }}
+                    className="group relative flex flex-col items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C3E41D] rounded-xl px-4 sm:px-6 py-2 transition-transform duration-200"
+                    role="menuitem"
+                  >
                     <TextRoll
+                      lines={item.lines}
                       center
                       className={cn(
-                        "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold uppercase leading-[0.9] tracking-[-0.03em] transition-colors duration-200",
+                        "text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold uppercase tracking-[-0.03em] transition-colors duration-200",
                         isDark
                           ? "text-white group-hover:text-[#C3E41D] group-focus-visible:text-[#C3E41D]"
                           : "text-[#0a0a0a] group-hover:text-[#C3E41D] group-focus-visible:text-[#C3E41D]"
@@ -210,10 +216,10 @@ export const AnimatedMenu: React.FC<AnimatedMenuProps> = ({
                     >
                       {item.name}
                     </TextRoll>
-                  )}
-                </motion.a>
-              </motion.li>
-            ))}
+                  </motion.a>
+                </motion.li>
+              );
+            })}
           </ul>
         </motion.div>
       )}

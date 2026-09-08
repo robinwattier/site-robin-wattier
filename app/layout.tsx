@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { kcy2kBanger } from "@/lib/fonts";
 import "./globals.css";
-
-const kcy2kBanger = localFont({
-  src: "../public/fonts/KCY2KBanger-Bold.otf",
-  variable: "--font-banger",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Robin Wattier — Creative Portfolio",

@@ -5,9 +5,17 @@
 @font-face {
   font-family: "KCY2KBanger-Bold";
   src: url("/fonts/KCY2KBanger-Bold.otf") format("opentype");
-  font-weight: bold;
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
+}
+
+:root {
+  --font-logo: var(--font-banger), "KCY2KBanger-Bold", sans-serif;
+}
+
+.font-logo {
+  font-family: var(--font-banger), "KCY2KBanger-Bold", sans-serif;
 }
 
 /* ============================================

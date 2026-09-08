@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
 import { motion, useMotionValue, useSpring, animate } from "framer-motion";
 
 interface ButtermaxCursorProps {
@@ -13,7 +13,18 @@ export const ButtermaxCursor: React.FC<ButtermaxCursorProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
-  const [isTouchDevice, setIsTouchDevice] = useState(true);
+
+  const isFinePointer = useSyncExternalStore(
+    (callback) => {
+      if (typeof window === "undefined") return () => {};
+      const mq = window.matchMedia("(pointer: fine)");
+      mq.addEventListener("change", callback);
+      return () => mq.removeEventListener("change", callback);
+    },
+    () => (typeof window !== "undefined" ? window.matchMedia("(pointer: fine)").matches : true),
+    () => true
+  );
+  const isTouchDevice = !isFinePointer;
 
   // Mouse position values
   const mouseX = useMotionValue(-100);
@@ -25,15 +36,6 @@ export const ButtermaxCursor: React.FC<ButtermaxCursorProps> = ({
   const cursorY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
-    // Check if device supports fine pointer (mouse)
-    const mediaQuery = window.matchMedia("(pointer: fine)");
-    setIsTouchDevice(!mediaQuery.matches);
-
-    const handlePointerChange = (e: MediaQueryListEvent) => {
-      setIsTouchDevice(!e.matches);
-    };
-    mediaQuery.addEventListener("change", handlePointerChange);
-
     let magnetAnimationX: { stop: () => void } | null = null;
     let magnetAnimationY: { stop: () => void } | null = null;
     let realMousePos: { x: number; y: number } | null = null;
@@ -101,8 +103,8 @@ export const ButtermaxCursor: React.FC<ButtermaxCursorProps> = ({
       }
     };
 
-    window.addEventListener("rw-magnet-cursor" as any, handleMagnet);
-    window.addEventListener("rw-unmagnet-cursor" as any, handleUnmagnet);
+    window.addEventListener("rw-magnet-cursor", handleMagnet as EventListener);
+    window.addEventListener("rw-unmagnet-cursor", handleUnmagnet as EventListener);
 
     const handleMouseMove = (e: MouseEvent) => {
       realMousePos = { x: e.clientX, y: e.clientY };
@@ -139,11 +141,10 @@ export const ButtermaxCursor: React.FC<ButtermaxCursorProps> = ({
     document.addEventListener("mouseenter", handleMouseEnter);
 
     return () => {
-      mediaQuery.removeEventListener("change", handlePointerChange);
       magnetAnimationX?.stop();
       magnetAnimationY?.stop();
-      window.removeEventListener("rw-magnet-cursor" as any, handleMagnet);
-      window.removeEventListener("rw-unmagnet-cursor" as any, handleUnmagnet);
+      window.removeEventListener("rw-magnet-cursor", handleMagnet as EventListener);
+      window.removeEventListener("rw-unmagnet-cursor", handleUnmagnet as EventListener);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);

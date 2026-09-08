@@ -49,6 +49,11 @@ const ALL_PROJECTS_LETTERS = [...LINE1_PROJECTS, ...LINE2_PROJECTS];
 
 const lerp = (a: number, b: number, n: number): number => a + (b - a) * n;
 
+export interface ZoomSliderDescPart {
+  text: string;
+  url?: string;
+}
+
 export interface ZoomSliderItem {
   number: string;
   src: string;
@@ -59,6 +64,7 @@ export interface ZoomSliderItem {
     text: string;
     url: string;
   };
+  descParts?: ZoomSliderDescPart[];
   link?: string;
   linkLabel?: string;
   linkPrefix?: string;
@@ -1003,21 +1009,47 @@ export function ZoomSliderComp({
                 data-desc
                 className="overflow-hidden text-[10px] font-normal leading-normal tracking-[0.04em] text-neutral-600 dark:text-white/60 transition-colors duration-300 pointer-events-auto"
               >
-                <span className="select-none">{item.desc}</span>
-                {item.descLink ? (
-                  <a
-                    href={item.descLink.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    className="inline-block text-[#0a0a0a] dark:text-white font-semibold underline underline-offset-2 decoration-neutral-400 dark:decoration-neutral-500 hover:text-[#84a30a] dark:hover:text-[#C3E41D] hover:decoration-[#84a30a] dark:hover:decoration-[#C3E41D] transition-colors cursor-pointer pointer-events-auto select-auto"
-                    aria-label={`${item.descLink.text} on Instagram`}
-                  >
-                    {item.descLink.text}
-                  </a>
-                ) : null}
+                {item.descParts ? (
+                  item.descParts.map((part, pIdx) =>
+                    part.url ? (
+                      <a
+                        key={pIdx}
+                        href={part.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        className="inline-block text-[#0a0a0a] dark:text-white font-semibold underline underline-offset-2 decoration-neutral-400 dark:decoration-neutral-500 hover:text-[#84a30a] dark:hover:text-[#C3E41D] hover:decoration-[#84a30a] dark:hover:decoration-[#C3E41D] transition-colors cursor-pointer pointer-events-auto select-auto"
+                        aria-label={`${part.text} on Instagram`}
+                      >
+                        {part.text}
+                      </a>
+                    ) : (
+                      <span key={pIdx} className="select-none">
+                        {part.text}
+                      </span>
+                    )
+                  )
+                ) : (
+                  <>
+                    <span className="select-none">{item.desc}</span>
+                    {item.descLink ? (
+                      <a
+                        href={item.descLink.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        className="inline-block text-[#0a0a0a] dark:text-white font-semibold underline underline-offset-2 decoration-neutral-400 dark:decoration-neutral-500 hover:text-[#84a30a] dark:hover:text-[#C3E41D] hover:decoration-[#84a30a] dark:hover:decoration-[#C3E41D] transition-colors cursor-pointer pointer-events-auto select-auto"
+                        aria-label={`${item.descLink.text} on Instagram`}
+                      >
+                        {item.descLink.text}
+                      </a>
+                    ) : null}
+                  </>
+                )}
               </p>
             </div>
 

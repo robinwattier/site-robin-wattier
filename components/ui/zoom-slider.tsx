@@ -980,7 +980,7 @@ export function ZoomSliderComp({
                 className="pointer-events-none absolute inset-0 select-none object-cover opacity-0 w-full h-full"
                 style={{
                   transform: 'none',
-                  objectPosition: 'center bottom',
+                  objectPosition: 'center',
                   transition: 'none',
                   willChange: 'auto',
                 }}

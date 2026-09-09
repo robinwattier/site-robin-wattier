@@ -105,6 +105,7 @@ export function ZoomSliderComp({
   const subheadingRef = useRef<HTMLParagraphElement | null>(null);
   const mobileCardRefs = useRef<(HTMLElement | null)[]>([]);
   const wasAtHomeRef = useRef(true);
+  const desktopStepRef = useRef(0);
 
   const [viewportWidth, setViewportWidth] = useState(1440);
   const [viewportHeight, setViewportHeight] = useState(900);
@@ -439,6 +440,31 @@ export function ZoomSliderComp({
       });
     };
 
+    const animateDesktopStep = (targetOffset: number, stepIndex: number) => {
+      cooldownRef.current = Date.now() + 480;
+      isTransitioningRef.current = true;
+      gsap.killTweensOf(state);
+
+      gsap.to(state, {
+        current: targetOffset,
+        target: targetOffset,
+        duration: 0.55,
+        ease: 'power3.out',
+        onUpdate: () => {
+          positionCards(state.current);
+          updateTitleProgress();
+        },
+        onComplete: () => {
+          state.current = targetOffset;
+          state.target = targetOffset;
+          positionCards(state.current);
+          updateTitleProgress();
+          setActiveIndex(stepIndex);
+          isTransitioningRef.current = false;
+        },
+      });
+    };
+
     const onWheel = (event: WheelEvent) => {
       // 1. If currently in transition, swallow all wheel events
       if (isTransitioningRef.current) {
@@ -446,7 +472,7 @@ export function ZoomSliderComp({
         return;
       }
 
-      // 2. Cooldown check (absorb residual trackpad inertia from section transitions)
+      // 2. Cooldown check (absorb residual trackpad inertia from section transitions or magnetic steps)
       if (Date.now() < cooldownRef.current) {
         event.preventDefault();
         return;
@@ -455,35 +481,23 @@ export function ZoomSliderComp({
       const { vh, currentScrollY, projectsTop, contactTop, projectsBottom, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
 
-      // ─── MOBILE & TABLET (< 1280px): Natural smooth scrolling ─────────────────
+      // ─── MOBILE & TABLET (< 1280px): Handled natively by CSS scroll-snap ────────
       if (!isDesktop) {
-        if (isAtHome && event.deltaY > 0) {
-          event.preventDefault();
-          smoothScrollTo(projectsTop, () => magnetizeToProject1());
-        } else if (isAtProjects && currentScrollY >= projectsBottom - 20 && event.deltaY > 0) {
-          event.preventDefault();
-          unmagnetizeProject1();
-          smoothScrollTo(contactTop);
-        } else if (isAtContact && event.deltaY < 0) {
-          event.preventDefault();
-          smoothScrollTo(projectsBottom);
-        } else if (isAtProjects && currentScrollY <= projectsTop + 20 && event.deltaY < 0) {
-          event.preventDefault();
-          unmagnetizeProject1();
-          wasAtHomeRef.current = true;
-          smoothScrollTo(0);
-        }
         return;
       }
 
-      // ─── DESKTOP (>= 1280px): Pinned Continuous Kinetic Gallery ───────────────
+      // ─── DESKTOP (>= 1280px): Magnetic Snap Project-by-Project with Clean Stop ───
       // CASE 1: In Home
       if (isAtHome) {
         if (event.deltaY > 0) {
           event.preventDefault();
+          desktopStepRef.current = 0;
           state.target = 0;
           state.current = 0;
-          smoothScrollTo(projectsTop, () => magnetizeToProject1());
+          smoothScrollTo(projectsTop, () => {
+            magnetizeToProject1();
+            setActiveIndex(0);
+          });
         }
         return;
       }
@@ -492,9 +506,12 @@ export function ZoomSliderComp({
       if (isAtContact) {
         if (event.deltaY < 0) {
           event.preventDefault();
+          desktopStepRef.current = images.length - 1;
           state.target = maxTarget;
           state.current = maxTarget;
-          smoothScrollTo(projectsTop);
+          smoothScrollTo(projectsTop, () => {
+            setActiveIndex(images.length - 1);
+          });
         }
         return;
       }
@@ -503,6 +520,7 @@ export function ZoomSliderComp({
       if (currentScrollY > 20 && currentScrollY < projectsTop - 40) {
         event.preventDefault();
         if (event.deltaY > 0) {
+          desktopStepRef.current = 0;
           state.target = 0;
           state.current = 0;
           smoothScrollTo(projectsTop, () => magnetizeToProject1());
@@ -519,6 +537,7 @@ export function ZoomSliderComp({
           unmagnetizeProject1();
           smoothScrollTo(contactTop);
         } else {
+          desktopStepRef.current = images.length - 1;
           state.target = maxTarget;
           state.current = maxTarget;
           smoothScrollTo(projectsTop);
@@ -526,25 +545,27 @@ export function ZoomSliderComp({
         return;
       }
 
-      // CASE 4: Pinned inside Projects (Continuous Analog Lerp Scrubbing)
+      // CASE 4: Pinned inside Projects — Magnetic snap to each project card with clean stop
+      if (Math.abs(event.deltaY) < 10) return;
+
       event.preventDefault();
 
       if (event.deltaY > 0) {
         // Downward wheel scroll:
-        if (state.target < maxTarget || state.current < maxTarget - 2) {
-          // Advance the project horizontal slider smoothly with user's wheel speed
-          state.target = Math.min(maxTarget, state.target + event.deltaY * SCROLL_PER_PX);
+        if (desktopStepRef.current < images.length - 1) {
+          desktopStepRef.current += 1;
+          animateDesktopStep(desktopStepRef.current * cardStep, desktopStepRef.current);
         } else {
-          // Reached and settled on the final project card!
+          // Reached and stopped on the final project card!
           // Next downward scroll smoothly glides to Contact
           unmagnetizeProject1();
           smoothScrollTo(contactTop);
         }
       } else if (event.deltaY < 0) {
         // Upward wheel scroll:
-        if (state.target > 0 || state.current > 2) {
-          // Scrub backwards through the project gallery
-          state.target = Math.max(0, state.target + event.deltaY * SCROLL_PER_PX);
+        if (desktopStepRef.current > 0) {
+          desktopStepRef.current -= 1;
+          animateDesktopStep(desktopStepRef.current * cardStep, desktopStepRef.current);
         } else {
           // Back at project 1!
           // Next upward scroll smoothly glides back to Home
@@ -579,6 +600,9 @@ export function ZoomSliderComp({
 
     const endDrag = () => {
       state.isDragging = false;
+      const nearestIdx = Math.max(0, Math.min(images.length - 1, Math.round(state.current / cardStep)));
+      desktopStepRef.current = nearestIdx;
+      animateDesktopStep(nearestIdx * cardStep, nearestIdx);
     };
 
     const onMouseDown = (event: MouseEvent) => {
@@ -617,95 +641,7 @@ export function ZoomSliderComp({
       if (isDesktop) {
         endDrag();
       }
-      if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
-      if (!event.changedTouches.length) return;
-
-      const touchEndY = event.changedTouches[0].clientY;
-      const touchEndX = event.changedTouches[0].clientX;
-      const diffY = touchStartY - touchEndY;
-      const diffX = touchStartX - touchEndX;
-
-      if (Math.abs(diffY) < 45 || Math.abs(diffY) < Math.abs(diffX) * 1.2) return;
-
-      const { vh, currentScrollY, projectsTop, contactTop, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
-      const projectsBottom = Math.max(projectsTop, contactTop - vh);
-
-      if (diffY > 0) {
-        // Swiping finger UP (scrolling DOWN)
-        if (isAtHome) {
-          state.target = 0;
-          state.current = 0;
-          smoothScrollTo(projectsTop, () => magnetizeToProject1());
-        } else if (isDesktop) {
-          if (isAtProjects && (state.target >= maxTarget || state.current >= maxTarget - 2)) {
-            unmagnetizeProject1();
-            smoothScrollTo(contactTop);
-          }
-        } else {
-          // Mobile & Tablet (< 1280px): if at or near bottom of projects feed, smoothly glide to Contact
-          if (isAtProjects && currentScrollY >= projectsBottom - 40) {
-            unmagnetizeProject1();
-            smoothScrollTo(contactTop);
-          }
-        }
-      } else {
-        // Swiping finger DOWN (scrolling UP)
-        if (isAtContact) {
-          const targetY = isDesktop ? projectsTop : projectsBottom;
-          if (isDesktop) {
-            state.target = maxTarget;
-            state.current = maxTarget;
-          }
-          smoothScrollTo(targetY);
-        } else if (isDesktop) {
-          if (isAtProjects && (state.target <= 0 || state.current <= 2)) {
-            unmagnetizeProject1();
-            wasAtHomeRef.current = true;
-            smoothScrollTo(0);
-          }
-        } else {
-          // Mobile & Tablet (< 1280px): if at or near top of projects feed, smoothly glide to Hero
-          if (isAtProjects && currentScrollY <= projectsTop + 40) {
-            unmagnetizeProject1();
-            wasAtHomeRef.current = true;
-            smoothScrollTo(0);
-          }
-        }
-      }
-    };
-
-    let scrollSnapTimer: ReturnType<typeof setTimeout> | null = null;
-    const handleScrollSnap = () => {
-      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
-      if (isDesktop) return;
-
-      if (scrollSnapTimer) clearTimeout(scrollSnapTimer);
-      scrollSnapTimer = setTimeout(() => {
-        if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
-
-        const { currentScrollY, projectsTop, contactTop, projectsBottom } = getSectionOffsets();
-
-        // If stopped in transition gap between Home and Projects
-        if (currentScrollY > 30 && currentScrollY < projectsTop - 30) {
-          if (currentScrollY < projectsTop * 0.45) {
-            smoothScrollTo(0);
-          } else {
-            smoothScrollTo(projectsTop, () => magnetizeToProject1());
-          }
-          return;
-        }
-
-        // If stopped in transition gap between bottom of Projects and Contact
-        if (currentScrollY > projectsBottom + 30 && currentScrollY < contactTop - 30) {
-          const mid = projectsBottom + (contactTop - projectsBottom) * 0.5;
-          if (currentScrollY < mid) {
-            smoothScrollTo(projectsBottom);
-          } else {
-            smoothScrollTo(contactTop);
-          }
-          return;
-        }
-      }, 160);
+      // On mobile (< 1280px), native CSS scroll-snap handles the magnetic snap to each card with an arrest!
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -715,50 +651,39 @@ export function ZoomSliderComp({
       if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
 
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
-      const { currentScrollY, projectsTop, contactTop, projectsBottom, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
+      const { projectsTop, contactTop, isAtHome, isAtContact } = getSectionOffsets();
 
       if (event.key === 'ArrowDown' || event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey)) {
-        if (isAtHome) {
+        if (isDesktop) {
           event.preventDefault();
-          state.target = 0;
-          state.current = 0;
-          smoothScrollTo(projectsTop, () => magnetizeToProject1());
-        } else if (isAtProjects) {
-          if (isDesktop) {
-            event.preventDefault();
-            if (state.target < maxTarget - 1) {
-              state.target = Math.min(maxTarget, state.target + cardStep);
-            } else {
-              unmagnetizeProject1();
-              smoothScrollTo(contactTop);
-            }
-          } else if (currentScrollY >= projectsBottom - 20) {
-            event.preventDefault();
+          if (isAtHome) {
+            desktopStepRef.current = 0;
+            state.target = 0;
+            state.current = 0;
+            smoothScrollTo(projectsTop, () => {
+              magnetizeToProject1();
+              setActiveIndex(0);
+            });
+          } else if (desktopStepRef.current < images.length - 1) {
+            desktopStepRef.current += 1;
+            animateDesktopStep(desktopStepRef.current * cardStep, desktopStepRef.current);
+          } else {
             unmagnetizeProject1();
             smoothScrollTo(contactTop);
           }
         }
       } else if (event.key === 'ArrowUp' || event.key === 'PageUp' || (event.key === ' ' && event.shiftKey)) {
-        if (isAtContact) {
+        if (isDesktop) {
           event.preventDefault();
-          const targetY = isDesktop ? projectsTop : projectsBottom;
-          if (isDesktop) {
+          if (isAtContact) {
+            desktopStepRef.current = images.length - 1;
             state.target = maxTarget;
             state.current = maxTarget;
-          }
-          smoothScrollTo(targetY);
-        } else if (isAtProjects) {
-          if (isDesktop) {
-            event.preventDefault();
-            if (state.target > 1) {
-              state.target = Math.max(0, state.target - cardStep);
-            } else {
-              unmagnetizeProject1();
-              wasAtHomeRef.current = true;
-              smoothScrollTo(0);
-            }
-          } else if (currentScrollY <= projectsTop + 20) {
-            event.preventDefault();
+            smoothScrollTo(projectsTop, () => setActiveIndex(images.length - 1));
+          } else if (desktopStepRef.current > 0) {
+            desktopStepRef.current -= 1;
+            animateDesktopStep(desktopStepRef.current * cardStep, desktopStepRef.current);
+          } else {
             unmagnetizeProject1();
             wasAtHomeRef.current = true;
             smoothScrollTo(0);
@@ -773,14 +698,18 @@ export function ZoomSliderComp({
       const { projectsTop, contactTop } = getSectionOffsets();
 
       if (target === 'home') {
+        desktopStepRef.current = 0;
         unmagnetizeProject1();
         wasAtHomeRef.current = true;
         smoothScrollTo(0);
       } else if (target === 'projects') {
+        desktopStepRef.current = 0;
         state.target = 0;
         state.current = 0;
+        animateDesktopStep(0, 0);
         smoothScrollTo(projectsTop, () => magnetizeToProject1());
       } else if (target === 'contact') {
+        desktopStepRef.current = images.length - 1;
         unmagnetizeProject1();
         smoothScrollTo(contactTop);
       }
@@ -799,7 +728,6 @@ export function ZoomSliderComp({
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('rw-nav', onCustomNav);
     window.addEventListener('scroll', updateTitleProgress, { passive: true });
-    window.addEventListener('scroll', handleScrollSnap, { passive: true });
     window.addEventListener('resize', updateTitleProgress);
 
     state.raf = requestAnimationFrame(tick);
@@ -807,7 +735,6 @@ export function ZoomSliderComp({
     return () => {
       cancelAnimationFrame(state.raf as number);
       clearTimeout(initTimer);
-      if (scrollSnapTimer) clearTimeout(scrollSnapTimer);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
@@ -819,7 +746,6 @@ export function ZoomSliderComp({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('rw-nav', onCustomNav);
       window.removeEventListener('scroll', updateTitleProgress);
-      window.removeEventListener('scroll', handleScrollSnap);
       window.removeEventListener('resize', updateTitleProgress);
     };
   }, [cardStep, images, positionCards, reduceMotion]);
@@ -1111,7 +1037,7 @@ export function ZoomSliderComp({
 
       {/* ─── MOBILE & TABLET: Vertical Feed (< xl) ────────────────── */}
       <div className="block xl:hidden w-full max-w-xl sm:max-w-2xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-24 sm:pb-32">
-        <div className="flex flex-col items-center gap-16 sm:gap-24">
+        <div className="flex flex-col items-center gap-8 sm:gap-12">
           {images.map((item, index) => {
             const isActive = activeIndex === index;
             return (
@@ -1121,7 +1047,7 @@ export function ZoomSliderComp({
                   mobileCardRefs.current[index] = el;
                 }}
                 data-mob-card-index={index}
-                className={`group/mob-card w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] flex flex-col gap-2.5 transition-all duration-500 ease-out ${
+                className={`group/mob-card w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] min-h-[75vh] sm:min-h-[80vh] flex flex-col justify-center gap-2.5 transition-all duration-500 ease-out snap-center snap-always ${
                   isActive ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-75'
                 }`}
               >

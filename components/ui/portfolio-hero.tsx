@@ -95,7 +95,7 @@ export default function PortfolioHero() {
 
   return (
     <div
-      className="min-h-screen transition-colors duration-300 snap-start snap-always"
+      className="min-h-screen transition-colors duration-300 snap-start"
       style={{
         backgroundColor: isDark ? "#000000" : "#fafafa",
         color: isDark ? "#ffffff" : "#0a0a0a",

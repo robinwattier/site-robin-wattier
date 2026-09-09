@@ -66,12 +66,16 @@
 
 /* ============================================
    RESPONSIVE SCROLL SNAP (< 1280px)
-   Magnetic snap to each project card with clean stop
+   Soft, fluid magnetic snapping without abrupt stops
 ============================================ */
 @media (max-width: 1279px) {
+  html {
+    scroll-behavior: smooth;
+  }
   html, body {
     scroll-snap-type: y mandatory;
-    scroll-padding-top: 0px;
+    scroll-padding-top: 1rem;
+    scroll-padding-bottom: 1rem;
   }
 }
 

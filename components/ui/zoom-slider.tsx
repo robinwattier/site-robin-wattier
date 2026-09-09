@@ -250,7 +250,9 @@ export function ZoomSliderComp({
       // When at Projects: rect.top = 0 -> exitProgress = 0
       // When scrolling down towards Contact: rect.top < 0 -> exitProgress goes from 0 to 1
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
-      const rawExit = isDesktop ? -rect.top / (viewportHeight * 0.7) : 0;
+      const rawExit = isDesktop
+        ? -rect.top / (viewportHeight * 0.7)
+        : Math.max(0, (viewportHeight * 1.3 - rect.bottom) / (viewportHeight * 0.8));
       const exitProgress = Math.max(0, Math.min(1, rawExit));
 
       // Progressive character reveal for each of the 8 letters (P-R-O / J-E-C-T-S)
@@ -425,6 +427,14 @@ export function ZoomSliderComp({
       isTransitioningRef.current = true;
       gsap.killTweensOf(window);
 
+      // Temporarily release CSS scroll-snap so GSAP tween glides with 100% fluid momentum
+      const root = document.documentElement;
+      const body = document.body;
+      const prevSnapRoot = root.style.scrollSnapType;
+      const prevSnapBody = body.style.scrollSnapType;
+      root.style.scrollSnapType = 'none';
+      body.style.scrollSnapType = 'none';
+
       gsap.to(window, {
         scrollTo: { y: targetY, autoKill: false },
         duration: 0.85,
@@ -436,6 +446,8 @@ export function ZoomSliderComp({
         onComplete: () => {
           window.scrollTo(0, targetY);
           updateTitleProgress();
+          root.style.scrollSnapType = prevSnapRoot;
+          body.style.scrollSnapType = prevSnapBody;
           setTimeout(() => {
             isTransitioningRef.current = false;
             cooldownRef.current = Date.now() + 250;
@@ -1089,14 +1101,14 @@ export function ZoomSliderComp({
                   mobileCardRefs.current[index] = el;
                 }}
                 data-mob-card-index={index}
-                className={`group/mob-card w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] min-h-[75vh] sm:min-h-[80vh] flex flex-col justify-center gap-2.5 transition-all duration-500 ease-out snap-center snap-always ${
-                  isActive ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-75'
+                className={`group/mob-card w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] min-h-[75vh] sm:min-h-[80vh] flex flex-col justify-center gap-2.5 transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] snap-center ${
+                  isActive ? 'scale-100 opacity-100' : 'scale-[0.97] opacity-80'
                 }`}
               >
                 {/* Text Above Card (matching desktop typographic layout) */}
                 <div
-                  className={`flex flex-col gap-1 px-1 transition-all duration-500 ease-out ${
-                    isActive ? 'opacity-100 translate-y-0' : 'opacity-60 translate-y-1'
+                  className={`flex flex-col gap-1 px-1 transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    isActive ? 'opacity-100 translate-y-0' : 'opacity-65 translate-y-1.5'
                   }`}
                 >
                   <p className="select-none text-[10px] font-bold uppercase leading-none tracking-[0.18em] text-neutral-500 dark:text-white/50 transition-colors duration-300">
@@ -1147,7 +1159,7 @@ export function ZoomSliderComp({
                 </div>
 
                 {/* Vertical Portrait Media Container (aspect-[3/4]) matching desktop square edges */}
-                <div className="relative w-full aspect-[3/4] overflow-hidden bg-neutral-900/10 dark:bg-neutral-900 shadow-xl shadow-black/10 dark:shadow-none transition-all duration-500">
+                <div className="relative w-full aspect-[3/4] overflow-hidden bg-neutral-900/10 dark:bg-neutral-900 shadow-xl shadow-black/10 dark:shadow-none transition-shadow duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
                   {item.isVideo || item.src?.endsWith('.mp4') ? (
                     <video
                       src={item.src}
@@ -1157,7 +1169,7 @@ export function ZoomSliderComp({
                       playsInline
                       controls={false}
                       preload="auto"
-                      className={`absolute inset-0 w-full h-full object-cover select-none transition-transform duration-700 ease-out ${
+                      className={`absolute inset-0 w-full h-full object-cover select-none transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                         isActive ? 'scale-105' : 'scale-100'
                       }`}
                     />
@@ -1166,7 +1178,7 @@ export function ZoomSliderComp({
                       src={item.src}
                       alt={item.title}
                       loading="lazy"
-                      className={`absolute inset-0 w-full h-full object-cover select-none transition-transform duration-700 ease-out ${
+                      className={`absolute inset-0 w-full h-full object-cover select-none transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                         isActive ? 'scale-105' : 'scale-100'
                       }`}
                     />
@@ -1178,7 +1190,7 @@ export function ZoomSliderComp({
                       href={item.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide bg-black/80 hover:bg-[#C3E41D] text-white hover:text-black border border-white/20 hover:border-[#C3E41D] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out group/link cursor-pointer select-none whitespace-nowrap active:!scale-95 ${
+                      className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide bg-black/80 hover:bg-[#C3E41D] text-white hover:text-black border border-white/20 hover:border-[#C3E41D] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-[transform,opacity,filter,background-color,border-color,color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group/link cursor-pointer select-none whitespace-nowrap active:!scale-95 ${
                         isActive
                           ? 'opacity-100 scale-100 blur-none pointer-events-auto'
                           : 'opacity-0 scale-90 blur-[4px] pointer-events-none group-hover/mob-card:opacity-100 group-hover/mob-card:scale-100 group-hover/mob-card:blur-none group-hover/mob-card:pointer-events-auto'

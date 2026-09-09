@@ -90,7 +90,7 @@ export default function ContactSection({
     <section
       ref={containerRef}
       id="contact"
-      className={`relative w-full overflow-hidden transition-colors duration-300 bg-[#fafafa] dark:bg-black text-[#0a0a0a] dark:text-white snap-start snap-always ${className}`}
+      className={`relative w-full overflow-hidden transition-colors duration-300 bg-[#fafafa] dark:bg-black text-[#0a0a0a] dark:text-white snap-start ${className}`}
       style={{ height: "100svh" }}
       aria-label="Contact / Follow Section"
     >

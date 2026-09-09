@@ -438,11 +438,6 @@ export function ZoomSliderComp({
     };
 
     const onWheel = (event: WheelEvent) => {
-      // On mobile / tablet (< 1280px), allow 100% native natural scrolling
-      if (typeof window !== 'undefined' && window.innerWidth < 1280) {
-        return;
-      }
-
       // 1. If currently in transition, swallow all wheel events
       if (isTransitioningRef.current) {
         event.preventDefault();
@@ -455,20 +450,18 @@ export function ZoomSliderComp({
         return;
       }
 
-      const { currentScrollY, projectsTop, contactTop, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
+      const { vh, currentScrollY, projectsTop, contactTop, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
+      const projectsBottom = Math.max(projectsTop, contactTop - vh);
 
       // ─── CASE 1: USER IS IN HERO (HOME) ───────────────────────
       if (isAtHome) {
         if (event.deltaY > 0) {
-          // Scrolling down from Home:
-          // Immediately prevent native scroll so fast scrolls CANNOT overshoot past Projects!
+          // Scrolling down from Home: immediately prevent overshoot and smoothly snap to Projects
           event.preventDefault();
           state.target = 0;
           state.current = 0;
           smoothScrollTo(projectsTop, () => magnetizeToProject1());
-        } else {
-          // Normal scroll up while at top of Home
-          return;
         }
         return;
       }
@@ -476,21 +469,19 @@ export function ZoomSliderComp({
       // ─── CASE 2: USER IS IN CONTACT ───────────────────────────
       if (isAtContact) {
         if (event.deltaY < 0) {
-          // Scrolling up from Contact:
-          // Smoothly glide back into Projects, initialized at the end of the project gallery!
+          // Scrolling up from Contact: smoothly glide back into Projects
           event.preventDefault();
-          state.target = maxTarget;
-          state.current = maxTarget;
-          smoothScrollTo(projectsTop);
-        } else {
-          // Normal scroll down while at bottom of Contact
-          return;
+          const targetY = isDesktop ? projectsTop : projectsBottom;
+          if (isDesktop) {
+            state.target = maxTarget;
+            state.current = maxTarget;
+          }
+          smoothScrollTo(targetY);
         }
         return;
       }
 
       // ─── CASE 3: INTERMEDIATE POSITION RECOVERY ───────────────
-      // If user somehow ended up between sections (e.g. reload or resize)
       if (currentScrollY > 20 && currentScrollY < projectsTop - 40) {
         event.preventDefault();
         if (event.deltaY > 0) {
@@ -504,45 +495,69 @@ export function ZoomSliderComp({
         }
         return;
       }
-      if (currentScrollY > projectsTop + 40 && currentScrollY < contactTop - 40) {
+
+      // ─── CASE 4: USER IS IN PROJECTS ──────────────────────────
+      if (isDesktop) {
+        // Desktop horizontal kinetic slider logic
+        if (currentScrollY > projectsTop + 40 && currentScrollY < contactTop - 40) {
+          event.preventDefault();
+          if (event.deltaY > 0) {
+            unmagnetizeProject1();
+            smoothScrollTo(contactTop);
+          } else {
+            state.target = maxTarget;
+            state.current = maxTarget;
+            smoothScrollTo(projectsTop);
+          }
+          return;
+        }
+
         event.preventDefault();
         if (event.deltaY > 0) {
-          unmagnetizeProject1();
-          smoothScrollTo(contactTop);
-        } else {
-          state.target = maxTarget;
-          state.current = maxTarget;
-          smoothScrollTo(projectsTop);
+          if (state.target < maxTarget || state.current < maxTarget - 2) {
+            state.target = Math.min(maxTarget, state.target + event.deltaY * SCROLL_PER_PX);
+          } else {
+            unmagnetizeProject1();
+            smoothScrollTo(contactTop);
+          }
+        } else if (event.deltaY < 0) {
+          if (state.target > 0 || state.current > 2) {
+            state.target = Math.max(0, state.target + event.deltaY * SCROLL_PER_PX);
+          } else {
+            unmagnetizeProject1();
+            wasAtHomeRef.current = true;
+            smoothScrollTo(0);
+          }
         }
-        return;
-      }
-
-      // ─── CASE 4: USER IS PINNED IN PROJECTS ───────────────────
-      // Pin window scroll completely while interacting with projects
-      event.preventDefault();
-
-      if (event.deltaY > 0) {
-        // Downward wheel scroll:
-        if (state.target < maxTarget || state.current < maxTarget - 2) {
-          // Advance the project horizontal slider
-          state.target = Math.min(maxTarget, state.target + event.deltaY * SCROLL_PER_PX);
-        } else {
-          // Reached and settled on the final project card!
-          // Next downward scroll smoothly glides to Contact
-          unmagnetizeProject1();
-          smoothScrollTo(contactTop);
+      } else {
+        // Mobile & Tablet (< 1280px): Vertical Feed
+        // Intermediate between bottom of projects feed and contact
+        if (currentScrollY > projectsBottom + 30 && currentScrollY < contactTop - 30) {
+          event.preventDefault();
+          if (event.deltaY > 0) {
+            unmagnetizeProject1();
+            smoothScrollTo(contactTop);
+          } else {
+            smoothScrollTo(projectsBottom);
+          }
+          return;
         }
-      } else if (event.deltaY < 0) {
-        // Upward wheel scroll:
-        if (state.target > 0 || state.current > 2) {
-          // Scrub backwards through the project gallery
-          state.target = Math.max(0, state.target + event.deltaY * SCROLL_PER_PX);
-        } else {
-          // Back at project 1!
-          // Next upward scroll smoothly glides back to Home
+
+        // Reached top of vertical projects feed & scrolling UP -> magnetize back to Home
+        if (currentScrollY <= projectsTop + 15 && event.deltaY < 0) {
+          event.preventDefault();
           unmagnetizeProject1();
           wasAtHomeRef.current = true;
           smoothScrollTo(0);
+          return;
+        }
+
+        // Reached bottom of vertical projects feed & scrolling DOWN -> magnetize to Contact
+        if (currentScrollY >= projectsBottom - 15 && event.deltaY > 0) {
+          event.preventDefault();
+          unmagnetizeProject1();
+          smoothScrollTo(contactTop);
+          return;
         }
       }
     };
@@ -586,26 +601,29 @@ export function ZoomSliderComp({
     let touchStartX = 0;
 
     const onTouchStart = (event: TouchEvent) => {
-      if (typeof window !== 'undefined' && window.innerWidth < 1280) return;
       if ((event.target as HTMLElement)?.closest('a, button')) return;
       if (event.touches.length > 0) {
         touchStartY = event.touches[0].clientY;
         touchStartX = event.touches[0].clientX;
       }
-      if (!containerRef.current?.contains(event.target as Node)) return;
-      beginDrag(event.touches[0].clientX, event.touches[0].clientY);
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
+      if (isDesktop && containerRef.current?.contains(event.target as Node)) {
+        beginDrag(event.touches[0].clientX, event.touches[0].clientY);
+      }
     };
 
     const onTouchMove = (event: TouchEvent) => {
-      if (typeof window !== 'undefined' && window.innerWidth < 1280) return;
-      if (containerRef.current?.contains(event.target as Node)) {
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
+      if (isDesktop && containerRef.current?.contains(event.target as Node)) {
         moveDrag(event.touches[0].clientX, event.touches[0].clientY, -1);
       }
     };
 
     const onTouchEnd = (event: TouchEvent) => {
-      if (typeof window !== 'undefined' && window.innerWidth < 1280) return;
-      endDrag();
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
+      if (isDesktop) {
+        endDrag();
+      }
       if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
       if (!event.changedTouches.length) return;
 
@@ -614,30 +632,88 @@ export function ZoomSliderComp({
       const diffY = touchStartY - touchEndY;
       const diffX = touchStartX - touchEndX;
 
-      if (Math.abs(diffY) < 60 || Math.abs(diffY) < Math.abs(diffX) * 1.3) return;
+      if (Math.abs(diffY) < 45 || Math.abs(diffY) < Math.abs(diffX) * 1.2) return;
 
-      const { projectsTop, contactTop, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
+      const { vh, currentScrollY, projectsTop, contactTop, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
+      const projectsBottom = Math.max(projectsTop, contactTop - vh);
 
       if (diffY > 0) {
+        // Swiping finger UP (scrolling DOWN)
         if (isAtHome) {
           state.target = 0;
           state.current = 0;
           smoothScrollTo(projectsTop, () => magnetizeToProject1());
-        } else if (isAtProjects && (state.target >= maxTarget || state.current >= maxTarget - 2)) {
-          unmagnetizeProject1();
-          smoothScrollTo(contactTop);
+        } else if (isDesktop) {
+          if (isAtProjects && (state.target >= maxTarget || state.current >= maxTarget - 2)) {
+            unmagnetizeProject1();
+            smoothScrollTo(contactTop);
+          }
+        } else {
+          // Mobile & Tablet (< 1280px): if at or near bottom of projects feed, magnetize to Contact
+          if (isAtProjects && currentScrollY >= projectsBottom - 40) {
+            unmagnetizeProject1();
+            smoothScrollTo(contactTop);
+          }
         }
       } else {
+        // Swiping finger DOWN (scrolling UP)
         if (isAtContact) {
-          state.target = maxTarget;
-          state.current = maxTarget;
-          smoothScrollTo(projectsTop);
-        } else if (isAtProjects && (state.target <= 0 || state.current <= 2)) {
-          unmagnetizeProject1();
-          wasAtHomeRef.current = true;
-          smoothScrollTo(0);
+          const targetY = isDesktop ? projectsTop : projectsBottom;
+          if (isDesktop) {
+            state.target = maxTarget;
+            state.current = maxTarget;
+          }
+          smoothScrollTo(targetY);
+        } else if (isDesktop) {
+          if (isAtProjects && (state.target <= 0 || state.current <= 2)) {
+            unmagnetizeProject1();
+            wasAtHomeRef.current = true;
+            smoothScrollTo(0);
+          }
+        } else {
+          // Mobile & Tablet (< 1280px): if at or near top of projects feed, magnetize to Hero
+          if (isAtProjects && currentScrollY <= projectsTop + 40) {
+            unmagnetizeProject1();
+            wasAtHomeRef.current = true;
+            smoothScrollTo(0);
+          }
         }
       }
+    };
+
+    let scrollSnapTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleScrollSnap = () => {
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
+      if (isDesktop) return;
+
+      if (scrollSnapTimer) clearTimeout(scrollSnapTimer);
+      scrollSnapTimer = setTimeout(() => {
+        if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
+
+        const { vh, currentScrollY, projectsTop, contactTop } = getSectionOffsets();
+        const projectsBottom = Math.max(projectsTop, contactTop - vh);
+
+        // If stopped halfway between Home and Projects
+        if (currentScrollY > 30 && currentScrollY < projectsTop - 30) {
+          if (currentScrollY < projectsTop * 0.45) {
+            smoothScrollTo(0);
+          } else {
+            smoothScrollTo(projectsTop, () => magnetizeToProject1());
+          }
+          return;
+        }
+
+        // If stopped halfway between bottom of Projects and Contact
+        if (currentScrollY > projectsBottom + 30 && currentScrollY < contactTop - 30) {
+          const mid = projectsBottom + (contactTop - projectsBottom) * 0.5;
+          if (currentScrollY < mid) {
+            smoothScrollTo(projectsBottom);
+          } else {
+            smoothScrollTo(contactTop);
+          }
+          return;
+        }
+      }, 160);
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -646,7 +722,9 @@ export function ZoomSliderComp({
       }
       if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
 
-      const { projectsTop, contactTop, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
+      const { vh, currentScrollY, projectsTop, contactTop, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
+      const projectsBottom = Math.max(projectsTop, contactTop - vh);
 
       if (event.key === 'ArrowDown' || event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey)) {
         if (isAtHome) {
@@ -655,10 +733,16 @@ export function ZoomSliderComp({
           state.current = 0;
           smoothScrollTo(projectsTop, () => magnetizeToProject1());
         } else if (isAtProjects) {
-          event.preventDefault();
-          if (state.target < maxTarget - 1) {
-            state.target = Math.min(maxTarget, state.target + cardStep);
-          } else {
+          if (isDesktop) {
+            event.preventDefault();
+            if (state.target < maxTarget - 1) {
+              state.target = Math.min(maxTarget, state.target + cardStep);
+            } else {
+              unmagnetizeProject1();
+              smoothScrollTo(contactTop);
+            }
+          } else if (currentScrollY >= projectsBottom - 20) {
+            event.preventDefault();
             unmagnetizeProject1();
             smoothScrollTo(contactTop);
           }
@@ -666,14 +750,24 @@ export function ZoomSliderComp({
       } else if (event.key === 'ArrowUp' || event.key === 'PageUp' || (event.key === ' ' && event.shiftKey)) {
         if (isAtContact) {
           event.preventDefault();
-          state.target = maxTarget;
-          state.current = maxTarget;
-          smoothScrollTo(projectsTop);
+          const targetY = isDesktop ? projectsTop : projectsBottom;
+          if (isDesktop) {
+            state.target = maxTarget;
+            state.current = maxTarget;
+          }
+          smoothScrollTo(targetY);
         } else if (isAtProjects) {
-          event.preventDefault();
-          if (state.target > 1) {
-            state.target = Math.max(0, state.target - cardStep);
-          } else {
+          if (isDesktop) {
+            event.preventDefault();
+            if (state.target > 1) {
+              state.target = Math.max(0, state.target - cardStep);
+            } else {
+              unmagnetizeProject1();
+              wasAtHomeRef.current = true;
+              smoothScrollTo(0);
+            }
+          } else if (currentScrollY <= projectsTop + 20) {
+            event.preventDefault();
             unmagnetizeProject1();
             wasAtHomeRef.current = true;
             smoothScrollTo(0);
@@ -714,6 +808,7 @@ export function ZoomSliderComp({
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('rw-nav', onCustomNav);
     window.addEventListener('scroll', updateTitleProgress, { passive: true });
+    window.addEventListener('scroll', handleScrollSnap, { passive: true });
     window.addEventListener('resize', updateTitleProgress);
 
     state.raf = requestAnimationFrame(tick);
@@ -721,6 +816,7 @@ export function ZoomSliderComp({
     return () => {
       cancelAnimationFrame(state.raf as number);
       clearTimeout(initTimer);
+      if (scrollSnapTimer) clearTimeout(scrollSnapTimer);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
@@ -732,6 +828,7 @@ export function ZoomSliderComp({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('rw-nav', onCustomNav);
       window.removeEventListener('scroll', updateTitleProgress);
+      window.removeEventListener('scroll', handleScrollSnap);
       window.removeEventListener('resize', updateTitleProgress);
     };
   }, [cardStep, images, positionCards, reduceMotion]);

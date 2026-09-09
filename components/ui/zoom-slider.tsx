@@ -10,19 +10,7 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(SplitText, ScrollToPlugin);
 }
 
-import { assetUrl } from '@/lib/utils';
 import { PROJECTS_DATA } from '@/lib/projects';
-
-const VAULT_IMAGES = [
-  assetUrl('/projects/project-1.jpg'),
-  assetUrl('/projects/project-2.jpg'),
-  assetUrl('/projects/project-3.jpg'),
-  assetUrl('/projects/project-4.jpg'),
-  assetUrl('/projects/project-5.jpg'),
-  assetUrl('/projects/project-6.jpg'),
-  assetUrl('/projects/project-7.jpg'),
-  assetUrl('/projects/project-8.jpg'),
-];
 
 const DEFAULT_SLIDER_DATA: ZoomSliderItem[] = PROJECTS_DATA;
 
@@ -38,10 +26,6 @@ const SLIDER_BOTTOM_OFFSET = 0;
 
 const REDUCED_MOTION_LERP_FACTOR = 0.08;
 const REDUCED_MOTION_FADE_DURATION = 0.18;
-
-const prefersReducedMotion = () =>
-  typeof window !== 'undefined' &&
-  false;
 
 const LINE1_PROJECTS = ['P', 'R', 'O'];
 const LINE2_PROJECTS = ['J', 'E', 'C', 'T', 'S'];
@@ -99,8 +83,6 @@ export function ZoomSliderComp({
   const imageWrapRefs = useRef<(HTMLDivElement | null)[]>([]);
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const titleWrapRef = useRef<HTMLHeadingElement | null>(null);
-  const proRef = useRef<HTMLSpanElement | null>(null);
-  const jectsRef = useRef<HTMLSpanElement | null>(null);
   const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const subheadingRef = useRef<HTMLParagraphElement | null>(null);
   const mobileCardRefs = useRef<(HTMLElement | null)[]>([]);
@@ -156,13 +138,13 @@ export function ZoomSliderComp({
       '(prefers-reduced-motion: reduce)'
     );
 
-    const syncReducedMotion = (event: MediaQueryList | MediaQueryListEvent) => {
+    const syncReducedMotion = () => {
       setReduceMotion(false);
     };
 
     if (!mediaQuery) return;
 
-    syncReducedMotion(mediaQuery);
+    syncReducedMotion();
     mediaQuery.addEventListener('change', syncReducedMotion);
     return () => mediaQuery.removeEventListener('change', syncReducedMotion);
   }, []);
@@ -703,7 +685,13 @@ export function ZoomSliderComp({
       // Mobile & Tablet: soft, luxurious section glide when swiping at boundaries
       if (event.changedTouches.length > 0) {
         const touchEndY = event.changedTouches[0].clientY;
+        const touchEndX = event.changedTouches[0].clientX;
         const deltaY = touchStartY - touchEndY;
+        const deltaX = touchStartX - touchEndX;
+
+        // Ensure vertical gesture intent
+        if (Math.abs(deltaY) < Math.abs(deltaX) * 0.8) return;
+
         const { currentScrollY, projectsTop, contactTop, projectsBottom, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
 
         if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;

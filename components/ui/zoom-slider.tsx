@@ -518,11 +518,27 @@ export function ZoomSliderComp({
         return;
       }
 
-      const { currentScrollY, projectsTop, contactTop, isAtHome, isAtContact } = getSectionOffsets();
+      const { currentScrollY, projectsTop, contactTop, projectsBottom, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
 
-      // ─── MOBILE & TABLET (< 1280px): Handled natively by CSS scroll-snap ────────
+      // ─── MOBILE & TABLET (< 1280px): Smooth fluid inter-section transitions ────
       if (!isDesktop) {
+        if (isAtHome && event.deltaY > 0) {
+          event.preventDefault();
+          smoothScrollTo(projectsTop, () => magnetizeToProject1());
+        } else if (isAtProjects && currentScrollY >= projectsBottom - 40 && event.deltaY > 0) {
+          event.preventDefault();
+          unmagnetizeProject1();
+          smoothScrollTo(contactTop);
+        } else if (isAtContact && event.deltaY < 0) {
+          event.preventDefault();
+          smoothScrollTo(projectsBottom);
+        } else if (isAtProjects && currentScrollY <= projectsTop + 40 && event.deltaY < 0) {
+          event.preventDefault();
+          unmagnetizeProject1();
+          wasAtHomeRef.current = true;
+          smoothScrollTo(0);
+        }
         return;
       }
 
@@ -681,6 +697,29 @@ export function ZoomSliderComp({
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
       if (isDesktop) {
         endDrag();
+        return;
+      }
+
+      // Mobile & Tablet: soft, luxurious section glide when swiping at boundaries
+      if (event.changedTouches.length > 0) {
+        const touchEndY = event.changedTouches[0].clientY;
+        const deltaY = touchStartY - touchEndY;
+        const { currentScrollY, projectsTop, contactTop, projectsBottom, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
+
+        if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
+
+        if (isAtHome && deltaY > 45) {
+          smoothScrollTo(projectsTop, () => magnetizeToProject1());
+        } else if (isAtProjects && currentScrollY >= projectsBottom - 50 && deltaY > 45) {
+          unmagnetizeProject1();
+          smoothScrollTo(contactTop);
+        } else if (isAtContact && deltaY < -45) {
+          smoothScrollTo(projectsBottom);
+        } else if (isAtProjects && currentScrollY <= projectsTop + 50 && deltaY < -45) {
+          unmagnetizeProject1();
+          wasAtHomeRef.current = true;
+          smoothScrollTo(0);
+        }
       }
     };
 
@@ -691,7 +730,7 @@ export function ZoomSliderComp({
       if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
 
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
-      const { projectsTop, contactTop, isAtHome, isAtContact } = getSectionOffsets();
+      const { currentScrollY, projectsTop, contactTop, projectsBottom, isAtHome, isAtProjects, isAtContact } = getSectionOffsets();
 
       if (event.key === 'ArrowDown' || event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey)) {
         if (isDesktop) {
@@ -716,6 +755,15 @@ export function ZoomSliderComp({
               smoothScrollTo(contactTop);
             }
           }
+        } else {
+          if (isAtHome) {
+            event.preventDefault();
+            smoothScrollTo(projectsTop, () => magnetizeToProject1());
+          } else if (isAtProjects && currentScrollY >= projectsBottom - 50) {
+            event.preventDefault();
+            unmagnetizeProject1();
+            smoothScrollTo(contactTop);
+          }
         }
       } else if (event.key === 'ArrowUp' || event.key === 'PageUp' || (event.key === ' ' && event.shiftKey)) {
         if (isDesktop) {
@@ -737,6 +785,16 @@ export function ZoomSliderComp({
               wasAtHomeRef.current = true;
               smoothScrollTo(0);
             }
+          }
+        } else {
+          if (isAtContact) {
+            event.preventDefault();
+            smoothScrollTo(projectsBottom);
+          } else if (isAtProjects && currentScrollY <= projectsTop + 50) {
+            event.preventDefault();
+            unmagnetizeProject1();
+            wasAtHomeRef.current = true;
+            smoothScrollTo(0);
           }
         }
       }

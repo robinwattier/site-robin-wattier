@@ -73,9 +73,9 @@
     scroll-behavior: smooth;
   }
   html, body {
-    scroll-snap-type: y mandatory;
-    scroll-padding-top: 1rem;
-    scroll-padding-bottom: 1rem;
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 2rem;
+    scroll-padding-bottom: 2rem;
   }
 }
 

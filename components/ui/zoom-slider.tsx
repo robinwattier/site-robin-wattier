@@ -1184,8 +1184,8 @@ export function ZoomSliderComp({
                   </div>
                 </div>
 
-                {/* Vertical Portrait Media Container (aspect-[3/4]) with kinetic zoom & floating pill */}
-                <div className="relative w-full aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900/10 dark:bg-neutral-900 shadow-xl shadow-black/10 dark:shadow-none border border-black/5 dark:border-white/10 transition-all duration-500">
+                {/* Vertical Portrait Media Container (aspect-[3/4]) matching desktop square edges */}
+                <div className="relative w-full aspect-[3/4] overflow-hidden bg-neutral-900/10 dark:bg-neutral-900 shadow-xl shadow-black/10 dark:shadow-none transition-all duration-500">
                   {item.isVideo || item.src?.endsWith('.mp4') ? (
                     <video
                       src={item.src}

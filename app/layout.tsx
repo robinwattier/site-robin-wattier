@@ -4,7 +4,7 @@ import MotionProvider from "@/components/providers/motion-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Robin Wattier — Creative Portfolio",
+  title: "Robin Wattier",
   description:
     "Robin Wattier — Designing human experiences in code. Portfolio créatif explorant l'IA, l'Audio et les expériences visuelles.",
   keywords: [
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Robin Wattier" }],
   openGraph: {
-    title: "Robin Wattier — Creative Portfolio",
+    title: "Robin Wattier",
     description: "Designing human experiences in code.",
     type: "website",
   },

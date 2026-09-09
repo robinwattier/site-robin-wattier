@@ -94,12 +94,12 @@ export default function ContactSection({
       style={{ height: "100svh" }}
       aria-label="Contact / Follow Section"
     >
-      {/* Top-left Section Title - progressive letter-by-letter kinetic unblur */}
-      <div className="pointer-events-none absolute left-6 sm:left-10 md:left-16 lg:left-20 top-24 sm:top-28 md:top-32 lg:top-36 z-20 text-left">
+      {/* Section Title - progressive letter-by-letter kinetic unblur */}
+      <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 xl:left-20 xl:translate-x-0 top-20 sm:top-24 md:top-28 xl:top-36 z-20 flex flex-col items-center xl:items-start text-center xl:text-left w-full max-w-full px-4 xl:w-auto xl:px-0">
         <h2
           ref={titleRef}
           aria-label={title}
-          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black uppercase tracking-tight text-[#0a0a0a] dark:text-white leading-[0.85] select-none transition-colors duration-300"
+          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black uppercase tracking-tight text-[#0a0a0a] dark:text-white leading-none xl:leading-[0.85] select-none transition-colors duration-300"
         >
           {/* Line 1: CONTACT */}
           <span className="block overflow-visible whitespace-nowrap">

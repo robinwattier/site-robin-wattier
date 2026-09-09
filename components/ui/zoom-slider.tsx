@@ -247,7 +247,8 @@ export function ZoomSliderComp({
       // 2. Exit (Projects -> Contact):
       // When at Projects: rect.top = 0 -> exitProgress = 0
       // When scrolling down towards Contact: rect.top < 0 -> exitProgress goes from 0 to 1
-      const rawExit = -rect.top / (viewportHeight * 0.7);
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1280;
+      const rawExit = isDesktop ? -rect.top / (viewportHeight * 0.7) : 0;
       const exitProgress = Math.max(0, Math.min(1, rawExit));
 
       // Progressive character reveal for each of the 8 letters (P-R-O / J-E-C-T-S)
@@ -336,6 +337,10 @@ export function ZoomSliderComp({
     };
 
     const tick = () => {
+      if (typeof window !== 'undefined' && window.innerWidth < 1280) {
+        state.raf = requestAnimationFrame(tick);
+        return;
+      }
       // Clamp target to available range [0, maxTarget]
       state.target = Math.max(0, Math.min(maxTarget, state.target));
 
@@ -433,6 +438,11 @@ export function ZoomSliderComp({
     };
 
     const onWheel = (event: WheelEvent) => {
+      // On mobile / tablet (< 1280px), allow 100% native natural scrolling
+      if (typeof window !== 'undefined' && window.innerWidth < 1280) {
+        return;
+      }
+
       // 1. If currently in transition, swallow all wheel events
       if (isTransitioningRef.current) {
         event.preventDefault();
@@ -564,6 +574,7 @@ export function ZoomSliderComp({
     };
 
     const onMouseDown = (event: MouseEvent) => {
+      if (typeof window !== 'undefined' && window.innerWidth < 1280) return;
       if (!containerRef.current?.contains(event.target as Node)) return;
       if ((event.target as HTMLElement)?.closest('a, button')) return;
       beginDrag(event.clientX, event.clientY);
@@ -575,6 +586,7 @@ export function ZoomSliderComp({
     let touchStartX = 0;
 
     const onTouchStart = (event: TouchEvent) => {
+      if (typeof window !== 'undefined' && window.innerWidth < 1280) return;
       if ((event.target as HTMLElement)?.closest('a, button')) return;
       if (event.touches.length > 0) {
         touchStartY = event.touches[0].clientY;
@@ -585,12 +597,14 @@ export function ZoomSliderComp({
     };
 
     const onTouchMove = (event: TouchEvent) => {
+      if (typeof window !== 'undefined' && window.innerWidth < 1280) return;
       if (containerRef.current?.contains(event.target as Node)) {
         moveDrag(event.touches[0].clientX, event.touches[0].clientY, -1);
       }
     };
 
     const onTouchEnd = (event: TouchEvent) => {
+      if (typeof window !== 'undefined' && window.innerWidth < 1280) return;
       endDrag();
       if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
       if (!event.changedTouches.length) return;
@@ -873,6 +887,42 @@ export function ZoomSliderComp({
     return () => cleanups.forEach((cleanup) => cleanup());
   }, [images, reduceMotion, scaleOnHover, textOnHover]);
 
+  // Active card tracking for mobile/tablet vertical feed
+  useEffect(() => {
+    if (typeof window === 'undefined' || !containerRef.current) return;
+
+    const cards = containerRef.current.querySelectorAll<HTMLElement>('[data-mob-card-index]');
+    if (!cards.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const indexAttr = entry.target.getAttribute('data-mob-card-index');
+            if (indexAttr !== null) {
+              const idx = parseInt(indexAttr, 10);
+              if (!isNaN(idx)) {
+                setActiveIndex(idx);
+              }
+            }
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '-28% 0px -28% 0px',
+        threshold: 0.15,
+      }
+    );
+
+    cards.forEach((card) => observer.observe(card));
+
+    return () => {
+      cards.forEach((card) => observer.unobserve(card));
+      observer.disconnect();
+    };
+  }, [images]);
+
   const activeItem = images[activeIndex];
   const slideAnnouncement = images.length
     ? activeItem?.title
@@ -884,23 +934,25 @@ export function ZoomSliderComp({
     <div
       ref={containerRef}
       id="projects"
-      className={`relative w-full overflow-hidden bg-[#fafafa] dark:bg-black text-[#0a0a0a] dark:text-white transition-colors duration-300 ${className || ''}`}
-      style={{ height: '100svh', touchAction: 'none' }}
+      className={`relative w-full min-h-screen xl:h-[100svh] overflow-visible xl:overflow-hidden bg-[#fafafa] dark:bg-black text-[#0a0a0a] dark:text-white transition-colors duration-300 touch-pan-y xl:touch-none ${className || ''}`}
     >
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {slideAnnouncement}
       </div>
       {title ? (
-        <div className="pointer-events-none absolute left-6 sm:left-10 md:left-16 lg:left-20 top-24 sm:top-28 md:top-32 lg:top-36 z-20 text-left">
+        <div className="pointer-events-none relative xl:absolute left-0 xl:left-20 xl:top-36 z-20 flex flex-col items-center xl:items-start text-center xl:text-left w-full xl:w-auto pt-20 sm:pt-24 xl:pt-0 px-4 xl:px-0">
           <h2
             ref={titleWrapRef}
             aria-label={typeof title === "string" ? title : "PROJECTS"}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black uppercase tracking-tight text-[#0a0a0a] dark:text-white leading-[0.85] select-none transition-colors duration-300"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black uppercase tracking-tight text-[#0a0a0a] dark:text-white leading-none xl:leading-[0.85] select-none transition-colors duration-300"
           >
             {typeof title === "string" && title.toUpperCase() === "PROJECTS" ? (
-              <span aria-label="PROJECTS">
+              <span
+                aria-label="PROJECTS"
+                className="inline-flex flex-row xl:flex-col items-center xl:items-start justify-center"
+              >
                 {/* Line 1: PRO */}
-                <span className="block overflow-visible whitespace-nowrap">
+                <span className="inline-flex overflow-visible whitespace-nowrap">
                   {LINE1_PROJECTS.map((char, i) => (
                     <span
                       key={i}
@@ -922,7 +974,7 @@ export function ZoomSliderComp({
                 </span>
 
                 {/* Line 2: JECTS */}
-                <span className="block overflow-visible whitespace-nowrap mt-1 sm:mt-2">
+                <span className="inline-flex overflow-visible whitespace-nowrap xl:mt-2">
                   {LINE2_PROJECTS.map((char, i) => {
                     const letterIndex = LINE1_PROJECTS.length + i;
                     return (
@@ -953,7 +1005,7 @@ export function ZoomSliderComp({
           {subheading ? (
             <p
               ref={subheadingRef}
-              className="mt-3 sm:mt-4 text-xs sm:text-sm tracking-[0.1em] text-neutral-600 dark:text-white/65 font-medium will-change-[opacity,transform,filter] flex items-center gap-2 transition-colors duration-300"
+              className="mt-2.5 sm:mt-3 xl:mt-4 text-xs sm:text-sm tracking-[0.1em] text-neutral-600 dark:text-white/65 font-medium will-change-[opacity,transform,filter] flex items-center justify-center xl:justify-start gap-2 text-center xl:text-left transition-colors duration-300"
               style={{
                 opacity: 0,
                 transform: 'translateY(18px)',
@@ -969,7 +1021,129 @@ export function ZoomSliderComp({
         </div>
       ) : null}
 
-      <div ref={stripRef} className="absolute inset-0">
+      {/* ─── MOBILE & TABLET: Vertical Feed (< xl) ────────────────── */}
+      <div className="block xl:hidden w-full max-w-xl sm:max-w-2xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-24 sm:pb-32">
+        <div className="flex flex-col items-center gap-16 sm:gap-24">
+          {images.map((item, index) => {
+            const isActive = activeIndex === index;
+            return (
+              <article
+                key={index}
+                data-mob-card-index={index}
+                className={`group/mob-card w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] flex flex-col gap-2.5 transition-all duration-500 ease-out ${
+                  isActive ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-75'
+                }`}
+              >
+                {/* Text Above Card (matching desktop typographic layout) */}
+                <div
+                  className={`flex flex-col gap-1 px-1 transition-all duration-500 ease-out ${
+                    isActive ? 'opacity-100 translate-y-0' : 'opacity-60 translate-y-1'
+                  }`}
+                >
+                  <p className="select-none text-[10px] font-bold uppercase leading-none tracking-[0.18em] text-neutral-500 dark:text-white/50 transition-colors duration-300">
+                    {item.number}
+                  </p>
+
+                  <h3 className="select-none text-[15px] sm:text-[17px] font-extrabold uppercase leading-[1.15] tracking-[0.08em] text-[#0a0a0a] dark:text-white transition-colors duration-300">
+                    {item.title}
+                  </h3>
+
+                  <div className="text-[11px] sm:text-[12px] font-normal leading-normal tracking-[0.04em] text-neutral-600 dark:text-white/60 transition-colors duration-300">
+                    {item.descParts ? (
+                      item.descParts.map((part, pIdx) =>
+                        part.url ? (
+                          <a
+                            key={pIdx}
+                            href={part.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block text-[#0a0a0a] dark:text-white font-semibold underline underline-offset-2 decoration-neutral-400 dark:decoration-neutral-500 hover:text-[#84a30a] dark:hover:text-[#C3E41D] hover:decoration-[#84a30a] dark:hover:decoration-[#C3E41D] transition-colors cursor-pointer pointer-events-auto select-auto"
+                            aria-label={`${part.text} on Instagram`}
+                          >
+                            {part.text}
+                          </a>
+                        ) : (
+                          <span key={pIdx} className="select-none">
+                            {part.text}
+                          </span>
+                        )
+                      )
+                    ) : (
+                      <>
+                        <span className="select-none">{item.desc}</span>
+                        {item.descLink ? (
+                          <a
+                            href={item.descLink.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block text-[#0a0a0a] dark:text-white font-semibold underline underline-offset-2 decoration-neutral-400 dark:decoration-neutral-500 hover:text-[#84a30a] dark:hover:text-[#C3E41D] hover:decoration-[#84a30a] dark:hover:decoration-[#C3E41D] transition-colors cursor-pointer pointer-events-auto select-auto ml-1"
+                            aria-label={`${item.descLink.text} on Instagram`}
+                          >
+                            {item.descLink.text}
+                          </a>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Vertical Portrait Media Container (aspect-[3/4]) with kinetic zoom & floating pill */}
+                <div className="relative w-full aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900/10 dark:bg-neutral-900 shadow-xl shadow-black/10 dark:shadow-none border border-black/5 dark:border-white/10 transition-all duration-500">
+                  {item.isVideo || item.src?.endsWith('.mp4') ? (
+                    <video
+                      src={item.src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls={false}
+                      preload="auto"
+                      className={`absolute inset-0 w-full h-full object-cover select-none transition-transform duration-700 ease-out ${
+                        isActive ? 'scale-105' : 'scale-100'
+                      }`}
+                    />
+                  ) : (
+                    <img
+                      src={item.src}
+                      alt={item.title}
+                      loading="lazy"
+                      className={`absolute inset-0 w-full h-full object-cover select-none transition-transform duration-700 ease-out ${
+                        isActive ? 'scale-105' : 'scale-100'
+                      }`}
+                    />
+                  )}
+
+                  {/* Centered Floating Pill Button (matching desktop animation & style) */}
+                  {item.link ? (
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide bg-black/80 hover:bg-[#C3E41D] text-white hover:text-black border border-white/20 hover:border-[#C3E41D] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out group/link cursor-pointer select-none whitespace-nowrap active:!scale-95 ${
+                        isActive
+                          ? 'opacity-100 scale-100 blur-none pointer-events-auto'
+                          : 'opacity-0 scale-90 blur-[4px] pointer-events-none group-hover/mob-card:opacity-100 group-hover/mob-card:scale-100 group-hover/mob-card:blur-none group-hover/mob-card:pointer-events-auto'
+                      }`}
+                      aria-label={`Visiter le site ${item.title}`}
+                    >
+                      <span className="opacity-75 font-normal tracking-normal">
+                        {item.linkPrefix || 'visit:'}
+                      </span>
+                      <span className="font-bold tracking-normal">
+                        {item.linkLabel || item.title || 'visit site'}
+                      </span>
+                      <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                    </a>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ─── DESKTOP: Horizontal Kinetic Zoom Slider (>= xl) ───────── */}
+      <div ref={stripRef} className="hidden xl:block absolute inset-0">
         {images.map((item, index) => (
           <div
             key={index}

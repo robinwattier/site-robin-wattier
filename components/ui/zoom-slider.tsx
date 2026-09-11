@@ -696,14 +696,14 @@ export function ZoomSliderComp({
 
         if (isTransitioningRef.current || Date.now() < cooldownRef.current) return;
 
-        if (isAtHome && deltaY > 45) {
+        if (isAtHome && deltaY > 30) {
           smoothScrollTo(projectsTop, () => magnetizeToProject1());
-        } else if (isAtProjects && currentScrollY >= projectsBottom - 50 && deltaY > 45) {
+        } else if (isAtProjects && currentScrollY >= projectsBottom - 50 && deltaY > 30) {
           unmagnetizeProject1();
           smoothScrollTo(contactTop);
-        } else if (isAtContact && deltaY < -45) {
+        } else if (isAtContact && deltaY < -30) {
           smoothScrollTo(projectsBottom);
-        } else if (isAtProjects && currentScrollY <= projectsTop + 50 && deltaY < -45) {
+        } else if (isAtProjects && currentScrollY <= projectsTop + 50 && deltaY < -30) {
           unmagnetizeProject1();
           wasAtHomeRef.current = true;
           smoothScrollTo(0);

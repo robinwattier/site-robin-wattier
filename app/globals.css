@@ -61,6 +61,7 @@
     overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    @apply bg-[#fafafa] dark:bg-black text-[#0a0a0a] dark:text-white transition-colors duration-300;
   }
 }
 
@@ -73,7 +74,7 @@
     scroll-behavior: smooth;
   }
   html, body {
-    scroll-snap-type: y proximity;
+    scroll-snap-type: y mandatory;
     scroll-padding-top: 2rem;
     scroll-padding-bottom: 2rem;
   }

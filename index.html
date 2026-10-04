@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f4f0">
+  <title>Robin Wattier</title>
+  <meta name="description"
+    content="Galerie de créations, explorations visuelles et direction artistique par Robin Wattier.">
+
+  <!-- Pinterest Domain Verification -->
+  <meta name="p:domain_verify" content="6ec184ce3195cbbb64e00a944ed296bd">
+
+  <!-- Typography : Montserrat Variable Font (Local) & Geist -->
+  <link rel="preload" href="assets/Montserrat/Montserrat-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+
+  <!-- Core Design System & Stylesheet -->
+  <link rel="stylesheet" href="style.css?v=22">
+
+  <!-- Pinterest Tag -->
+  <script>
+    !function (e) {
+      if (!window.pintrk) {
+        window.pintrk = function () {
+          window.pintrk.queue.push(Array.prototype.slice.call(arguments))
+        }; var
+          n = window.pintrk; n.queue = [], n.version = "3.0"; var
+            t = document.createElement("script"); t.async = !0, t.src = e; var
+              r = document.getElementsByTagName("script")[0];
+        r.parentNode.insertBefore(t, r)
+      }
+    }("https://s.pinimg.com/ct/core.js");
+    pintrk('load', '2613036792309');
+    pintrk('page');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none;" alt=""
+      src="https://ct.pinterest.com/v3/?event=init&tid=2613036792309&noscript=1" />
+  </noscript>
+</head>
+
+<body>
+
+  <!-- Barre de Navigation Fixe en Haut de Page (Toujours visible sans bouger) -->
+  <nav class="navbar" id="navbar" aria-label="Navigation principale">
+    <a class="nav-brand" href="#intro" data-page="intro" aria-label="Logo RW - Accueil">
+      RW
+    </a>
+
+    <!-- Boutons Desktop en haut à droite (shadcn navigation-menu-01) -->
+    <div class="nav-links" role="menubar">
+      <button type="button" class="nav-link active" data-page="intro" id="nav-btn-intro" role="menuitem"
+        aria-label="Intro">
+        Intro
+      </button>
+      <button type="button" class="nav-link" data-page="projects" id="nav-btn-projects" role="menuitem"
+        aria-label="Projects">
+        Projects
+      </button>
+      <!-- Lien externe vers la future boutique e-commerce (Shopify, Big Cartel, etc.) -->
+      <a href="https://shop.robinwattier.com" class="nav-link" id="nav-btn-shop" role="menuitem" target="_blank"
+        rel="noopener noreferrer" aria-label="Shop (Boutique de merch)">
+        Shop
+      </a>
+      <button type="button" class="nav-link" data-page="contact" id="nav-btn-contact" role="menuitem"
+        aria-label="Contact/Follow">
+        Contact/Follow
+      </button>
+    </div>
+
+    <!-- Menu Hamburger pour Tablettes et Mobiles -->
+    <button type="button" class="burger-btn" id="burger-btn" aria-label="Ouvrir le menu de navigation"
+      aria-expanded="false" aria-controls="mobile-menu">
+      <svg class="menu-toggle-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path class="menu-toggle-path"
+          d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22" />
+        <path class="menu-toggle-middle" d="M7 16 27 16" />
+      </svg>
+    </button>
+  </nav>
+
+  <!-- Menu Déroulant Mobile / Tablette (shadcn navigation-menu-01) -->
+  <div class="mobile-menu" id="mobile-menu" aria-label="Menu mobile">
+    <button type="button" class="m-nav-link active" data-page="intro" aria-label="Intro">
+      Intro
+    </button>
+    <button type="button" class="m-nav-link" data-page="projects" aria-label="Projects">
+      Projects
+    </button>
+    <a href="https://shop.robinwattier.com" class="m-nav-link" id="m-nav-btn-shop" target="_blank"
+      rel="noopener noreferrer" aria-label="Shop (Boutique de merch)">
+      Shop
+    </a>
+    <button type="button" class="m-nav-link" data-page="contact" aria-label="Contact/Follow">
+      Contact/Follow
+    </button>
+  </div>
+
+  <!-- Contenu Principal (Défile sous la barre de navigation fixe) -->
+  <main class="main-content" id="main-content">
+
+    <!-- SECTION 1 : INTRO (Reproduction fidèle de https://www.iamnotsrc.com/) -->
+    <section class="page-view active" id="page-intro" aria-label="Section Intro">
+      <div class="studio-wrap">
+
+        <!-- PROFIL ROBIN WATTIER (Photo Ronde & Nom Centré) -->
+        <section class="intro-profile studio-section revealed" aria-label="Profil Robin Wattier">
+          <div class="intro-avatar-circle">
+            <picture>
+              <source srcset="assets/robin-wattier-profile.webp" type="image/webp">
+              <img src="assets/robin-wattier-profile.jpg" alt="Robin Wattier" class="intro-avatar-img" width="124"
+                height="124" loading="eager" decoding="async">
+            </picture>
+          </div>
+          <h2 class="intro-profile-name">
+            <span class="name-first">ROBIN</span>
+            <span class="name-last">WATTIER</span>
+          </h2>
+        </section>
+
+        <section class="studio-section studio-hero">
+          <h1 class="studio-headline">Digital content creator.</h1>
+          <p class="studio-subhead">Based in Mons, Belgium, crafting experiences across audio, visual, and web design.
+            Hybrid profile, one unified system. AI powers my workflow daily, anchored by human intuition. I bridge the
+            discipline of movement with the craft of creation—the thinking as much as the making.</p>
+          <div class="studio-cta">
+            <button type="button" class="cta-pill cta-pill-ghost" data-page="projects" id="cta-see-projects"
+              aria-label="See projects">see projects</button>
+            <a href="https://linktr.ee/robinwattier" target="_blank" rel="noopener noreferrer"
+              class="cta-pill cta-pill-ghost" id="cta-contact-follow"
+              aria-label="Contact/Follow (Linktree)">contact/follow</a>
+          </div>
+        </section>
+
+        <section class="studio-section studio-trusted">
+          <span class="studio-label">Trusted by</span>
+          <div class="trusted-marquee" aria-label="Entreprises et créateurs partenaires">
+            <div class="trusted-track">
+              <!-- Groupe 1 (Accessible aux lecteurs d'écran) -->
+              <div class="trusted-group">
+                <a href="https://www.youtube.com/results?search_query=trap+city+" target="_blank"
+                  rel="noopener noreferrer" class="trusted-logo" aria-label="Trap City (YouTube)">
+                  <img src="assets/trusted/trapcity.png" alt="Trap City" loading="lazy">
+                  <span class="trusted-name" aria-hidden="true">Trap City</span>
+                </a>
+                <a href="https://www.instagram.com/villedemons/?hl=en" target="_blank" rel="noopener noreferrer"
+                  class="trusted-logo" aria-label="Ville de Mons (Instagram)">
+                  <img src="assets/trusted/mons.png" alt="Ville de Mons" loading="lazy">
+                  <span class="trusted-name" aria-hidden="true">Ville de Mons</span>
+                </a>
+                <a href="https://www.instagram.com/ch1m3ra_/?hl=en" target="_blank" rel="noopener noreferrer"
+                  class="trusted-logo" aria-label="CH1M3RA (Instagram)">
+                  <img src="assets/trusted/chimaera.png" alt="CH1M3RA" loading="lazy">
+                  <span class="trusted-name" aria-hidden="true">CH1M3RA</span>
+                </a>
+                <a href="https://www.instagram.com/kyllerbeats/?hl=en" target="_blank" rel="noopener noreferrer"
+                  class="trusted-logo" aria-label="Kyller (Instagram)">
+                  <img src="assets/trusted/kyller.png" alt="Kyller" loading="lazy">
+                  <span class="trusted-name" aria-hidden="true">Kyller</span>
+                </a>
+                <a href="https://www.youtube.com/results?search_query=wave+city+" target="_blank"
+                  rel="noopener noreferrer" class="trusted-logo" aria-label="Wave City (YouTube)">
+                  <img src="assets/trusted/wavecity.png" alt="Wave City" loading="lazy">
+                  <span class="trusted-name" aria-hidden="true">Wave City</span>
+                </a>
+                <a href="https://www.youtube.com/user/monsterwolfofficial" target="_blank" rel="noopener noreferrer"
+                  class="trusted-logo" aria-label="Monsterwolf music (YouTube)">
+                  <img src="assets/trusted/wolf.png" alt="Monsterwolf music" loading="lazy">
+                  <span class="trusted-name" aria-hidden="true">Monsterwolf music</span>
+                </a>
+                <a href="https://www.youtube.com/@housecity/featured" target="_blank" rel="noopener noreferrer"
+                  class="trusted-logo" aria-label="House City (YouTube)">
+                  <img src="assets/trusted/housecity.png" alt="House City" loading="lazy">
+                  <span class="trusted-name" aria-hidden="true">House City</span>
+                </a>
+              </div>
+              <!-- Groupe 2 (Clone boucle infinie) -->
+              <div class="trusted-group" aria-hidden="true">
+                <a href="https://www.youtube.com/results?search_query=trap+city+" target="_blank"
+                  rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/trapcity.png" alt="" loading="lazy">
+                  <span class="trusted-name">Trap City</span>
+                </a>
+                <a href="https://www.instagram.com/villedemons/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/mons.png" alt="" loading="lazy">
+                  <span class="trusted-name">Ville de Mons</span>
+                </a>
+                <a href="https://www.instagram.com/ch1m3ra_/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/chimaera.png" alt="" loading="lazy">
+                  <span class="trusted-name">CH1M3RA</span>
+                </a>
+                <a href="https://www.instagram.com/kyllerbeats/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/kyller.png" alt="" loading="lazy">
+                  <span class="trusted-name">Kyller</span>
+                </a>
+                <a href="https://www.youtube.com/results?search_query=wave+city+" target="_blank"
+                  rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/wavecity.png" alt="" loading="lazy">
+                  <span class="trusted-name">Wave City</span>
+                </a>
+                <a href="https://www.youtube.com/user/monsterwolfofficial" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/wolf.png" alt="" loading="lazy">
+                  <span class="trusted-name">Monsterwolf music</span>
+                </a>
+                <a href="https://www.youtube.com/@housecity/featured" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/housecity.png" alt="" loading="lazy">
+                  <span class="trusted-name">House City</span>
+                </a>
+              </div>
+              <!-- Groupe 3 (Clone boucle infinie) -->
+              <div class="trusted-group" aria-hidden="true">
+                <a href="https://www.youtube.com/results?search_query=trap+city+" target="_blank"
+                  rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/trapcity.png" alt="" loading="lazy">
+                  <span class="trusted-name">Trap City</span>
+                </a>
+                <a href="https://www.instagram.com/villedemons/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/mons.png" alt="" loading="lazy">
+                  <span class="trusted-name">Ville de Mons</span>
+                </a>
+                <a href="https://www.instagram.com/ch1m3ra_/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/chimaera.png" alt="" loading="lazy">
+                  <span class="trusted-name">CH1M3RA</span>
+                </a>
+                <a href="https://www.instagram.com/kyllerbeats/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/kyller.png" alt="" loading="lazy">
+                  <span class="trusted-name">Kyller</span>
+                </a>
+                <a href="https://www.youtube.com/results?search_query=wave+city+" target="_blank"
+                  rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/wavecity.png" alt="" loading="lazy">
+                  <span class="trusted-name">Wave City</span>
+                </a>
+                <a href="https://www.youtube.com/user/monsterwolfofficial" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/wolf.png" alt="" loading="lazy">
+                  <span class="trusted-name">Monsterwolf music</span>
+                </a>
+                <a href="https://www.youtube.com/@housecity/featured" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/housecity.png" alt="" loading="lazy">
+                  <span class="trusted-name">House City</span>
+                </a>
+              </div>
+              <!-- Groupe 4 (Clone boucle infinie) -->
+              <div class="trusted-group" aria-hidden="true">
+                <a href="https://www.youtube.com/results?search_query=trap+city+" target="_blank"
+                  rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/trapcity.png" alt="" loading="lazy">
+                  <span class="trusted-name">Trap City</span>
+                </a>
+                <a href="https://www.instagram.com/villedemons/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/mons.png" alt="" loading="lazy">
+                  <span class="trusted-name">Ville de Mons</span>
+                </a>
+                <a href="https://www.instagram.com/ch1m3ra_/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/chimaera.png" alt="" loading="lazy">
+                  <span class="trusted-name">CH1M3RA</span>
+                </a>
+                <a href="https://www.instagram.com/kyllerbeats/?hl=en" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/kyller.png" alt="" loading="lazy">
+                  <span class="trusted-name">Kyller</span>
+                </a>
+                <a href="https://www.youtube.com/results?search_query=wave+city+" target="_blank"
+                  rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/wavecity.png" alt="" loading="lazy">
+                  <span class="trusted-name">Wave City</span>
+                </a>
+                <a href="https://www.youtube.com/user/monsterwolfofficial" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/wolf.png" alt="" loading="lazy">
+                  <span class="trusted-name">Monsterwolf music</span>
+                </a>
+                <a href="https://www.youtube.com/@housecity/featured" target="_blank" rel="noopener noreferrer"
+                  tabindex="-1" class="trusted-logo">
+                  <img src="assets/trusted/housecity.png" alt="" loading="lazy">
+                  <span class="trusted-name">House City</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- SECTION 2 : PROJECTS (Galerie principale) -->
+    <section class="page-view" id="page-projects" aria-label="Galerie des projets">
+      <div class="gallery-container">
+        <div class="grid" id="projects-grid">
+          <!-- Les items de la galerie sont insérés dynamiquement par script.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 : CONTACT / FOLLOW (Lien central Linktree) -->
+    <section class="page-view" id="page-contact" aria-label="Section Contact / Follow">
+      <div class="contact-linktree-container">
+        <a href="https://linktr.ee/robinwattier" target="_blank" rel="noopener noreferrer" class="linktree-link"
+          aria-label="Linktree Robin Wattier" title="Robin Wattier sur Linktree">
+          <svg viewBox="0 0 150 150" class="linktree-logo" fill="currentColor" aria-hidden="true">
+            <path d="M 66 96 L 66 134 L 83 134 L 83 96 Z" />
+            <path
+              d="M 46 24 L 35 35 L 55 55 L 26 56 L 26 71 L 55 72 L 35 93 L 46 103 L 75 75 L 103 103 L 114 92 L 94 72 L 123 71 L 123 56 L 94 54 L 114 35 L 103 24 L 84 43 L 83 15 L 66 15 L 65 43 Z" />
+          </svg>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer en Bas de Page (Apparaît au bas du site, identique quelle que soit la section) -->
+  <footer class="site-footer" id="footer" aria-label="Pied de page">
+    <div class="footer-copy">
+      © Robin Wattier. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Modale Lightbox plein écran avec flou d'arrière-plan et gestes tactiles -->
+  <div id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+    <button type="button" id="lb-close" class="lb-btn" aria-label="Fermer la vue agrandie">
+      <svg viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <button type="button" id="lb-prev" class="lb-btn" aria-label="Projet précédent">
+      <svg viewBox="0 0 24 24">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+
+    <div id="lb-media">
+      <!-- Média injecté dynamiquement -->
+    </div>
+
+    <button type="button" id="lb-next" class="lb-btn" aria-label="Projet suivant">
+      <svg viewBox="0 0 24 24">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+
+    <div id="lb-info">
+      <span id="lb-counter">01 / 01</span>
+      <span id="lb-extra" class="lb-extra"></span>
+    </div>
+  </div>
+
+  <!-- Bouton Flottant Scroll to Top -->
+  <button type="button" id="scroll-top" aria-label="Retour en haut de page">
+    <svg viewBox="0 0 24 24">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
+  <!-- Données des projets et Logique applicative -->
+  <script src="projects-data.js?v=20"></script>
+  <script src="script.js?v=16"></script>
+</body>
+
+</html>

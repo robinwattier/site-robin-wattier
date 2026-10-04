@@ -1,0 +1,6 @@
+{
+  "username": "robinwattier",
+  "accessToken": "",
+  "autoDownloadMedia": true,
+  "comment": "Pour activer la synchronisation automatique en 1 clic, insérez votre jeton Instagram Graph API ci-dessus. Sinon, importez un post directement via : node sync-instagram.js <url_du_post>"
+}

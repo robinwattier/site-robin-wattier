@@ -25,7 +25,7 @@
   <link rel="shortcut icon" href="assets/favicon.ico">
 
   <!-- Core Design System & Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=33">
+  <link rel="stylesheet" href="style.css?v=34">
 
   <!-- Pinterest Tag -->
   <script>
@@ -72,10 +72,11 @@
         rel="noopener noreferrer" aria-label="Shop (Boutique de merch)">
         Shop
       </a>
-      <button type="button" class="nav-link" data-page="contact" id="nav-btn-contact" role="menuitem"
-        aria-label="Contact/Follow">
+      <!-- Lien externe vers Linktree (identique au CTA de l'intro) -->
+      <a href="https://linktr.ee/robinwattier" class="nav-link" id="nav-btn-contact" role="menuitem" target="_blank"
+        rel="noopener noreferrer" aria-label="Contact/Follow (Linktree)">
         Contact/Follow
-      </button>
+      </a>
     </div>
 
     <!-- Menu Hamburger pour Tablettes et Mobiles -->
@@ -102,9 +103,10 @@
       rel="noopener noreferrer" aria-label="Shop (Boutique de merch)">
       Shop
     </a>
-    <button type="button" class="m-nav-link" data-page="contact" aria-label="Contact/Follow">
+    <a href="https://linktr.ee/robinwattier" class="m-nav-link" id="m-nav-btn-contact" target="_blank"
+      rel="noopener noreferrer" aria-label="Contact/Follow (Linktree)">
       Contact/Follow
-    </button>
+    </a>
   </div>
 
   <!-- Contenu Principal (Défile sous la barre de navigation fixe) -->
@@ -356,20 +358,6 @@
       </div>
     </section>
 
-    <!-- SECTION 3 : CONTACT / FOLLOW (Lien central Linktree) -->
-    <section class="page-view" id="page-contact" aria-label="Section Contact / Follow">
-      <div class="contact-linktree-container">
-        <a href="https://linktr.ee/robinwattier" target="_blank" rel="noopener noreferrer" class="linktree-link"
-          aria-label="Linktree Robin Wattier" title="Robin Wattier sur Linktree">
-          <svg viewBox="0 0 150 150" class="linktree-logo" fill="currentColor" aria-hidden="true">
-            <path d="M 66 96 L 66 134 L 83 134 L 83 96 Z" />
-            <path
-              d="M 46 24 L 35 35 L 55 55 L 26 56 L 26 71 L 55 72 L 35 93 L 46 103 L 75 75 L 103 103 L 114 92 L 94 72 L 123 71 L 123 56 L 94 54 L 114 35 L 103 24 L 84 43 L 83 15 L 66 15 L 65 43 Z" />
-          </svg>
-        </a>
-      </div>
-    </section>
-
   </main>
 
   <!-- Footer en Bas de Page (Apparaît au bas du site, identique quelle que soit la section) -->
@@ -418,8 +406,8 @@
   </button>
 
   <!-- Données des projets et Logique applicative -->
-  <script src="projects-data.js?v=650550"></script>
-  <script src="script.js?v=23"></script>
+  <script src="projects-data.js?v=650553"></script>
+  <script src="script.js?v=25"></script>
 </body>
 
 </html>

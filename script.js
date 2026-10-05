@@ -27,6 +27,11 @@
   const mobileMenu = document.getElementById('mobile-menu');
   const scrollTopBtn = document.getElementById('scroll-top');
 
+  // True only if the item points to an actual video file (avoids broken players
+  // for Instagram reels where only the poster image could be scraped)
+  const VIDEO_EXT_RE = /\.(mp4|webm|mov|m4v)(\?|#|$)/i;
+  const hasPlayableVideo = (item) => !!(item && item.src && VIDEO_EXT_RE.test(item.src));
+
   // --- Shuffle Utility ---
   function shuffleArray(arr) {
     const copy = [...arr];
@@ -95,7 +100,7 @@
       const mediaWrap = document.createElement('div');
       mediaWrap.className = 'item-media-wrap';
 
-      const isVideo = item.type === 'video' || (item.src && item.src.endsWith('.mp4'));
+      const isVideo = hasPlayableVideo(item);
       const isCarousel = item.type === 'carousel' || (Array.isArray(item.slides) && item.slides.length > 1);
 
       if (isCarousel) {
@@ -747,7 +752,7 @@
         wrap.appendChild(img);
         wrap.appendChild(openBtn);
         lbMediaEl.appendChild(wrap);
-      } else if (item.type === 'video') {
+      } else if (item.type === 'video' && hasPlayableVideo(item)) {
         const video = document.createElement('video');
         video.autoplay = true;
         video.controls = true;
@@ -1136,6 +1141,11 @@
         const page = btn.getAttribute('data-page');
         showPage(page);
       });
+    });
+
+    // External Linktree links: just close the mobile menu (link opens in a new tab)
+    document.querySelectorAll('#nav-btn-contact, #m-nav-btn-contact').forEach((link) => {
+      link.addEventListener('click', () => closeMobileMenu());
     });
 
     // Handle external shop link clicks

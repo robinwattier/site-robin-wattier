@@ -32,7 +32,8 @@ function loadConfig() {
     profileUrl: 'https://www.instagram.com/robinwattier/',
     autoSyncIntervalMinutes: 60,
     downloadMedia: true,
-    excludeStories: true
+    excludeStories: true,
+    excludedCodes: []
   };
   if (fs.existsSync(CONFIG_FILE)) {
     try {
@@ -328,7 +329,7 @@ async function downloadPostMedia(post) {
 }
 
 // Mise à jour de data.json et projects-data.js en préservant l'ordre
-function updateGalleryWithNewPosts(newItems) {
+function updateGalleryWithNewPosts(newItems, excludedCodes = new Set()) {
   let currentItems = [];
   if (fs.existsSync(DATA_JSON_FILE)) {
     try {
@@ -355,6 +356,7 @@ function updateGalleryWithNewPosts(newItems) {
     const codeMatch = item.link.match(/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/i);
     const code = codeMatch ? codeMatch[1] : null;
 
+    if (code && excludedCodes.has(code)) return false;
     if (existingLinks.has(cleanLink)) return false;
     if (code && existingCodes.has(code)) return false;
     return true;
@@ -433,7 +435,8 @@ async function syncInstagram() {
     convertedItems.push(galleryItem);
   }
 
-  const result = updateGalleryWithNewPosts(convertedItems);
+  const excludedSet = new Set(config.excludedCodes || []);
+  const result = updateGalleryWithNewPosts(convertedItems, excludedSet);
   return {
     success: true,
     scraped: posts.length,

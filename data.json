@@ -12,40 +12,17 @@
     "poster": "assets/projets/danelec.webp"
   },
   {
-    "title": "CH1M3RA sur Instagram: \"41 Frozen - @trinsic.music x @robinwattier",
-    "type": "video",
-    "link": "https://www.instagram.com/ch1m3ra_/reel/DV32A1nAakB/",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1080,
-    "h": 1440,
-    "src": "assets/projets/instagram/DV32A1nAakB/poster.jpg",
-    "fallbackSrc": "assets/projets/instagram/DV32A1nAakB/poster.jpg",
-    "poster": "assets/projets/instagram/DV32A1nAakB/poster.jpg"
-  },
-  {
-    "title": "Wave City Life feat. Robin Wattier — Lakeside",
-    "type": "video",
-    "link": "https://www.instagram.com/wavecitylife/reel/C6TqEWBKVPh/",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1080,
-    "h": 1440,
-    "src": "assets/projets/instagram/C6TqEWBKVPh/poster.jpg",
-    "fallbackSrc": "assets/projets/instagram/C6TqEWBKVPh/poster.jpg",
-    "poster": "assets/projets/instagram/C6TqEWBKVPh/poster.jpg"
-  },
-  {
     "title": "Midnight Alsthetic",
     "type": "carousel",
     "link": "https://www.instagram.com/robinwattier/p/DU6MhcLjOpu/",
     "featured": true,
     "hasBadge": true,
     "w": 1080,
-    "h": 1440,
+    "h": 1080,
     "slides": [
       "assets/projets/instagram/DU6MhcLjOpu/slide_1.jpg",
-      "assets/projets/instagram/DU6MhcLjOpu/slide_2.jpg"
+      "assets/projets/instagram/DU6MhcLjOpu/slide_2.jpg",
+      "assets/projets/instagram/DU6MhcLjOpu/slide_3.jpg"
     ],
     "src": "assets/projets/instagram/DU6MhcLjOpu/slide_1.jpg",
     "fallbackSrc": "assets/projets/instagram/DU6MhcLjOpu/slide_1.jpg",
@@ -59,8 +36,8 @@
     "hasBadge": true,
     "w": 1080,
     "h": 1440,
-    "src": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg",
-    "fallbackSrc": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg",
+    "src": "assets/projets/video-edit-snow-strippers-under-your-spell-remix-robin-wattier-izzy-x.mp4",
+    "fallbackSrc": "assets/projets/video-edit-snow-strippers-under-your-spell-remix-robin-wattier-izzy-x.mp4",
     "poster": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg"
   },
   {

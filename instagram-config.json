@@ -4,5 +4,9 @@
   "autoSyncIntervalMinutes": 60,
   "downloadMedia": true,
   "excludeStories": true,
+  "excludedCodes": [
+    "C6TqEWBKVPh",
+    "DV32A1nAakB"
+  ],
   "comment": "Configuration du scrapper automatique Instagram pour Robin Wattier. Les contenus sont capturés sans stories et synchronisés dans la galerie."
 }

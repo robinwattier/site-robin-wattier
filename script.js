@@ -1,7 +1,6 @@
 /**
  * Portfolio Robin Wattier - Core Script
- * Reproduction fidèle de l'expérience de défilement, de la grille et de la fluidité
- * inspirée par https://www.iamnotsrc.com/#playground
+ * Expérience interactive, grille responsive fluide et lightbox tactile
  */
 
 (function () {
@@ -80,6 +79,9 @@
     items.forEach((item, index) => {
       const card = document.createElement('div');
       card.className = 'item';
+      if (item.size === 'small' || item.small) {
+        card.classList.add('item-small');
+      }
       card.setAttribute('data-index', index);
       card.setAttribute('role', 'button');
       card.setAttribute('tabindex', '0');
@@ -327,15 +329,49 @@
           badge.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>`;
           mediaWrap.appendChild(badge);
         }
+
+        // If it's a PDF project, add a document badge and set pointer cursor
+        if (item.type === 'pdf') {
+          const badge = document.createElement('div');
+          badge.className = 'pdf-badge';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.title = 'Document PDF (cliquer pour ouvrir)';
+          badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`;
+          mediaWrap.appendChild(badge);
+          card.style.cursor = 'pointer';
+        }
+
+        // If it's an external link / website project, add an external link badge and pointer cursor
+        if (item.type === 'link' || item.type === 'website') {
+          const badge = document.createElement('div');
+          badge.className = 'link-badge';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.title = 'Lien externe (cliquer pour ouvrir)';
+          badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+          mediaWrap.appendChild(badge);
+          card.style.cursor = 'pointer';
+        }
       }
 
       card.appendChild(mediaWrap);
 
-      // Open Lightbox on Click or Enter
-      card.addEventListener('click', () => openLightbox(index));
+      // Open PDF / External Link directly or Open Lightbox on Click or Enter
+      card.addEventListener('click', () => {
+        if (item.type === 'link' || item.type === 'website' || item.type === 'pdf' || (item.link && item.link.endsWith('.pdf'))) {
+          const targetUrl = item.link || item.pdf || item.src;
+          window.open(targetUrl, '_blank', 'noopener,noreferrer');
+          return;
+        }
+        openLightbox(index);
+      });
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
+          if (item.type === 'link' || item.type === 'website' || item.type === 'pdf' || (item.link && item.link.endsWith('.pdf'))) {
+            const targetUrl = item.link || item.pdf || item.src;
+            window.open(targetUrl, '_blank', 'noopener,noreferrer');
+            return;
+          }
           openLightbox(index);
         }
       });
@@ -382,20 +418,27 @@
 
     items.forEach((item, idx) => {
       const dataItem = galleryItems[idx];
+      const isSmall = item.classList.contains('item-small') || (dataItem && (dataItem.size === 'small' || dataItem.small));
+      const itemWidth = isSmall ? Math.round(colWidth * 0.72) : colWidth;
       let calculatedHeight;
 
       if (dataItem && dataItem.w && dataItem.h) {
-        calculatedHeight = colWidth * (dataItem.h / dataItem.w);
+        calculatedHeight = itemWidth * (dataItem.h / dataItem.w);
       } else {
-        calculatedHeight = item.offsetHeight || colWidth;
+        calculatedHeight = item.offsetHeight || itemWidth;
       }
 
       // Pick the shortest column
       const targetCol = colHeights[0] <= colHeights[1] ? 0 : 1;
 
       item.style.position = 'absolute';
-      item.style.width = `${colWidth}px`;
-      item.style.left = `${targetCol * (colWidth + gap)}px`;
+      item.style.width = `${itemWidth}px`;
+      if (isSmall) {
+        const offsetLeft = targetCol * (colWidth + gap) + Math.round((colWidth - itemWidth) / 2);
+        item.style.left = `${offsetLeft}px`;
+      } else {
+        item.style.left = `${targetCol * (colWidth + gap)}px`;
+      }
       item.style.top = `${colHeights[targetCol]}px`;
       item.style.margin = '0';
 
@@ -654,6 +697,55 @@
         wrap.appendChild(thumb);
         wrap.appendChild(overlay);
         wrap.appendChild(metaBar);
+        lbMediaEl.appendChild(wrap);
+      } else if (item.type === 'pdf') {
+        const wrap = document.createElement('div');
+        wrap.className = 'lb-pdf-container';
+        wrap.style.cssText = 'position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;max-width:90vw;max-height:85vh;';
+
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.alt = item.title || 'Document PDF';
+        img.style.cssText = 'max-height:68vh;max-width:90vw;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,0.35);object-fit:contain;cursor:pointer;';
+        img.addEventListener('click', () => {
+          window.open(item.link || item.src, '_blank', 'noopener,noreferrer');
+        });
+
+        const openBtn = document.createElement('a');
+        openBtn.href = item.link || item.src;
+        openBtn.target = '_blank';
+        openBtn.rel = 'noopener noreferrer';
+        openBtn.className = 'cta-pill';
+        openBtn.style.cssText = 'display:inline-flex;align-items:center;gap:10px;padding:12px 24px;font-size:13px;font-weight:600;letter-spacing:-0.01em;text-decoration:none;border-radius:999px;background:#e11d48;color:#ffffff;box-shadow:0 6px 20px rgba(225,29,72,0.4);transition:transform 0.2s, background 0.2s;';
+        openBtn.innerHTML = `<span>Ouvrir le Book PDF</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+
+        wrap.appendChild(img);
+        wrap.appendChild(openBtn);
+        lbMediaEl.appendChild(wrap);
+      } else if (item.type === 'link' || item.type === 'website') {
+        const wrap = document.createElement('div');
+        wrap.className = 'lb-link-container';
+        wrap.style.cssText = 'position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;max-width:90vw;max-height:85vh;';
+
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.alt = item.title || 'Site Web';
+        img.style.cssText = 'max-height:68vh;max-width:90vw;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,0.35);object-fit:contain;cursor:pointer;';
+        img.addEventListener('click', () => {
+          window.open(item.link || item.src, '_blank', 'noopener,noreferrer');
+        });
+
+        const openBtn = document.createElement('a');
+        openBtn.href = item.link || item.src;
+        openBtn.target = '_blank';
+        openBtn.rel = 'noopener noreferrer';
+        openBtn.className = 'cta-pill';
+        openBtn.style.cssText = 'display:inline-flex;align-items:center;gap:10px;padding:12px 24px;font-size:13px;font-weight:600;letter-spacing:-0.01em;text-decoration:none;border-radius:999px;background:#111111;color:#ffffff;box-shadow:0 6px 20px rgba(0,0,0,0.3);transition:transform 0.2s, background 0.2s;';
+        const displayHost = (item.link || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+        openBtn.innerHTML = `<span>Visiter ${displayHost || 'le site web'}</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+
+        wrap.appendChild(img);
+        wrap.appendChild(openBtn);
         lbMediaEl.appendChild(wrap);
       } else if (item.type === 'video') {
         const video = document.createElement('video');
@@ -960,7 +1052,7 @@
   }
 
   // --- Copy Email to Clipboard ---
-  const CONTACT_EMAIL = 'hey@iamnotsrc.com';
+  const CONTACT_EMAIL = 'rwcnx10n@gmail.com';
 
   function copyEmail(e, el) {
     if (e) e.preventDefault();
@@ -986,6 +1078,50 @@
     }
   }
 
+  // --- Trusted Marquee Infinite Motion (Fail-proof rAF driver) ---
+  function initTrustedMarquee() {
+    const marquee = document.querySelector('.trusted-marquee');
+    const track = document.querySelector('.trusted-track');
+    if (!marquee || !track) return;
+
+    let isPaused = false;
+    let x = 0;
+    let lastTime = null;
+    const speed = 36; // pixels par seconde
+
+    marquee.addEventListener('mouseenter', () => { isPaused = true; });
+    marquee.addEventListener('mouseleave', () => { isPaused = false; });
+    marquee.addEventListener('focusin', () => { isPaused = true; });
+    marquee.addEventListener('focusout', () => { isPaused = false; });
+
+    function tick(now) {
+      if (lastTime === null) {
+        lastTime = now;
+      }
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      // Uniquement si la section intro est active
+      const introPage = document.getElementById('page-intro');
+      const isIntroActive = !introPage || introPage.classList.contains('active');
+
+      if (isIntroActive) {
+        const halfWidth = track.scrollWidth / 2;
+        if (!isPaused && halfWidth > 50) {
+          x -= speed * dt;
+          while (x <= -halfWidth) {
+            x += halfWidth;
+          }
+          track.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
   // --- Initialization ---
   document.addEventListener('DOMContentLoaded', () => {
     // 1. Setup Controls
@@ -1003,7 +1139,7 @@
     });
 
     // Handle external shop link clicks
-    document.querySelectorAll('#nav-btn-shop, #m-nav-btn-shop').forEach((link) => {
+    document.querySelectorAll('#nav-btn-shop, #m-nav-btn-shop, #cta-shop').forEach((link) => {
       link.addEventListener('click', (e) => {
         closeMobileMenu();
         const href = link.getAttribute('href');
@@ -1027,6 +1163,7 @@
     initLightboxGestures();
     initScrollTop();
     initVariableFontHover();
+    initTrustedMarquee();
     guardMedia();
 
     // Footer year update
@@ -1037,7 +1174,7 @@
     let items = Array.isArray(window.PORTFOLIO_ITEMS) ? window.PORTFOLIO_ITEMS : [];
     buildGrid(items);
 
-    // 3. Handle Hash Routing (defaults to #intro to match iamnotsrc.com)
+    // 3. Handle Hash Routing (defaults to #intro)
     let initialHash = location.hash.slice(1);
     if (initialHash === 'projets') initialHash = 'projects';
     if (initialHash && document.getElementById(`page-${initialHash}`)) {

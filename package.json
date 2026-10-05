@@ -1,0 +1,21 @@
+{
+  "name": "portfolio-robin-wattier",
+  "version": "2.0.0",
+  "description": "Portfolio créatif Robin Wattier avec synchronisation automatique Instagram",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "sync": "node sync-instagram.js",
+    "sync:instagram": "node sync-instagram.js"
+  },
+  "keywords": [
+    "portfolio",
+    "creative-technologist",
+    "instagram-sync",
+    "design",
+    "media"
+  ],
+  "author": "Robin Wattier",
+  "license": "ISC"
+}

@@ -1,18 +1,73 @@
 /**
  * Portfolio Projects Data - Robin Wattier
- * Ce fichier contient les items affichés dans la galerie de projets.
- * Vous pouvez facilement ajouter, modifier ou remplacer vos propres créations.
- *
- * Structure d'un projet :
- * - src: chemin local ('assets/projets/image.webp') ou URL web
- * - title: titre du projet
- * - type: 'image' ou 'video'
- * - w: largeur native (ex: 1080)
- * - h: hauteur native (ex: 1080)
- * - poster: miniature d'affiche (pour les vidéos)
+ * Fichier synchronisé automatiquement via sync-instagram.js
  */
 
 window.PORTFOLIO_ITEMS = [
+  {
+    "src": "assets/projets/danelec.webp",
+    "fallbackSrc": "assets/projets/danelec.jpg",
+    "title": "DanElec - Votre Partenaire en Sécurité",
+    "type": "link",
+    "link": "https://danelec.be/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1024,
+    "h": 1024,
+    "poster": "assets/projets/danelec.webp"
+  },
+  {
+    "title": "CH1M3RA sur Instagram: \"41 Frozen - @trinsic.music x @robinwattier",
+    "type": "video",
+    "link": "https://www.instagram.com/ch1m3ra_/reel/DV32A1nAakB/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1440,
+    "src": "assets/projets/instagram/DV32A1nAakB/poster.jpg",
+    "fallbackSrc": "assets/projets/instagram/DV32A1nAakB/poster.jpg",
+    "poster": "assets/projets/instagram/DV32A1nAakB/poster.jpg"
+  },
+  {
+    "title": "Wave City Life feat. Robin Wattier — Lakeside",
+    "type": "video",
+    "link": "https://www.instagram.com/wavecitylife/reel/C6TqEWBKVPh/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1440,
+    "src": "assets/projets/instagram/C6TqEWBKVPh/poster.jpg",
+    "fallbackSrc": "assets/projets/instagram/C6TqEWBKVPh/poster.jpg",
+    "poster": "assets/projets/instagram/C6TqEWBKVPh/poster.jpg"
+  },
+  {
+    "title": "Midnight Alsthetic",
+    "type": "carousel",
+    "link": "https://www.instagram.com/robinwattier/p/DU6MhcLjOpu/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1440,
+    "slides": [
+      "assets/projets/instagram/DU6MhcLjOpu/slide_1.jpg",
+      "assets/projets/instagram/DU6MhcLjOpu/slide_2.jpg"
+    ],
+    "src": "assets/projets/instagram/DU6MhcLjOpu/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/DU6MhcLjOpu/slide_1.jpg",
+    "poster": "assets/projets/instagram/DU6MhcLjOpu/slide_1.jpg"
+  },
+  {
+    "title": "Snow Strippers - Under Your Spell (Remix by Izzy X & Robin Wattier)",
+    "type": "video",
+    "link": "https://www.instagram.com/israelortega._/reel/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1440,
+    "src": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg",
+    "fallbackSrc": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg",
+    "poster": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg"
+  },
   {
     "src": "assets/projets/aesthetic_life/slide_1.webp",
     "fallbackSrc": "assets/projets/aesthetic_life/slide_1.webp",
@@ -64,15 +119,6 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/red_waterproof_speaker.jpg"
   },
   {
-    "src": "assets/projets/332083282.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/332083282.webp",
-    "title": "332083282",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
     "src": "assets/projets/lakeside.mp4",
     "fallbackSrc": "https://youtu.be/NTnm2GXDqq8",
     "title": "Robin Wattier - Lakeside",
@@ -86,15 +132,6 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/lakeside.webp"
   },
   {
-    "src": "assets/projets/403774177.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/403774177.webp",
-    "title": "403774177",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
     "src": "assets/projets/reel-CH1M3RA.mp4",
     "fallbackSrc": "assets/projets/reel-CH1M3RA.mp4",
     "title": "CH1M3RA",
@@ -105,15 +142,6 @@ window.PORTFOLIO_ITEMS = [
     "w": 720,
     "h": 1280,
     "poster": "assets/projets/ch1m3ra.webp"
-  },
-  {
-    "src": "assets/projets/369294544.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/369294544.webp",
-    "title": "369294544",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
   },
   {
     "src": "assets/projets/mysterieux.mp4",
@@ -129,15 +157,6 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/mysterieux.webp"
   },
   {
-    "src": "assets/projets/290470837.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/290470837.webp",
-    "title": "290470837",
-    "type": "image",
-    "w": 1400,
-    "h": 788,
-    "poster": null
-  },
-  {
     "src": "assets/projets/animation-logo-3d-ville-de-Mons.mp4",
     "fallbackSrc": "assets/projets/rw-gare-de-mons-export-cover-3000X3000.jpg",
     "title": "RW Logo 3D - Gare de Mons",
@@ -150,15 +169,6 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/rw-gare-de-mons-export-cover-3000X3000.jpg"
   },
   {
-    "src": "assets/projets/125945903.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/125945903.webp",
-    "title": "125945903",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
     "src": "assets/projets/animes_cette_video.mp4",
     "fallbackSrc": "assets/projets/Animes_cette_vidéo.mp4",
     "title": "S'well - Stainless Steel Bottle",
@@ -168,15 +178,6 @@ window.PORTFOLIO_ITEMS = [
     "w": 720,
     "h": 1290,
     "poster": "assets/projets/stainless_steel_bottle.jpg"
-  },
-  {
-    "src": "assets/projets/205828859.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/205828859.webp",
-    "title": "205828859",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
   },
   {
     "src": "assets/projets/dior_sauvage.mp4",
@@ -203,8 +204,8 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/skeler_pin.jpg"
   },
   {
-    "src": "assets/projets/house_city_41_frozen.webp",
-    "fallbackSrc": "assets/projets/house_city_41_frozen.jpg",
+    "src": "assets/projets/house_city.mp4",
+    "fallbackSrc": "assets/projets/house_city.mp4",
     "title": "Trinsic, Robin Wattier - 41 Frozen (House City)",
     "type": "youtube",
     "youtubeId": "7XaZdj_MUII",
@@ -213,447 +214,18 @@ window.PORTFOLIO_ITEMS = [
     "hasBadge": true,
     "w": 1280,
     "h": 720,
-    "poster": "assets/projets/house_city_41_frozen.webp"
+    "poster": "assets/projets/house_city_poster.webp"
   },
   {
-    "src": "https://www.iamnotsrc.com/assets/playground/149267903.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/149267903.mp4",
-    "title": "149267903",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/149267903.webp"
-  },
-  {
-    "src": "assets/projets/351186275.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/351186275.webp",
-    "title": "351186275",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/187532275.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/187532275.mp4",
-    "title": "187532275",
-    "type": "video",
-    "w": 1080,
-    "h": 608,
-    "poster": "https://www.iamnotsrc.com/assets/posters/187532275.webp"
-  },
-  {
-    "src": "assets/projets/338252377.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/338252377.webp",
-    "title": "338252377",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/272141882.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/272141882.mp4",
-    "title": "272141882",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/272141882.webp"
-  },
-  {
-    "src": "assets/projets/116919439.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/116919439.webp",
-    "title": "116919439",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/140239155.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/140239155.mp4",
-    "title": "140239155",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/140239155.webp"
-  },
-  {
-    "src": "assets/projets/397103272.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/397103272.webp",
-    "title": "397103272",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/133716067.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/133716067.mp4",
-    "title": "133716067",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/133716067.webp"
-  },
-  {
-    "src": "assets/projets/353720294.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/353720294.webp",
-    "title": "353720294",
-    "type": "image",
-    "w": 1400,
-    "h": 788,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/178837715.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/178837715.mp4",
-    "title": "178837715",
-    "type": "video",
-    "w": 1080,
-    "h": 608,
-    "poster": "https://www.iamnotsrc.com/assets/posters/178837715.webp"
-  },
-  {
-    "src": "assets/projets/133206381.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/133206381.webp",
-    "title": "133206381",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/209359563.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/209359563.mp4",
-    "title": "209359563",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/209359563.webp"
-  },
-  {
-    "src": "assets/projets/342451978.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/342451978.webp",
-    "title": "342451978",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/336940715.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/336940715.mp4",
-    "title": "336940715",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/336940715.webp"
-  },
-  {
-    "src": "assets/projets/290316397.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/290316397.webp",
-    "title": "290316397",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "assets/projets/117577534.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/117577534.mp4",
-    "title": "117577534",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "assets/projets/117577534.webp"
-  },
-  {
-    "src": "assets/projets/117461103.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/117461103.webp",
-    "title": "117461103",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/278434817.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/278434817.mp4",
-    "title": "278434817",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/278434817.webp"
-  },
-  {
-    "src": "assets/projets/277083798.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/277083798.webp",
-    "title": "277083798",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/175983974.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/175983974.mp4",
-    "title": "175983974",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/175983974.webp"
-  },
-  {
-    "src": "assets/projets/237136323.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/237136323.webp",
-    "title": "237136323",
-    "type": "image",
-    "w": 1400,
-    "h": 788,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/219041416.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/219041416.mp4",
-    "title": "219041416",
-    "type": "video",
-    "w": 1080,
-    "h": 608,
-    "poster": "https://www.iamnotsrc.com/assets/posters/219041416.webp"
-  },
-  {
-    "src": "assets/projets/207527859.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/207527859.webp",
-    "title": "207527859",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/312378218.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/312378218.mp4",
-    "title": "312378218",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/312378218.webp"
-  },
-  {
-    "src": "assets/projets/153730024.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/153730024.webp",
-    "title": "153730024",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/154440831.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/154440831.mp4",
-    "title": "154440831",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/154440831.webp"
-  },
-  {
-    "src": "assets/projets/360103115.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/360103115.webp",
-    "title": "360103115",
-    "type": "image",
-    "w": 1400,
-    "h": 788,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/241695179.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/241695179.mp4",
-    "title": "241695179",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/241695179.webp"
-  },
-  {
-    "src": "assets/projets/235465220.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/235465220.webp",
-    "title": "235465220",
-    "type": "image",
-    "w": 1400,
-    "h": 788,
-    "poster": null
-  },
-  {
-    "src": "assets/projets/111991247.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/111991247.mp4",
-    "title": "111991247",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "assets/projets/111991247.webp"
-  },
-  {
-    "src": "assets/projets/358339176.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/358339176.webp",
-    "title": "358339176",
-    "type": "image",
-    "w": 1400,
-    "h": 788,
-    "poster": null
-  },
-  {
-    "src": "assets/projets/126302362.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/126302362.mp4",
-    "title": "126302362",
-    "type": "video",
-    "w": 1080,
-    "h": 608,
-    "poster": "assets/projets/126302362.webp"
-  },
-  {
-    "src": "assets/projets/131315639.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/131315639.webp",
-    "title": "131315639",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/349373997.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/349373997.mp4",
-    "title": "349373997",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/349373997.webp"
-  },
-  {
-    "src": "assets/projets/138931230.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/138931230.webp",
-    "title": "138931230",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/286451342.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/286451342.mp4",
-    "title": "286451342",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/286451342.webp"
-  },
-  {
-    "src": "assets/projets/408783689.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/408783689.webp",
-    "title": "408783689",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/176301378.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/176301378.mp4",
-    "title": "176301378",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/176301378.webp"
-  },
-  {
-    "src": "assets/projets/326940969.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/326940969.webp",
-    "title": "326940969",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/184012006.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/184012006.mp4",
-    "title": "184012006",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/184012006.webp"
-  },
-  {
-    "src": "assets/projets/163713885.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/163713885.webp",
-    "title": "163713885",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/161873955.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/161873955.mp4",
-    "title": "161873955",
-    "type": "video",
-    "w": 1080,
-    "h": 608,
-    "poster": "https://www.iamnotsrc.com/assets/posters/161873955.webp"
-  },
-  {
-    "src": "assets/projets/275533917.webp",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/275533917.webp",
-    "title": "275533917",
-    "type": "image",
-    "w": 1056,
-    "h": 1400,
-    "poster": null
-  },
-  {
-    "src": "assets/projets/128474573.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/128474573.mp4",
-    "title": "128474573",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "assets/projets/128474573.webp"
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/158574725.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/158574725.mp4",
-    "title": "158574725",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/158574725.webp"
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/276869236.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/276869236.mp4",
-    "title": "276869236",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/276869236.webp"
-  },
-  {
-    "src": "assets/projets/117344647.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/117344647.mp4",
-    "title": "117344647",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "assets/projets/117344647.webp"
-  },
-  {
-    "src": "https://www.iamnotsrc.com/assets/playground/348586914.mp4",
-    "fallbackSrc": "https://www.iamnotsrc.com/assets/playground/348586914.mp4",
-    "title": "348586914",
-    "type": "video",
-    "w": 1080,
-    "h": 1080,
-    "poster": "https://www.iamnotsrc.com/assets/posters/348586914.webp"
+    "src": "assets/projets/book-stage-mons.webp",
+    "fallbackSrc": "assets/projets/book-stage-mons.png",
+    "title": "Book de stage - Ville de Mons",
+    "type": "pdf",
+    "link": "assets/projets/portfolio-vdm/Book-stage-AA-Pub-juin2023-WATTIER-Robin.pdf",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1280,
+    "h": 720,
+    "poster": "assets/projets/book-stage-mons.webp"
   }
 ];

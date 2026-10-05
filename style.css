@@ -1,6 +1,6 @@
 /* ==========================================================================
    Portfolio Robin Wattier - Style Architecture
-   Inspiré par le design épuré, tactile et cinétique de iamnotsrc.com
+   Design épuré, tactile et cinétique
    ========================================================================== */
 
 /* --- CSS Reset & Box Sizing --- */
@@ -436,7 +436,7 @@ main.main-content {
 }
 
 /* ==========================================================================
-   Intro Studio Page (Reproduction fidèle de https://www.iamnotsrc.com/)
+   Intro Studio Page
    ========================================================================== */
 .studio-wrap {
   width: 100%;
@@ -747,35 +747,38 @@ main.main-content {
 }
 
 .studio-trusted {
-  margin-bottom: 72px;
+  margin-bottom: 84px;
   text-align: center;
 }
 
 .studio-trusted .studio-label {
-  margin: 0 auto 34px;
+  margin: 0 auto 36px;
   text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .trusted-marquee {
   position: relative;
   width: 100%;
-  max-width: 440px;
-  margin: -42px auto 0;
-  padding: 46px 0 10px;
+  max-width: 720px;
+  margin: -50px auto 0;
+  padding: 56px 0 16px;
   overflow: hidden;
   user-select: none;
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 12%,
-    black 88%,
+    black 10%,
+    black 90%,
     transparent 100%
   );
   mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 12%,
-    black 88%,
+    black 10%,
+    black 90%,
     transparent 100%
   );
 }
@@ -785,31 +788,36 @@ main.main-content {
   width: max-content;
   align-items: center;
   will-change: transform;
-  animation: trusted-scroll 28s linear infinite;
-}
-
-.trusted-marquee:hover .trusted-track {
-  animation-play-state: paused;
 }
 
 .trusted-group {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 40px;
-  padding-right: 40px;
+  gap: 56px;
+  padding-right: 56px;
 }
 
 .trusted-logo {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 50px;
+  height: 50px;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
   cursor: pointer;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.trusted-logo.logo-trinsic {
+  width: 76px;
+}
+
+.trusted-logo.logo-trinsic img {
+  max-width: 72px;
 }
 
 .trusted-logo img {
@@ -819,9 +827,9 @@ main.main-content {
   height: auto;
   display: block;
   object-fit: contain;
-  opacity: 0.55;
+  opacity: 0.58;
   filter: grayscale(1);
-  transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s var(--ease-spring);
+  transition: opacity 0.25s ease, filter 0.25s ease, transform 0.25s var(--ease-spring);
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -830,7 +838,7 @@ main.main-content {
 .trusted-logo:focus-visible img {
   opacity: 1;
   filter: grayscale(0);
-  transform: scale(1.08);
+  transform: scale(1.12);
 }
 
 .trusted-logo:focus-visible {
@@ -841,23 +849,23 @@ main.main-content {
 
 .trusted-name {
   position: absolute;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   background: var(--fg);
   color: #ffffff;
   font-family: var(--font-geist);
-  font-size: 11px;
+  font-size: 11.5px;
   line-height: 1.2;
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: -0.01em;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s var(--ease-spring), transform 0.2s var(--ease-spring);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
   z-index: 10;
 }
 
@@ -867,20 +875,6 @@ main.main-content {
   transform: translateX(-50%) translateY(0);
 }
 
-@keyframes trusted-scroll {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .trusted-track {
-    animation: none;
-  }
-}
 
 @media (max-width: 640px) {
   .studio-wrap {
@@ -928,18 +922,20 @@ main.main-content {
     text-align: center;
   }
   .studio-trusted {
-    margin-bottom: 56px;
+    margin-bottom: 64px;
   }
   .trusted-marquee {
     max-width: 100%;
+    padding: 48px 0 14px;
+    margin: -44px auto 0;
   }
   .trusted-group {
-    gap: 28px;
-    padding-right: 28px;
+    gap: 38px;
+    padding-right: 38px;
   }
   .trusted-logo {
-    width: 24px;
-    height: 24px;
+    width: 38px;
+    height: 38px;
   }
 }
 
@@ -1126,15 +1122,17 @@ main.main-content {
   transform: scale(1.035);
 }
 
-/* Video badge / sound indicator */
-.video-badge {
+/* Video badge / sound indicator, PDF badge & Link badge */
+.video-badge,
+.pdf-badge,
+.link-badge {
   position: absolute;
   top: 10px;
   right: 10px;
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  background: rgba(10, 10, 10, 0.35);
+  background: rgba(10, 10, 10, 0.45);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
@@ -1143,12 +1141,20 @@ main.main-content {
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
+  z-index: 2;
 }
 
 .video-badge svg {
   width: 10px;
   height: 10px;
   fill: #ffffff;
+}
+
+.pdf-badge svg,
+.link-badge svg {
+  width: 13px;
+  height: 13px;
+  stroke: #ffffff;
 }
 
 .item-media-wrap video ~ .video-badge {
@@ -1160,9 +1166,32 @@ main.main-content {
   transform: scale(0.8);
 }
 
-.item:hover .item-media-wrap img ~ .video-badge {
+.item:hover .item-media-wrap img ~ .video-badge,
+.item:hover .pdf-badge,
+.item:hover .link-badge {
   opacity: 1;
   transform: scale(1.08);
+}
+
+/* --- Item au format petit (ex: Book de stage Mons intégré en fin de galerie) --- */
+.item.item-small {
+  max-width: 140px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.item.item-small .pdf-badge,
+.item.item-small .link-badge {
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+}
+
+.item.item-small .pdf-badge svg,
+.item.item-small .link-badge svg {
+  width: 11px;
+  height: 11px;
 }
 
 /* --- Carousels (Matchbox Hover Auto-Advance & Pill Indicators) --- */

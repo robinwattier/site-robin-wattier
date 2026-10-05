@@ -19,39 +19,100 @@ const MIME_TYPES = {
   '.webm': 'video/webm',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf'
+  '.ttf': 'font/ttf',
+  '.pdf': 'application/pdf'
 };
 
-const server = http.createServer((req, res) => {
+let syncState = {
+  isSyncing: false,
+  lastSync: null,
+  lastResult: null,
+  error: null
+};
+
+// Exécuter la synchronisation avec verrouillage d'exclusion mutuelle
+async function performInstagramSync() {
+  if (syncState.isSyncing) {
+    return { skipped: true, reason: 'Sync already in progress' };
+  }
+  syncState.isSyncing = true;
+  syncState.error = null;
+  console.log(`[Auto-Sync] Démarrage de la synchronisation Instagram...`);
+
+  try {
+    const { syncInstagram } = require('./sync-instagram.js');
+    const result = await syncInstagram();
+    syncState.lastSync = new Date().toISOString();
+    syncState.lastResult = result;
+    syncState.isSyncing = false;
+    console.log(`[Auto-Sync] Terminé avec succès : ${result.added} nouveau(x) post(s), ${result.total} total.`);
+    return result;
+  } catch (err) {
+    syncState.error = err.message;
+    syncState.isSyncing = false;
+    console.error(`[Auto-Sync] Erreur lors de la synchronisation :`, err.message);
+    throw err;
+  }
+}
+
+// Planificateur automatique en arrière-plan
+function setupBackgroundSync() {
+  try {
+    const configPath = path.join(__dirname, 'instagram-config.json');
+    if (!fs.existsSync(configPath)) return;
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    const intervalMinutes = config.autoSyncIntervalMinutes || 60;
+    if (intervalMinutes > 0) {
+      const intervalMs = intervalMinutes * 60 * 1000;
+      console.log(`[Auto-Sync] Tâche de fond configurée : vérification toutes les ${intervalMinutes} minutes.`);
+      setInterval(() => {
+        performInstagramSync().catch(() => {});
+      }, intervalMs);
+    }
+  } catch (e) {
+    console.warn(`[Auto-Sync] Impossible de lire la configuration automatique :`, e.message);
+  }
+}
+
+setupBackgroundSync();
+
+const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   let reqPath = decodeURI(req.url.split('?')[0]);
 
-  // Instagram Sync API Route
+  // Instagram Sync API Route (GET ou POST)
   if (reqPath === '/api/instagram/sync') {
     res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+    if (syncState.isSyncing) {
+      res.writeHead(409);
+      res.end(JSON.stringify({
+        success: false,
+        status: 'already_running',
+        message: 'Une synchronisation Instagram est déjà en cours d\'exécution.'
+      }));
+      return;
+    }
     try {
-      const syncModule = require('./sync-instagram.js');
-      const configPath = path.join(__dirname, 'instagram-config.json');
-      const config = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, 'utf-8')) : {};
-      if (!config.accessToken) {
-        res.writeHead(400);
-        res.end(JSON.stringify({ error: 'accessToken manquant dans instagram-config.json' }));
-        return;
-      }
-      syncModule.syncFromApi(config.accessToken)
-        .then(posts => {
-          res.writeHead(200);
-          res.end(JSON.stringify({ success: true, count: posts.length }));
-        })
-        .catch(err => {
-          res.writeHead(500);
-          res.end(JSON.stringify({ error: err.message }));
-        });
+      const result = await performInstagramSync();
+      res.writeHead(200);
+      res.end(JSON.stringify({ success: true, ...result }));
     } catch (e) {
       res.writeHead(500);
-      res.end(JSON.stringify({ error: e.message }));
+      res.end(JSON.stringify({ success: false, error: e.message }));
     }
+    return;
+  }
+
+  // Instagram Sync Status API Route
+  if (reqPath === '/api/instagram/status') {
+    res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      success: true,
+      syncState,
+      timestamp: new Date().toISOString()
+    }));
     return;
   }
 

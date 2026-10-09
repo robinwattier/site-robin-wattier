@@ -814,11 +814,13 @@ main.main-content {
   border-radius: var(--radius-sm);
 }
 
-.trusted-logo.logo-trinsic {
+.trusted-logo.logo-trinsic,
+.trusted-logo.logo-izzyx {
   width: 76px;
 }
 
-.trusted-logo.logo-trinsic img {
+.trusted-logo.logo-trinsic img,
+.trusted-logo.logo-izzyx img {
   max-width: 72px;
 }
 

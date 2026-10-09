@@ -40,6 +40,7 @@
 
 /* --- Design Tokens --- */
 :root {
+  color-scheme: light;
   --bg: #f5f4f0;
   --bg-translucent: rgba(245, 244, 240, 0.88);
   --fg: #111111;
@@ -65,16 +66,50 @@
   --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* Verrouillage strict du thème clair sur tous les appareils et navigateurs (Brave, iOS, Android) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light;
+    --bg: #f5f4f0;
+    --bg-translucent: rgba(245, 244, 240, 0.88);
+    --fg: #111111;
+    --fg-secondary: #444444;
+    --fg-muted: #888888;
+    --fg-faint: #bbbbbb;
+    --border-subtle: #dddcd8;
+    --border-faint: #e8e7e3;
+    --pill-bg-ghost: #e8e7e3;
+    --pill-hover-ghost: #deddd8;
+    --pill-active-ghost: #e0dfda;
+  }
+  html, body {
+    background-color: #f5f4f0 !important;
+    color: #111111 !important;
+  }
+  nav.navbar {
+    background-color: rgba(245, 244, 240, 0.88) !important;
+  }
+  .mobile-menu {
+    background-color: rgba(245, 244, 240, 0.98) !important;
+  }
+  footer.site-footer {
+    background-color: #f5f4f0 !important;
+  }
+}
+
 /* --- Base HTML & Body --- */
 html {
   background-color: var(--bg);
   color: var(--fg);
+  color-scheme: light;
   font-family: var(--font-main);
   font-size: 13px;
   font-weight: 300;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
 }
@@ -84,6 +119,8 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--bg);
+  color: var(--fg);
+  color-scheme: light;
   overflow-x: hidden;
   position: relative;
 }
@@ -438,29 +475,41 @@ main.main-content {
 }
 
 /* ==========================================================================
-   Intro Studio Page
+   Intro Studio Page (Adaptation stricte Viewport sans aucun défilement)
    ========================================================================== */
+#page-intro {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
 .studio-wrap {
   width: 100%;
-  max-width: 600px;
+  max-width: 580px;
   margin: 0 auto;
-  padding: clamp(16px, 2.5vh, 28px) 24px 0;
   text-align: center;
   font-family: var(--font-geist);
 }
 
 #page-intro .studio-wrap {
   flex: 1;
+  height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
+  padding: clamp(4px, 1vh, 16px) 20px clamp(4px, 1vh, 12px);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .studio-section {
-  margin-bottom: clamp(20px, 3.5vh, 44px);
   text-align: center;
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(12px);
   transition: opacity 0.5s var(--ease-spring), transform 0.5s var(--ease-spring);
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .studio-section.revealed {
@@ -473,19 +522,19 @@ main.main-content {
 }
 
 #page-intro .studio-section.studio-trusted {
-  margin-top: auto;
-  margin-bottom: auto;
-  padding: 16px 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: clamp(2px, 0.6vh, 8px) 0;
 }
 
 .studio-label {
   font-family: var(--font-geist);
-  font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.04em;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
   color: var(--fg-muted);
   text-transform: uppercase;
-  margin: 0 auto 16px;
+  margin: 0 auto clamp(4px, 0.6vh, 8px);
   text-align: center;
   display: block;
 }
@@ -497,13 +546,13 @@ main.main-content {
   align-items: center;
   justify-content: center;
   text-align: center;
-  margin: 4px auto clamp(20px, 3.5vh, 36px);
+  margin: 0 auto;
   width: 100%;
 }
 
 .intro-avatar-circle {
-  width: clamp(100px, 13vh, 124px);
-  height: clamp(100px, 13vh, 124px);
+  width: clamp(68px, 9.5vh, 108px);
+  height: clamp(68px, 9.5vh, 108px);
   border-radius: 50%;
   overflow: hidden;
   display: block;
@@ -533,13 +582,13 @@ main.main-content {
 }
 
 .intro-profile-name {
-  margin-top: clamp(12px, 2vh, 20px);
+  margin-top: clamp(6px, 1vh, 14px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-family: var(--font-geist);
-  font-size: clamp(38px, 5.5vh, 50px);
+  font-size: clamp(28px, 4.2vh, 46px);
   font-weight: 500;
   line-height: 1.04;
   letter-spacing: -0.04em;
@@ -558,50 +607,52 @@ main.main-content {
 }
 
 .studio-hero {
-  margin-bottom: clamp(24px, 4vh, 44px);
+  margin: 0 auto;
   text-align: center;
 }
 
 .studio-headline {
   font-family: var(--font-geist);
-  font-size: clamp(22px, 3.2vh, 28px);
+  font-size: clamp(17px, 2.4vh, 26px);
   font-weight: 300;
-  line-height: 1.35;
+  line-height: 1.3;
   letter-spacing: -0.02em;
   color: var(--fg);
-  max-width: 520px;
+  max-width: 500px;
   margin: 0 auto;
   text-align: center;
 }
 
 .studio-subhead {
   font-family: var(--font-geist);
-  font-size: clamp(13px, 1.5vh, 14px);
+  font-size: clamp(11.5px, 1.4vh, 13.5px);
   font-weight: 300;
-  line-height: 1.7;
+  line-height: 1.55;
   letter-spacing: -0.01em;
   color: #444444;
-  max-width: 480px;
-  margin: clamp(12px, 1.8vh, 18px) auto 0;
+  max-width: 460px;
+  margin: clamp(6px, 1vh, 12px) auto 0;
   text-align: center;
 }
 
 .studio-cta {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: clamp(16px, 2.5vh, 24px) auto 0;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
+  gap: clamp(6px, 1.4vw, 10px);
+  flex-wrap: nowrap;
+  margin: clamp(8px, 1.5vh, 16px) auto 0;
+  width: auto;
 }
 
 .cta-pill {
   font-family: var(--font-geist);
-  font-size: 13px;
-  font-weight: 300;
+  font-size: clamp(11.5px, 1.3vh, 13px);
+  font-weight: 400;
   letter-spacing: -0.01em;
   text-decoration: none;
-  padding: 10px 22px;
+  padding: clamp(7px, 1vh, 9px) clamp(12px, 1.8vw, 18px);
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s var(--ease-spring);
@@ -611,6 +662,8 @@ main.main-content {
   border: none;
   outline: none;
   line-height: 1;
+  white-space: nowrap;
+  flex: 0 0 auto;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -749,15 +802,15 @@ main.main-content {
 }
 
 .studio-trusted {
-  margin-bottom: 84px;
+  margin-bottom: 0;
   text-align: center;
 }
 
 .studio-trusted .studio-label {
-  margin: 0 auto 36px;
+  margin: 0 auto clamp(4px, 0.8vh, 10px);
   text-align: center;
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -765,8 +818,8 @@ main.main-content {
   position: relative;
   width: 100%;
   max-width: 720px;
-  margin: -50px auto 0;
-  padding: 56px 0 16px;
+  margin: 0 auto;
+  padding: clamp(6px, 1vh, 14px) 0;
   overflow: hidden;
   user-select: none;
   -webkit-mask-image: linear-gradient(
@@ -882,64 +935,80 @@ main.main-content {
 
 @media (max-width: 640px) {
   .studio-wrap {
-    padding-top: 20px;
-    padding-bottom: 0;
+    padding-top: clamp(4px, 1vh, 12px);
+    padding-bottom: clamp(4px, 1vh, 8px);
   }
   .intro-profile {
     margin-top: 0;
-    margin-bottom: 28px;
+    margin-bottom: 0;
   }
   .intro-avatar-circle {
-    width: 100px;
-    height: 100px;
+    width: clamp(60px, 9.5vh, 82px);
+    height: clamp(60px, 9.5vh, 82px);
   }
   .intro-profile-name {
-    font-size: 38px;
-    margin-top: 14px;
+    font-size: clamp(24px, 4vh, 32px);
+    margin-top: clamp(4px, 0.8vh, 8px);
     line-height: 1.05;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.03em;
   }
   .studio-section {
-    margin-bottom: 36px;
+    margin-bottom: 0;
   }
   .studio-hero {
-    margin-bottom: 36px;
+    margin-bottom: 0;
   }
   .studio-headline {
-    font-size: 22px;
+    font-size: clamp(15px, 2.3vh, 19px);
     text-align: center;
     margin: 0 auto;
+    line-height: 1.25;
   }
   .studio-subhead {
-    font-size: 13.5px;
-    line-height: 1.7;
+    font-size: clamp(11px, 1.4vh, 12.5px);
+    line-height: 1.45;
     text-align: center;
-    margin: 18px auto 0;
+    margin: clamp(4px, 0.8vh, 8px) auto 0;
+    max-width: 320px;
   }
   .studio-cta {
-    flex-direction: column;
-    align-items: stretch;
-    max-width: 280px;
-    margin: 28px auto 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    margin: clamp(8px, 1.4vh, 14px) auto 0;
+    max-width: 100%;
   }
   .cta-pill {
+    padding: 6px 12px;
+    font-size: 11.5px;
     text-align: center;
+    flex: 0 0 auto;
   }
   .studio-trusted {
-    margin-bottom: 64px;
+    margin-bottom: 0;
   }
   .trusted-marquee {
     max-width: 100%;
-    padding: 48px 0 14px;
-    margin: -44px auto 0;
+    padding: clamp(4px, 0.8vh, 10px) 0;
+    margin: 0 auto;
   }
   .trusted-group {
-    gap: 38px;
-    padding-right: 38px;
+    gap: 28px;
+    padding-right: 28px;
   }
   .trusted-logo {
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
+  }
+  .trusted-logo.logo-trinsic,
+  .trusted-logo.logo-izzyx {
+    width: 52px;
+  }
+  .trusted-logo.logo-trinsic img,
+  .trusted-logo.logo-izzyx img {
+    max-width: 48px;
   }
 }
 
@@ -1746,19 +1815,33 @@ footer.fixed-footer {
   text-align: center;
 }
 
-/* Positionnement direct sous la section Trusted By sur la page Intro */
-body:has(#page-intro.active) footer.site-footer,
-body.page-is-intro footer.site-footer {
-  margin-top: auto;
-  padding: 16px 24px 20px;
+/* Page Intro : Plein écran strict et aucun défilement sur tous les écrans */
+body:has(#page-intro.active),
+body.page-is-intro {
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
-/* Élimine le défilement inutile sur les écrans standards lors de l'affichage de l'Intro */
-@media (min-height: 680px) {
-  body:has(#page-intro.active),
-  body.page-is-intro {
-    overflow-y: hidden;
-  }
+body:has(#page-intro.active) main.main-content,
+body.page-is-intro main.main-content {
+  flex: 1 1 0;
+  min-height: 0;
+  height: calc(100dvh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow: hidden !important;
+}
+
+body:has(#page-intro.active) footer.site-footer,
+body.page-is-intro footer.site-footer {
+  flex-shrink: 0;
+  height: auto;
+  min-height: 28px;
+  padding: 6px 20px calc(6px + env(safe-area-inset-bottom, 0px));
+  margin-top: 0;
 }
 
 /* --- Floating Scroll to Top Button --- */

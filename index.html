@@ -18,6 +18,7 @@
 
   <!-- Typography : Montserrat Variable Font (Local) & Geist -->
   <link rel="preload" href="assets/Montserrat/Montserrat-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="assets/robin-wattier-profile.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -31,17 +32,26 @@
   <!-- Core Design System & Stylesheet -->
   <link rel="stylesheet" href="style.css?v=42">
 
-  <!-- Pinterest Tag -->
+  <!-- Pinterest Tag (Chargement asynchrone non-bloquant) -->
   <script>
     !function (e) {
       if (!window.pintrk) {
         window.pintrk = function () {
           window.pintrk.queue.push(Array.prototype.slice.call(arguments))
-        }; var
-          n = window.pintrk; n.queue = [], n.version = "3.0"; var
-            t = document.createElement("script"); t.async = !0, t.src = e; var
-              r = document.getElementsByTagName("script")[0];
-        r.parentNode.insertBefore(t, r)
+        };
+        var n = window.pintrk; n.queue = [], n.version = "3.0";
+        var injectTag = function () {
+          var t = document.createElement("script");
+          t.async = true;
+          t.src = e;
+          var r = document.getElementsByTagName("script")[0];
+          r.parentNode.insertBefore(t, r);
+        };
+        if (document.readyState === 'complete') {
+          setTimeout(injectTag, 50);
+        } else {
+          window.addEventListener('load', function () { setTimeout(injectTag, 50); }, { once: true });
+        }
       }
     }("https://s.pinimg.com/ct/core.js");
     pintrk('load', '2613036792309');
@@ -126,7 +136,7 @@
             <picture>
               <source srcset="assets/robin-wattier-profile.webp" type="image/webp">
               <img src="assets/robin-wattier-profile.jpg" alt="Robin Wattier" class="intro-avatar-img" width="124"
-                height="124" loading="eager" decoding="async">
+                height="124" loading="eager" decoding="async" fetchpriority="high">
             </picture>
           </div>
           <h2 class="intro-profile-name">
@@ -470,8 +480,8 @@
   </button>
 
   <!-- Données des projets et Logique applicative -->
-  <script src="projects-data.js?v=650554"></script>
-  <script src="script.js?v=26"></script>
+  <script src="projects-data.js?v=650555" defer></script>
+  <script src="script.js?v=27" defer></script>
 </body>
 
 </html>

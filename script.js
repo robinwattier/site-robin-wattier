@@ -202,7 +202,7 @@
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
-        video.preload = 'metadata';
+        video.preload = 'none';
 
         if (item.poster) {
           video.className = 'item-hover-video';
@@ -234,7 +234,6 @@
         // Custom time bounds should not trigger native full-file loop
         if (endTime > initialTime) {
           video.loop = false;
-          video.preload = 'auto';
         }
 
         if (initialTime > 0) {
@@ -257,6 +256,9 @@
 
         const startHover = () => {
           card.classList.add('is-hovered');
+          if (video.preload !== 'auto') {
+            video.preload = 'auto';
+          }
           if (endTime > initialTime) {
             if (video.currentTime < initialTime || video.currentTime >= endTime - 0.05) {
               try {

@@ -76,10 +76,26 @@ function setupBackgroundSync() {
 
 setupBackgroundSync();
 
+const zlib = require('zlib');
+
+// Cache en mémoire pour les fichiers textes fréquemment demandés
+const memoryCache = new Map();
+const COMPRESSIBLE_EXTS = new Set(['.html', '.js', '.css', '.json', '.svg', '.ttf', '.otf', '.txt']);
+
+// Sécurise la taille du cache mémoire (< 30 Mo)
+function pruneMemoryCache() {
+  if (memoryCache.size > 150) {
+    memoryCache.clear();
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  let reqPath = decodeURI(req.url.split('?')[0]);
+  const rawUrl = req.url || '/';
+  const urlParts = rawUrl.split('?');
+  let reqPath = decodeURI(urlParts[0]);
+  const hasVersionParam = urlParts[1] && urlParts[1].includes('v=');
 
   // Instagram Sync API Route (GET ou POST)
   if (reqPath === '/api/instagram/sync') {
@@ -147,7 +163,27 @@ const server = http.createServer(async (req, res) => {
     const totalSize = stats.size;
     const rangeHeader = req.headers.range;
 
-    // HTTP 206 Partial Content (essential for smooth video streaming and fast seeking)
+    // Génération ETag basée sur taille et date de modification
+    const etag = `W/"${totalSize.toString(16)}-${Math.floor(stats.mtimeMs).toString(16)}"`;
+    res.setHeader('ETag', etag);
+
+    // En-têtes de Cache-Control optimaux
+    if (ext === '.html') {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (hasVersionParam || filePath.includes(path.sep + 'assets' + path.sep)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    }
+
+    // Validation ETag -> 304 Not Modified (0 octet transféré, chargement instantané)
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304);
+      res.end();
+      return;
+    }
+
+    // HTTP 206 Partial Content (indispensable pour les flux vidéos MP4/WebM fluides)
     if (rangeHeader && (ext === '.mp4' || ext === '.webm')) {
       const parts = rangeHeader.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
@@ -169,14 +205,68 @@ const server = http.createServer(async (req, res) => {
       });
 
       stream.pipe(res);
-    } else {
-      res.writeHead(200, {
-        'Content-Length': totalSize,
-        'Content-Type': contentType,
-        'Accept-Ranges': 'bytes'
-      });
-      fs.createReadStream(filePath).pipe(res);
+      return;
     }
+
+    // Compression dynamique GZIP pour fichiers textuels et polices (HTML, CSS, JS, JSON, SVG, TTF)
+    const acceptEncoding = req.headers['accept-encoding'] || '';
+    const shouldCompress = COMPRESSIBLE_EXTS.has(ext) && acceptEncoding.includes('gzip');
+
+    if (shouldCompress) {
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Encoding', 'gzip');
+      res.setHeader('Vary', 'Accept-Encoding');
+
+      // Vérifier le cache mémoire
+      const cacheKey = `${filePath}:${stats.mtimeMs}:gzip`;
+      const cached = memoryCache.get(cacheKey);
+
+      if (cached) {
+        res.setHeader('Content-Length', cached.length);
+        res.writeHead(200);
+        res.end(cached);
+        return;
+      }
+
+      // Lire, compresser et stocker en cache mémoire
+      fs.readFile(filePath, (readErr, rawData) => {
+        if (readErr) {
+          res.writeHead(500);
+          res.end('Server error');
+          return;
+        }
+
+        zlib.gzip(rawData, { level: 6 }, (gzErr, compressedData) => {
+          if (gzErr) {
+            // Fallback non compressé en cas d'erreur de compression
+            res.removeHeader('Content-Encoding');
+            res.setHeader('Content-Length', rawData.length);
+            res.writeHead(200);
+            res.end(rawData);
+            return;
+          }
+
+          pruneMemoryCache();
+          // Mettre en cache si le fichier compressé fait moins de 2 Mo
+          if (compressedData.length < 2 * 1024 * 1024) {
+            memoryCache.set(cacheKey, compressedData);
+          }
+
+          res.setHeader('Content-Length', compressedData.length);
+          res.writeHead(200);
+          res.end(compressedData);
+        });
+      });
+      return;
+    }
+
+    // Réponse standard pour fichiers binaires ou clients sans support gzip
+    res.writeHead(200, {
+      'Content-Length': totalSize,
+      'Content-Type': contentType,
+      'Accept-Ranges': 'bytes'
+    });
+    fs.createReadStream(filePath).pipe(res);
   });
 });
 

@@ -11,12 +11,13 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/danelec.webp",
     "posterFallback": "assets/projets/danelec.jpg",
     "title": "DanElec - Votre Partenaire en Sécurité",
-    "type": "link",
+    "type": "video",
     "link": "https://danelec.be/",
     "featured": true,
     "hasBadge": true,
-    "w": 1024,
-    "h": 1024
+    "w": 1280,
+    "h": 720,
+    "posterPosition": "center 60%"
   },
   {
     "title": "Midnight Alsthetic",

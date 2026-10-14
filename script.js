@@ -192,6 +192,9 @@
           posterImg.loading = 'lazy';
           posterImg.decoding = 'async';
           posterImg.draggable = false;
+          if (item.posterPosition || item.objectPosition) {
+            posterImg.style.objectPosition = item.posterPosition || item.objectPosition;
+          }
           posterImg.onerror = function () {
             const imgFallback = item.posterFallback || (item.fallbackSrc && !VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
             if (imgFallback && posterImg.src !== imgFallback) {
@@ -339,7 +342,7 @@
           badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
           mediaWrap.appendChild(badge);
           card.style.cursor = 'pointer';
-        } else if (item.hasBadge || item.featured || item.type === 'youtube') {
+        } else if (item.hasBadge || item.featured || item.type === 'youtube' || item.type === 'video') {
           const badge = document.createElement('div');
           badge.className = 'video-badge';
           badge.setAttribute('aria-hidden', 'true');

@@ -1201,7 +1201,7 @@ main.main-content {
   pointer-events: none;
 }
 
-/* Survol actif : la vidéo apparaît, la miniature s'estompe */
+/* Survol actif : la vidéo apparaît en fondu au-dessus de la miniature */
 .item:hover .item-hover-video,
 .item.is-hovered .item-hover-video {
   opacity: 1 !important;
@@ -1209,7 +1209,7 @@ main.main-content {
 
 .item:hover .item-poster-img,
 .item.is-hovered .item-poster-img {
-  opacity: 0 !important;
+  opacity: 0.1;
 }
 
 /* Fin de survol : la miniature redevient 100% visible, la vidéo redevient 0% */

@@ -208,7 +208,7 @@
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
-        video.preload = 'none';
+        video.preload = ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 'none' : 'metadata';
 
         if (item.poster) {
           video.className = 'item-hover-video';
@@ -223,14 +223,16 @@
         source.type = ext === 'webm' ? 'video/webm' : 'video/mp4';
 
         // Graceful fallback to remote host if local file fails
-        source.onerror = function () {
+        const onVideoError = function () {
           const videoFallback = item.videoFallback || (item.fallbackSrc && VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
-          if (videoFallback && source.src !== videoFallback) {
-            source.src = videoFallback;
+          if (videoFallback && video.src !== videoFallback) {
             video.src = videoFallback;
+            source.src = videoFallback;
             video.load();
           }
         };
+        video.onerror = onVideoError;
+        source.onerror = onVideoError;
 
         video.appendChild(source);
         mediaWrap.appendChild(video);
@@ -304,8 +306,6 @@
         };
 
         const stopHover = () => {
-          // If the cursor is still hovering over the card, do NOT stop playback!
-          if (card.matches(':hover')) return;
           card.classList.remove('is-hovered');
           cancelAnimationFrame(loopRafId);
           video.pause();

@@ -176,20 +176,13 @@ const server = http.createServer(async (req, res) => {
       res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
     }
 
-    // Validation ETag -> 304 Not Modified (0 octet transféré, chargement instantané)
-    if (req.headers['if-none-match'] === etag) {
-      res.writeHead(304);
-      res.end();
-      return;
-    }
-
     // HTTP 206 Partial Content (indispensable pour les flux vidéos MP4/WebM fluides)
     if (rangeHeader && (ext === '.mp4' || ext === '.webm')) {
       const parts = rangeHeader.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
       const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
 
-      if (start >= totalSize || end >= totalSize || start > end) {
+      if (isNaN(start) || start >= totalSize || end >= totalSize || start > end) {
         res.writeHead(416, { 'Content-Range': `bytes */${totalSize}` });
         return res.end();
       }
@@ -205,6 +198,13 @@ const server = http.createServer(async (req, res) => {
       });
 
       stream.pipe(res);
+      return;
+    }
+
+    // Validation ETag -> 304 Not Modified pour les requêtes complètes (0 octet transféré)
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304);
+      res.end();
       return;
     }
 

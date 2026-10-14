@@ -30,7 +30,7 @@
   // True only if the item points to an actual video file (avoids broken players
   // for Instagram reels where only the poster image could be scraped)
   const VIDEO_EXT_RE = /\.(mp4|webm|mov|m4v)(\?|#|$)/i;
-  const hasPlayableVideo = (item) => !!(item && item.src && VIDEO_EXT_RE.test(item.src));
+  const hasPlayableVideo = (item) => !!(item && ((item.src && VIDEO_EXT_RE.test(item.src)) || (item.video && VIDEO_EXT_RE.test(item.video))));
 
   // --- Shuffle Utility ---
   function shuffleArray(arr) {
@@ -190,8 +190,9 @@
           posterImg.decoding = 'async';
           posterImg.draggable = false;
           posterImg.onerror = function () {
-            if (item.fallbackSrc && posterImg.src !== item.fallbackSrc) {
-              posterImg.src = item.fallbackSrc;
+            const imgFallback = item.posterFallback || (item.fallbackSrc && !VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
+            if (imgFallback && posterImg.src !== imgFallback) {
+              posterImg.src = imgFallback;
             }
           };
           mediaWrap.appendChild(posterImg);
@@ -208,15 +209,17 @@
           video.poster = item.poster;
         }
 
+        const videoSrc = (item.video && VIDEO_EXT_RE.test(item.video)) ? item.video : item.src;
         const source = document.createElement('source');
-        source.src = item.src;
-        const ext = item.src.split('.').pop().toLowerCase();
+        source.src = videoSrc;
+        const ext = videoSrc.split('.').pop().toLowerCase();
         source.type = ext === 'webm' ? 'video/webm' : 'video/mp4';
 
         // Graceful fallback to remote host if local file fails
         source.onerror = function () {
-          if (item.fallbackSrc && source.src !== item.fallbackSrc) {
-            source.src = item.fallbackSrc;
+          const videoFallback = item.videoFallback || (item.fallbackSrc && VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
+          if (videoFallback && source.src !== videoFallback) {
+            source.src = videoFallback;
             video.load();
           }
         };
@@ -301,8 +304,16 @@
         card.addEventListener('pointerleave', stopHover);
         card.addEventListener('blur', stopHover);
 
-        // Add subtle video badge if featured, hasBadge, or youtube
-        if (item.hasBadge || item.featured || item.type === 'youtube') {
+        // Add link badge for external website projects or subtle video badge for video/youtube
+        if (item.type === 'link' || item.type === 'website') {
+          const badge = document.createElement('div');
+          badge.className = 'link-badge';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.title = 'Lien externe (cliquer pour ouvrir)';
+          badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+          mediaWrap.appendChild(badge);
+          card.style.cursor = 'pointer';
+        } else if (item.hasBadge || item.featured || item.type === 'youtube') {
           const badge = document.createElement('div');
           badge.className = 'video-badge';
           badge.setAttribute('aria-hidden', 'true');
@@ -733,9 +744,15 @@
         wrap.style.cssText = 'position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;max-width:90vw;max-height:85vh;';
 
         const img = document.createElement('img');
-        img.src = item.src;
+        img.src = item.poster || item.src;
         img.alt = item.title || 'Site Web';
         img.style.cssText = 'max-height:68vh;max-width:90vw;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,0.35);object-fit:contain;cursor:pointer;';
+        img.onerror = function () {
+          const imgFallback = item.posterFallback || (item.fallbackSrc && !VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
+          if (imgFallback && img.src !== imgFallback) {
+            img.src = imgFallback;
+          }
+        };
         img.addEventListener('click', () => {
           window.open(item.link || item.src, '_blank', 'noopener,noreferrer');
         });

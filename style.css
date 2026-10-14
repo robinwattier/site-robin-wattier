@@ -928,7 +928,7 @@ main.main-content {
   transform: scale(1.08);
 }
 
-/* Logos avec relief métallisé, chromé ou avec couleur (Trinsic, Wolf, Mons, DanElec) */
+/* Logos avec relief métallisé, chromé ou avec couleur (Trinsic, Wolf, Mons, DanElec, QuickLets, Zanzi) */
 .trusted-logo img[src*="trinsic"],
 .trusted-logo img[src*="wolf"] {
   opacity: 0.92;
@@ -941,6 +941,16 @@ main.main-content {
   filter: brightness(1.35) contrast(1.1);
 }
 
+.trusted-logo img[src*="quicklets"] {
+  opacity: 0.95;
+  filter: brightness(1.65) contrast(1.15) saturate(1.1);
+}
+
+.trusted-logo img[src*="zanzihomes"] {
+  opacity: 0.95;
+  filter: brightness(1.2) contrast(1.1);
+}
+
 .trusted-logo:hover img[src*="trinsic"],
 .trusted-logo:hover img[src*="wolf"],
 .trusted-logo:hover img[src*="mons"],
@@ -951,6 +961,20 @@ main.main-content {
 .trusted-logo:focus-visible img[src*="danelec"] {
   opacity: 1;
   filter: brightness(1.25) contrast(1.1);
+  transform: scale(1.08);
+}
+
+.trusted-logo:hover img[src*="quicklets"],
+.trusted-logo:focus-visible img[src*="quicklets"] {
+  opacity: 1;
+  filter: brightness(1.85) contrast(1.15) saturate(1.15);
+  transform: scale(1.08);
+}
+
+.trusted-logo:hover img[src*="zanzihomes"],
+.trusted-logo:focus-visible img[src*="zanzihomes"] {
+  opacity: 1;
+  filter: brightness(1.35) contrast(1.1);
   transform: scale(1.08);
 }
 

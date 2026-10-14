@@ -1,15 +1,17 @@
 [
   {
-    "src": "assets/projets/danelec.webp",
-    "fallbackSrc": "assets/projets/danelec.jpg",
+    "src": "assets/projets/screen-video-dan-elec.mp4",
+    "fallbackSrc": "assets/screen-vidéo-dan-elec.mp4",
+    "video": "assets/projets/screen-video-dan-elec.mp4",
+    "poster": "assets/projets/danelec.webp",
+    "posterFallback": "assets/projets/danelec.jpg",
     "title": "DanElec - Votre Partenaire en Sécurité",
     "type": "link",
     "link": "https://danelec.be/",
     "featured": true,
     "hasBadge": true,
     "w": 1024,
-    "h": 1024,
-    "poster": "assets/projets/danelec.webp"
+    "h": 1024
   },
   {
     "title": "Midnight Alsthetic",

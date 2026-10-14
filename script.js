@@ -170,6 +170,7 @@
         };
 
         const stopCarousel = () => {
+          if (card.matches(':hover')) return;
           card.classList.remove('is-hovered');
           clearInterval(carouselInterval);
           setSlide(0);
@@ -177,9 +178,11 @@
 
         card.addEventListener('mouseenter', startCarousel);
         card.addEventListener('mouseleave', stopCarousel);
-        card.addEventListener('pointerleave', stopCarousel);
-        card.addEventListener('blur', stopCarousel);
-        card.addEventListener('reset-hover', stopCarousel);
+        card.addEventListener('reset-hover', () => {
+          card.classList.remove('is-hovered');
+          clearInterval(carouselInterval);
+          setSlide(0);
+        });
       } else if (isVideo) {
         if (item.poster) {
           const posterImg = document.createElement('img');
@@ -210,6 +213,7 @@
         }
 
         const videoSrc = (item.video && VIDEO_EXT_RE.test(item.video)) ? item.video : item.src;
+        video.src = videoSrc;
         const source = document.createElement('source');
         source.src = videoSrc;
         const ext = videoSrc.split('.').pop().toLowerCase();
@@ -220,6 +224,7 @@
           const videoFallback = item.videoFallback || (item.fallbackSrc && VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
           if (videoFallback && source.src !== videoFallback) {
             source.src = videoFallback;
+            video.src = videoFallback;
             video.load();
           }
         };
@@ -254,6 +259,17 @@
           }
         };
 
+        // Seamless Infinite Loop Backup: prevents video from freezing at the end
+        video.addEventListener('ended', () => {
+          if (card.matches(':hover') || card.classList.contains('is-hovered')) {
+            try {
+              video.currentTime = initialTime;
+            } catch (e) {}
+            const p = video.play();
+            if (p !== undefined) p.catch(() => {});
+          }
+        });
+
         const startHover = () => {
           card.classList.add('is-hovered');
           if (video.preload !== 'auto') {
@@ -285,6 +301,8 @@
         };
 
         const stopHover = () => {
+          // If the cursor is still hovering over the card, do NOT stop playback!
+          if (card.matches(':hover')) return;
           card.classList.remove('is-hovered');
           cancelAnimationFrame(loopRafId);
           video.pause();
@@ -303,8 +321,14 @@
 
         card.addEventListener('mouseenter', startHover);
         card.addEventListener('mouseleave', stopHover);
-        card.addEventListener('pointerleave', stopHover);
-        card.addEventListener('blur', stopHover);
+        card.addEventListener('reset-hover', () => {
+          card.classList.remove('is-hovered');
+          cancelAnimationFrame(loopRafId);
+          video.pause();
+          try {
+            video.currentTime = initialTime;
+          } catch (e) {}
+        });
 
         // Add link badge for external website projects or subtle video badge for video/youtube
         if (item.type === 'link' || item.type === 'website') {
@@ -1025,15 +1049,17 @@
       () => {
         scrollTopBtn.classList.toggle('visible', window.scrollY > 300);
 
-        // Revert all hover-playing preview videos when scrolling
+        // Only pause preview videos when the cursor is no longer hovering the card
         document.querySelectorAll('.item.is-hovered').forEach((c) => {
-          c.classList.remove('is-hovered');
-          const v = c.querySelector('video');
-          if (v) {
-            v.pause();
-            try {
-              v.currentTime = 0;
-            } catch (e) {}
+          if (!c.matches(':hover')) {
+            c.classList.remove('is-hovered');
+            const v = c.querySelector('video');
+            if (v) {
+              v.pause();
+              try {
+                v.currentTime = 0;
+              } catch (e) {}
+            }
           }
         });
       },

@@ -22,11 +22,11 @@ window.PORTFOLIO_ITEMS = [
   {
     "title": "nightmode.",
     "type": "carousel",
-    "link": "https://www.instagram.com/p/DersLAZIAVN/?img_index=1",
+    "link": "https://www.instagram.com/p/DersLAZIAVN/",
     "featured": true,
     "hasBadge": true,
     "w": 1080,
-    "h": 1080,
+    "h": 1350,
     "slides": [
       "assets/projets/instagram/DersLAZIAVN/slide_1.jpg",
       "assets/projets/instagram/DersLAZIAVN/slide_2.jpg",

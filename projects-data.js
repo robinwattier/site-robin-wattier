@@ -20,6 +20,23 @@ window.PORTFOLIO_ITEMS = [
     "posterPosition": "center 60%"
   },
   {
+    "title": "nightmode.",
+    "type": "carousel",
+    "link": "https://www.instagram.com/p/DersLAZIAVN/?img_index=1",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1080,
+    "slides": [
+      "assets/projets/instagram/DersLAZIAVN/slide_1.jpg",
+      "assets/projets/instagram/DersLAZIAVN/slide_2.jpg",
+      "assets/projets/instagram/DersLAZIAVN/slide_3.jpg"
+    ],
+    "src": "assets/projets/instagram/DersLAZIAVN/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/DersLAZIAVN/slide_1.jpg",
+    "poster": "assets/projets/instagram/DersLAZIAVN/slide_1.jpg"
+  },
+  {
     "title": "Midnight Alsthetic",
     "type": "carousel",
     "link": "https://www.instagram.com/robinwattier/p/DU6MhcLjOpu/",

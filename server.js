@@ -208,17 +208,19 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // Compression dynamique GZIP pour fichiers textuels et polices (HTML, CSS, JS, JSON, SVG, TTF)
+    // Compression dynamique Brotli ou GZIP pour fichiers textuels et polices (HTML, CSS, JS, JSON, SVG, TTF)
     const acceptEncoding = req.headers['accept-encoding'] || '';
-    const shouldCompress = COMPRESSIBLE_EXTS.has(ext) && acceptEncoding.includes('gzip');
+    const canBrotli = COMPRESSIBLE_EXTS.has(ext) && acceptEncoding.includes('br') && typeof zlib.brotliCompress === 'function';
+    const canGzip = !canBrotli && COMPRESSIBLE_EXTS.has(ext) && acceptEncoding.includes('gzip');
 
-    if (shouldCompress) {
+    if (canBrotli || canGzip) {
+      const encoding = canBrotli ? 'br' : 'gzip';
       res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Encoding', 'gzip');
+      res.setHeader('Content-Encoding', encoding);
       res.setHeader('Vary', 'Accept-Encoding');
 
       // Vérifier le cache mémoire
-      const cacheKey = `${filePath}:${stats.mtimeMs}:gzip`;
+      const cacheKey = `${filePath}:${stats.mtimeMs}:${encoding}`;
       const cached = memoryCache.get(cacheKey);
 
       if (cached) {
@@ -236,8 +238,12 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        zlib.gzip(rawData, { level: 6 }, (gzErr, compressedData) => {
-          if (gzErr) {
+        const compressor = canBrotli
+          ? (data, cb) => zlib.brotliCompress(data, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 6 } }, cb)
+          : (data, cb) => zlib.gzip(data, { level: 6 }, cb);
+
+        compressor(rawData, (compErr, compressedData) => {
+          if (compErr) {
             // Fallback non compressé en cas d'erreur de compression
             res.removeHeader('Content-Encoding');
             res.setHeader('Content-Length', rawData.length);

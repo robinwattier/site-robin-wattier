@@ -10,31 +10,34 @@
   padding: 0;
 }
 
+/* --- Typographies auto-hébergées, sous-ensemble Latin en WOFF2 ---
+   (Montserrat 672 Ko -> ~28 Ko, Geist via Google Fonts -> ~25 Ko local, logo 117 Ko -> ~9 Ko).
+   Les fichiers sources complets restent dans assets/ ; régénération : voir README. */
+
 /* --- Custom Logo Typography (Kern Club KCY2K Banger) --- */
 @font-face {
   font-family: 'KCY2K';
-  src: url('assets/KCY2KBanger-Bold.otf') format('opentype');
+  src: url('assets/fonts/kcy2k-banger-bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
-/* --- Montserrat Variable Typography (Local assets/Montserrat) --- */
+/* --- Montserrat Variable Typography (graisses 100-900 dans un seul fichier) --- */
 @font-face {
   font-family: 'Montserrat';
-  src: url('assets/Montserrat/Montserrat-VariableFont_wght.ttf') format('truetype-variations'),
-       url('assets/Montserrat/Montserrat-VariableFont_wght.ttf') format('truetype');
+  src: url('assets/fonts/montserrat-var-latin.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
+/* --- Geist Variable Typography (remplace la feuille Google Fonts bloquante) --- */
 @font-face {
-  font-family: 'Montserrat';
-  src: url('assets/Montserrat/Montserrat-Italic-VariableFont_wght.ttf') format('truetype-variations'),
-       url('assets/Montserrat/Montserrat-Italic-VariableFont_wght.ttf') format('truetype');
+  font-family: 'Geist';
+  src: url('assets/fonts/geist-var-latin.woff2') format('woff2');
   font-weight: 100 900;
-  font-style: italic;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -452,15 +455,14 @@ main.main-content {
   flex-direction: column;
 }
 
+/* Pas de filter: blur() sur toute la page (repaint plein écran coûteux) : opacité + translation = compositeur GPU seul */
 @keyframes pageIn {
   from {
     opacity: 0;
-    filter: blur(8px);
     transform: translateY(8px);
   }
   to {
     opacity: 1;
-    filter: blur(0);
     transform: translateY(0);
   }
 }
@@ -1133,13 +1135,17 @@ main.main-content {
   transform: translateY(18px) translateZ(0);
   opacity: 0;
   transition: opacity 0.55s var(--ease-spring), transform 0.55s var(--ease-spring), box-shadow 0.35s ease;
+  /* will-change uniquement pendant l'apparition (voir .revealed) : évite des dizaines de couches GPU permanentes */
   will-change: transform, opacity;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  /* Isole le rendu de chaque carte : un survol ne déclenche pas de re-layout de la grille */
+  contain: layout paint style;
 }
 
 .item.revealed {
   opacity: 1;
   transform: translateY(0) translateZ(0);
+  will-change: auto;
 }
 
 .item:hover {
@@ -1201,14 +1207,15 @@ main.main-content {
   pointer-events: none;
 }
 
-/* Survol actif : la vidéo apparaît en fondu au-dessus de la miniature */
-.item:hover .item-hover-video,
-.item.is-hovered .item-hover-video {
+/* Survol actif : la vidéo apparaît en fondu au-dessus de la miniature, mais seulement
+   quand ses premières images sont prêtes (.video-ready) : jamais d'écran noir pendant le chargement */
+.item.video-ready:hover .item-hover-video,
+.item.video-ready.is-hovered .item-hover-video {
   opacity: 1 !important;
 }
 
-.item:hover .item-poster-img,
-.item.is-hovered .item-poster-img {
+.item.video-ready:hover .item-poster-img,
+.item.video-ready.is-hovered .item-poster-img {
   opacity: 0.1;
 }
 
@@ -1238,9 +1245,8 @@ main.main-content {
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  background: rgba(10, 10, 10, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* Fond plein translucide : un backdrop-filter par carte coûte cher au scroll */
+  background: rgba(10, 10, 10, 0.62);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1351,9 +1357,7 @@ main.main-content {
   pointer-events: none;
   padding: 4px 9px;
   border-radius: 999px;
-  background: rgba(14, 14, 14, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(14, 14, 14, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   transition: opacity 0.25s var(--ease-smooth), transform 0.25s var(--ease-smooth);
@@ -1381,9 +1385,7 @@ main.main-content {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: rgba(14, 14, 14, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(14, 14, 14, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   display: flex;

@@ -16,12 +16,12 @@
   <!-- Pinterest Domain Verification -->
   <meta name="p:domain_verify" content="6ec184ce3195cbbb64e00a944ed296bd"/>
 
-  <!-- Typography : Montserrat Variable Font (Local) & Geist -->
-  <link rel="preload" href="assets/Montserrat/Montserrat-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="assets/robin-wattier-profile.webp" as="image" type="image/webp" fetchpriority="high">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Typography : Montserrat + Geist, sous-ensembles Latin WOFF2 auto-hébergés (~28 Ko + ~25 Ko, aucune requête tierce) -->
+  <link rel="preload" href="assets/fonts/montserrat-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/geist-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/robin-wattier-profile-248.webp" as="image" type="image/webp"
+    imagesrcset="assets/robin-wattier-profile-248.webp 248w, assets/robin-wattier-profile-372.webp 372w" imagesizes="124px"
+    fetchpriority="high">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
@@ -30,7 +30,7 @@
   <link rel="shortcut icon" href="assets/favicon.ico">
 
   <!-- Core Design System & Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=44">
+  <link rel="stylesheet" href="style.css?v=46">
 
   <!-- Pinterest Tag (Chargement asynchrone non-bloquant) -->
   <script>
@@ -134,7 +134,7 @@
         <section class="intro-profile studio-section revealed" aria-label="Profil Robin Wattier">
           <div class="intro-avatar-circle">
             <picture>
-              <source srcset="assets/robin-wattier-profile.webp" type="image/webp">
+              <source srcset="assets/robin-wattier-profile-248.webp 248w, assets/robin-wattier-profile-372.webp 372w" sizes="124px" type="image/webp">
               <img src="assets/robin-wattier-profile.jpg" alt="Robin Wattier" class="intro-avatar-img" width="124"
                 height="124" loading="eager" decoding="async" fetchpriority="high">
             </picture>
@@ -168,62 +168,62 @@
               <div class="trusted-group">
                 <a href="https://www.youtube.com/results?search_query=trap+city+" target="_blank"
                   rel="noopener noreferrer" class="trusted-logo" aria-label="Trap City (YouTube)">
-                  <img src="assets/trusted/trapcity.png" alt="Trap City" loading="lazy">
+                  <img src="assets/trusted/trapcity.webp" alt="Trap City" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">Trap City</span>
                 </a>
                 <a href="https://www.instagram.com/villedemons/?hl=en" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo" aria-label="Ville de Mons (Instagram)">
-                  <img src="assets/trusted/mons.png" alt="Ville de Mons" loading="lazy">
+                  <img src="assets/trusted/mons.webp" alt="Ville de Mons" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">Ville de Mons</span>
                 </a>
                 <a href="https://danelec.be/" target="_blank" rel="noopener noreferrer" class="trusted-logo"
                   aria-label="DanElec (Site officiel)">
-                  <img src="assets/trusted/danelec.png" alt="DanElec" loading="lazy">
+                  <img src="assets/trusted/danelec.webp" alt="DanElec" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">DanElec</span>
                 </a>
                 <a href="https://www.facebook.com/zanzihomes" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo logo-quicklets" aria-label="QuickLets (Facebook)">
-                  <img src="assets/trusted/quicklets.png" alt="QuickLets" loading="lazy">
+                  <img src="assets/trusted/quicklets.webp" alt="QuickLets" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">QuickLets</span>
                 </a>
                 <a href="https://www.facebook.com/zanzihomes" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo logo-zanzihomes" aria-label="Zanzi Homes (Facebook)">
-                  <img src="assets/trusted/zanzihomes.png" alt="Zanzi Homes" loading="lazy">
+                  <img src="assets/trusted/zanzihomes.webp" alt="Zanzi Homes" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">Zanzi Homes</span>
                 </a>
                 <a href="https://www.instagram.com/ch1m3ra_/?hl=en" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo" aria-label="CH1M3RA (Instagram)">
-                  <img src="assets/trusted/chimaera.png" alt="CH1M3RA" loading="lazy">
+                  <img src="assets/trusted/chimaera.webp" alt="CH1M3RA" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">CH1M3RA</span>
                 </a>
                 <a href="https://www.instagram.com/trinsic.music/" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo logo-trinsic" aria-label="Trinsic (Instagram)">
-                  <img src="assets/trusted/trinsic.png" alt="Trinsic" loading="lazy">
+                  <img src="assets/trusted/trinsic.webp" alt="Trinsic" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">Trinsic</span>
                 </a>
                 <a href="https://www.instagram.com/israelortega._/" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo logo-izzyx" aria-label="IZZY-X (Instagram)">
-                  <img src="assets/trusted/izzy-x.png" alt="IZZY-X" loading="lazy">
+                  <img src="assets/trusted/izzy-x.webp" alt="IZZY-X" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">IZZY-X</span>
                 </a>
                 <a href="https://www.instagram.com/kyllerbeats/?hl=en" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo" aria-label="Kyller (Instagram)">
-                  <img src="assets/trusted/kyller.png" alt="Kyller" loading="lazy">
+                  <img src="assets/trusted/kyller.webp" alt="Kyller" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">Kyller</span>
                 </a>
                 <a href="https://www.youtube.com/results?search_query=wave+city+" target="_blank"
                   rel="noopener noreferrer" class="trusted-logo" aria-label="Wave City (YouTube)">
-                  <img src="assets/trusted/wavecity.png" alt="Wave City" loading="lazy">
+                  <img src="assets/trusted/wavecity.webp" alt="Wave City" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">Wave City</span>
                 </a>
                 <a href="https://www.youtube.com/user/monsterwolfofficial" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo" aria-label="Monsterwolf music (YouTube)">
-                  <img src="assets/trusted/wolf.png" alt="Monsterwolf music" loading="lazy">
+                  <img src="assets/trusted/wolf.webp" alt="Monsterwolf music" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">Monsterwolf music</span>
                 </a>
                 <a href="https://www.youtube.com/@housecity/featured" target="_blank" rel="noopener noreferrer"
                   class="trusted-logo" aria-label="House City (YouTube)">
-                  <img src="assets/trusted/housecity.png" alt="House City" loading="lazy">
+                  <img src="assets/trusted/housecity.webp" alt="House City" loading="lazy">
                   <span class="trusted-name" aria-hidden="true">House City</span>
                 </a>
               </div>
@@ -231,62 +231,62 @@
               <div class="trusted-group" aria-hidden="true">
                 <a href="https://www.youtube.com/results?search_query=trap+city+" target="_blank"
                   rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/trapcity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/trapcity.webp" alt="" loading="lazy">
                   <span class="trusted-name">Trap City</span>
                 </a>
                 <a href="https://www.instagram.com/villedemons/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/mons.png" alt="" loading="lazy">
+                  <img src="assets/trusted/mons.webp" alt="" loading="lazy">
                   <span class="trusted-name">Ville de Mons</span>
                 </a>
                 <a href="https://danelec.be/" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo">
-                  <img src="assets/trusted/danelec.png" alt="" loading="lazy">
+                  <img src="assets/trusted/danelec.webp" alt="" loading="lazy">
                   <span class="trusted-name">DanElec</span>
                 </a>
                 <a href="https://www.facebook.com/zanzihomes" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo logo-quicklets">
-                  <img src="assets/trusted/quicklets.png" alt="" loading="lazy">
+                  <img src="assets/trusted/quicklets.webp" alt="" loading="lazy">
                   <span class="trusted-name">QuickLets</span>
                 </a>
                 <a href="https://www.facebook.com/zanzihomes" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo logo-zanzihomes">
-                  <img src="assets/trusted/zanzihomes.png" alt="" loading="lazy">
+                  <img src="assets/trusted/zanzihomes.webp" alt="" loading="lazy">
                   <span class="trusted-name">Zanzi Homes</span>
                 </a>
                 <a href="https://www.instagram.com/ch1m3ra_/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/chimaera.png" alt="" loading="lazy">
+                  <img src="assets/trusted/chimaera.webp" alt="" loading="lazy">
                   <span class="trusted-name">CH1M3RA</span>
                 </a>
                 <a href="https://www.instagram.com/trinsic.music/" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo logo-trinsic">
-                  <img src="assets/trusted/trinsic.png" alt="" loading="lazy">
+                  <img src="assets/trusted/trinsic.webp" alt="" loading="lazy">
                   <span class="trusted-name">Trinsic</span>
                 </a>
                 <a href="https://www.instagram.com/israelortega._/" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo logo-izzyx">
-                  <img src="assets/trusted/izzy-x.png" alt="" loading="lazy">
+                  <img src="assets/trusted/izzy-x.webp" alt="" loading="lazy">
                   <span class="trusted-name">IZZY-X</span>
                 </a>
                 <a href="https://www.instagram.com/kyllerbeats/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/kyller.png" alt="" loading="lazy">
+                  <img src="assets/trusted/kyller.webp" alt="" loading="lazy">
                   <span class="trusted-name">Kyller</span>
                 </a>
                 <a href="https://www.youtube.com/results?search_query=wave+city+" target="_blank"
                   rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/wavecity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/wavecity.webp" alt="" loading="lazy">
                   <span class="trusted-name">Wave City</span>
                 </a>
                 <a href="https://www.youtube.com/user/monsterwolfofficial" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/wolf.png" alt="" loading="lazy">
+                  <img src="assets/trusted/wolf.webp" alt="" loading="lazy">
                   <span class="trusted-name">Monsterwolf music</span>
                 </a>
                 <a href="https://www.youtube.com/@housecity/featured" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/housecity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/housecity.webp" alt="" loading="lazy">
                   <span class="trusted-name">House City</span>
                 </a>
               </div>
@@ -294,62 +294,62 @@
               <div class="trusted-group" aria-hidden="true">
                 <a href="https://www.youtube.com/results?search_query=trap+city+" target="_blank"
                   rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/trapcity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/trapcity.webp" alt="" loading="lazy">
                   <span class="trusted-name">Trap City</span>
                 </a>
                 <a href="https://www.instagram.com/villedemons/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/mons.png" alt="" loading="lazy">
+                  <img src="assets/trusted/mons.webp" alt="" loading="lazy">
                   <span class="trusted-name">Ville de Mons</span>
                 </a>
                 <a href="https://danelec.be/" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo">
-                  <img src="assets/trusted/danelec.png" alt="" loading="lazy">
+                  <img src="assets/trusted/danelec.webp" alt="" loading="lazy">
                   <span class="trusted-name">DanElec</span>
                 </a>
                 <a href="https://www.facebook.com/zanzihomes" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo logo-quicklets">
-                  <img src="assets/trusted/quicklets.png" alt="" loading="lazy">
+                  <img src="assets/trusted/quicklets.webp" alt="" loading="lazy">
                   <span class="trusted-name">QuickLets</span>
                 </a>
                 <a href="https://www.facebook.com/zanzihomes" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo logo-zanzihomes">
-                  <img src="assets/trusted/zanzihomes.png" alt="" loading="lazy">
+                  <img src="assets/trusted/zanzihomes.webp" alt="" loading="lazy">
                   <span class="trusted-name">Zanzi Homes</span>
                 </a>
                 <a href="https://www.instagram.com/ch1m3ra_/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/chimaera.png" alt="" loading="lazy">
+                  <img src="assets/trusted/chimaera.webp" alt="" loading="lazy">
                   <span class="trusted-name">CH1M3RA</span>
                 </a>
                 <a href="https://www.instagram.com/trinsic.music/" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo logo-trinsic">
-                  <img src="assets/trusted/trinsic.png" alt="" loading="lazy">
+                  <img src="assets/trusted/trinsic.webp" alt="" loading="lazy">
                   <span class="trusted-name">Trinsic</span>
                 </a>
                 <a href="https://www.instagram.com/israelortega._/" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo logo-izzyx">
-                  <img src="assets/trusted/izzy-x.png" alt="" loading="lazy">
+                  <img src="assets/trusted/izzy-x.webp" alt="" loading="lazy">
                   <span class="trusted-name">IZZY-X</span>
                 </a>
                 <a href="https://www.instagram.com/kyllerbeats/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/kyller.png" alt="" loading="lazy">
+                  <img src="assets/trusted/kyller.webp" alt="" loading="lazy">
                   <span class="trusted-name">Kyller</span>
                 </a>
                 <a href="https://www.youtube.com/results?search_query=wave+city+" target="_blank"
                   rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/wavecity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/wavecity.webp" alt="" loading="lazy">
                   <span class="trusted-name">Wave City</span>
                 </a>
                 <a href="https://www.youtube.com/user/monsterwolfofficial" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/wolf.png" alt="" loading="lazy">
+                  <img src="assets/trusted/wolf.webp" alt="" loading="lazy">
                   <span class="trusted-name">Monsterwolf music</span>
                 </a>
                 <a href="https://www.youtube.com/@housecity/featured" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/housecity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/housecity.webp" alt="" loading="lazy">
                   <span class="trusted-name">House City</span>
                 </a>
               </div>
@@ -357,62 +357,62 @@
               <div class="trusted-group" aria-hidden="true">
                 <a href="https://www.youtube.com/results?search_query=trap+city+" target="_blank"
                   rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/trapcity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/trapcity.webp" alt="" loading="lazy">
                   <span class="trusted-name">Trap City</span>
                 </a>
                 <a href="https://www.instagram.com/villedemons/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/mons.png" alt="" loading="lazy">
+                  <img src="assets/trusted/mons.webp" alt="" loading="lazy">
                   <span class="trusted-name">Ville de Mons</span>
                 </a>
                 <a href="https://danelec.be/" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo">
-                  <img src="assets/trusted/danelec.png" alt="" loading="lazy">
+                  <img src="assets/trusted/danelec.webp" alt="" loading="lazy">
                   <span class="trusted-name">DanElec</span>
                 </a>
                 <a href="https://www.facebook.com/zanzihomes" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo logo-quicklets">
-                  <img src="assets/trusted/quicklets.png" alt="" loading="lazy">
+                  <img src="assets/trusted/quicklets.webp" alt="" loading="lazy">
                   <span class="trusted-name">QuickLets</span>
                 </a>
                 <a href="https://www.facebook.com/zanzihomes" target="_blank" rel="noopener noreferrer" tabindex="-1"
                   class="trusted-logo logo-zanzihomes">
-                  <img src="assets/trusted/zanzihomes.png" alt="" loading="lazy">
+                  <img src="assets/trusted/zanzihomes.webp" alt="" loading="lazy">
                   <span class="trusted-name">Zanzi Homes</span>
                 </a>
                 <a href="https://www.instagram.com/ch1m3ra_/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/chimaera.png" alt="" loading="lazy">
+                  <img src="assets/trusted/chimaera.webp" alt="" loading="lazy">
                   <span class="trusted-name">CH1M3RA</span>
                 </a>
                 <a href="https://www.instagram.com/trinsic.music/" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo logo-trinsic">
-                  <img src="assets/trusted/trinsic.png" alt="" loading="lazy">
+                  <img src="assets/trusted/trinsic.webp" alt="" loading="lazy">
                   <span class="trusted-name">Trinsic</span>
                 </a>
                 <a href="https://www.instagram.com/israelortega._/" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo logo-izzyx">
-                  <img src="assets/trusted/izzy-x.png" alt="" loading="lazy">
+                  <img src="assets/trusted/izzy-x.webp" alt="" loading="lazy">
                   <span class="trusted-name">IZZY-X</span>
                 </a>
                 <a href="https://www.instagram.com/kyllerbeats/?hl=en" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/kyller.png" alt="" loading="lazy">
+                  <img src="assets/trusted/kyller.webp" alt="" loading="lazy">
                   <span class="trusted-name">Kyller</span>
                 </a>
                 <a href="https://www.youtube.com/results?search_query=wave+city+" target="_blank"
                   rel="noopener noreferrer" tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/wavecity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/wavecity.webp" alt="" loading="lazy">
                   <span class="trusted-name">Wave City</span>
                 </a>
                 <a href="https://www.youtube.com/user/monsterwolfofficial" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/wolf.png" alt="" loading="lazy">
+                  <img src="assets/trusted/wolf.webp" alt="" loading="lazy">
                   <span class="trusted-name">Monsterwolf music</span>
                 </a>
                 <a href="https://www.youtube.com/@housecity/featured" target="_blank" rel="noopener noreferrer"
                   tabindex="-1" class="trusted-logo">
-                  <img src="assets/trusted/housecity.png" alt="" loading="lazy">
+                  <img src="assets/trusted/housecity.webp" alt="" loading="lazy">
                   <span class="trusted-name">House City</span>
                 </a>
               </div>
@@ -480,8 +480,8 @@
   </button>
 
   <!-- Données des projets et Logique applicative -->
-  <script src="projects-data.js?v=529919" defer></script>
-  <script src="script.js?v=31" defer></script>
+  <script src="projects-data.js?v=530001" defer></script>
+  <script src="script.js?v=33" defer></script>
 </body>
 
 </html>

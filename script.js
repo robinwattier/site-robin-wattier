@@ -32,6 +32,84 @@
   const VIDEO_EXT_RE = /\.(mp4|webm|mov|m4v)(\?|#|$)/i;
   const hasPlayableVideo = (item) => !!(item && ((item.src && VIDEO_EXT_RE.test(item.src)) || (item.video && VIDEO_EXT_RE.test(item.video))));
 
+  // --- Médias légers ---------------------------------------------------------
+  // scripts/optimize-assets.js génère à côté de chaque média d'origine :
+  //   image  -> <nom>.w480.webp / .w800.webp / .w1200.webp
+  //   vidéo  -> <nom>.preview.mp4 (survol de la grille) / <nom>.web.mp4 (lightbox)
+  // Chaque chargement retombe automatiquement sur l'original si la variante n'existe pas.
+  const IS_TOUCH = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const LOW_DATA = !!(connection && (connection.saveData || /^(slow-2g|2g|3g)$/.test(connection.effectiveType || '')));
+
+  const IMG_EXT_RE = /\.(jpe?g|png|webp)$/i;
+  const GRID_SIZES = '(max-width: 560px) 50vw, (max-width: 900px) 34vw, (max-width: 1200px) 25vw, 20vw';
+
+  const isLocalPath = (p) => typeof p === 'string' && p !== '' && !/^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(p) && !p.startsWith('data:');
+  const variantOf = (p, w) => (isLocalPath(p) && IMG_EXT_RE.test(p) && !/\.w\d+\.webp$/i.test(p) ? p.replace(IMG_EXT_RE, `.w${w}.webp`) : null);
+  const videoVariantOf = (p, kind) => (isLocalPath(p) && /\.(mp4|webm|mov|m4v)$/i.test(p) ? p.replace(/\.(mp4|webm|mov|m4v)$/i, `.${kind}.mp4`) : null);
+  const unique = (list) => list.filter((s, i, a) => s && a.indexOf(s) === i);
+
+  /**
+   * Charge une image en essayant d'abord la variante WebP adaptée, puis l'original,
+   * puis le fallback éventuel.
+   * mode 'grid' : srcset 480w/800w (la grille ne charge que la taille utile)
+   * mode 'full' : variante 1200w (lightbox)
+   */
+  function loadImage(img, src, { fallback = null, mode = 'grid' } = {}) {
+    const small = variantOf(src, 480);
+    const mid = variantOf(src, 800);
+    const big = variantOf(src, 1200);
+    const stages = [];
+
+    if (mode === 'grid' && small && mid) {
+      stages.push(() => {
+        img.sizes = GRID_SIZES;
+        img.srcset = `${small} 480w, ${mid} 800w`;
+        img.src = mid;
+      });
+    } else if (mode === 'full' && big) {
+      stages.push(() => {
+        img.removeAttribute('srcset');
+        img.src = big;
+      });
+    }
+    stages.push(() => {
+      img.removeAttribute('srcset');
+      img.removeAttribute('sizes');
+      img.src = src;
+    });
+    if (fallback && fallback !== src) {
+      stages.push(() => {
+        img.removeAttribute('srcset');
+        img.removeAttribute('sizes');
+        img.src = fallback;
+      });
+    }
+
+    let stage = 0;
+    img.onerror = () => {
+      stage += 1;
+      if (stage < stages.length) stages[stage]();
+    };
+    stages[0]();
+  }
+
+  // Précharge discrètement les aperçus vidéo des cartes proches de l'écran (fichiers de ~100-700 Ko),
+  // sauf sur mobile / connexion lente / mode économie de données : alors seul le survol/tap les charge.
+  const videoPrefetchObserver =
+    !IS_TOUCH && !LOW_DATA && 'IntersectionObserver' in window
+      ? new IntersectionObserver(
+          (entries, observer) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              observer.unobserve(entry.target);
+              if (typeof entry.target._attachVideo === 'function') entry.target._attachVideo();
+            });
+          },
+          { rootMargin: '200px 0px' }
+        )
+      : null;
+
   // --- Shuffle Utility ---
   function shuffleArray(arr) {
     const copy = [...arr];
@@ -109,23 +187,26 @@
         const track = document.createElement('div');
         track.className = 'carousel-track';
 
+        // Seule la 1re diapositive est chargée au départ ; les suivantes le sont au premier
+        // survol / focus / toucher (une carte = 1 image au lieu de N).
         const slideImgs = [];
+        const pendingSlideLoads = [];
         item.slides.forEach((slideSrc, sIdx) => {
           const sImg = document.createElement('img');
-          sImg.src = slideSrc;
           sImg.alt = `${item.title || 'Carrousel'} - Diapositive ${sIdx + 1}`;
           sImg.className = sIdx === 0 ? 'carousel-slide active' : 'carousel-slide';
-          sImg.loading = sIdx === 0 ? 'eager' : 'lazy';
+          sImg.loading = 'lazy';
           sImg.decoding = 'async';
           sImg.draggable = false;
-          sImg.onerror = function () {
-            if (item.fallbackSrc && sImg.src !== item.fallbackSrc) {
-              sImg.src = item.fallbackSrc;
-            }
-          };
+          const load = () => loadImage(sImg, slideSrc, { fallback: item.fallbackSrc });
+          if (sIdx === 0) load();
+          else pendingSlideLoads.push(load);
           track.appendChild(sImg);
           slideImgs.push(sImg);
         });
+        const loadRemainingSlides = () => {
+          while (pendingSlideLoads.length) pendingSlideLoads.shift()();
+        };
         mediaWrap.appendChild(track);
 
         // Matchbox-style Pill Indicators
@@ -161,6 +242,7 @@
         };
 
         const startCarousel = () => {
+          loadRemainingSlides();
           card.classList.add('is-hovered');
           clearInterval(carouselInterval);
           carouselInterval = setInterval(() => {
@@ -178,6 +260,8 @@
 
         card.addEventListener('mouseenter', startCarousel);
         card.addEventListener('mouseleave', stopCarousel);
+        card.addEventListener('focusin', loadRemainingSlides, { once: true });
+        card.addEventListener('touchstart', loadRemainingSlides, { once: true, passive: true });
         card.addEventListener('reset-hover', () => {
           card.classList.remove('is-hovered');
           clearInterval(carouselInterval);
@@ -186,7 +270,6 @@
       } else if (isVideo) {
         if (item.poster) {
           const posterImg = document.createElement('img');
-          posterImg.src = item.poster;
           posterImg.alt = item.title || `Miniature ${index + 1}`;
           posterImg.className = 'item-poster-img';
           posterImg.loading = 'lazy';
@@ -195,12 +278,9 @@
           if (item.posterPosition || item.objectPosition) {
             posterImg.style.objectPosition = item.posterPosition || item.objectPosition;
           }
-          posterImg.onerror = function () {
-            const imgFallback = item.posterFallback || (item.fallbackSrc && !VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
-            if (imgFallback && posterImg.src !== imgFallback) {
-              posterImg.src = imgFallback;
-            }
-          };
+          loadImage(posterImg, item.poster, {
+            fallback: item.posterFallback || (item.fallbackSrc && !VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null),
+          });
           mediaWrap.appendChild(posterImg);
         }
 
@@ -208,33 +288,55 @@
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
-        video.preload = ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 'none' : 'metadata';
+        // Aucun téléchargement tant que la carte n'est pas proche de l'écran / survolée (voir attachVideo)
+        video.preload = 'none';
 
+        // La miniature (posterImg) fait office de poster : pas de video.poster (2e téléchargement de l'image)
         if (item.poster) {
           video.className = 'item-hover-video';
-          video.poster = item.poster;
         }
 
-        const videoSrc = (item.video && VIDEO_EXT_RE.test(item.video)) ? item.video : item.src;
-        video.src = videoSrc;
-        const source = document.createElement('source');
-        source.src = videoSrc;
-        const ext = videoSrc.split('.').pop().toLowerCase();
-        source.type = ext === 'webm' ? 'video/webm' : 'video/mp4';
+        // Chaîne de sources : aperçu léger (.preview.mp4) -> vidéo d'origine -> fallback distant.
+        // Un découpage personnalisé (startTime/endTime) exige la vidéo complète.
+        const fullVideoSrc = (item.video && VIDEO_EXT_RE.test(item.video)) ? item.video : item.src;
+        const hasCustomBounds = typeof item.startTime === 'number' || typeof item.endTime === 'number';
+        const videoFallbackSrc = item.videoFallback || (item.fallbackSrc && VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
+        const videoSources = unique([
+          hasCustomBounds ? null : videoVariantOf(fullVideoSrc, 'preview'),
+          fullVideoSrc,
+          videoFallbackSrc,
+        ]);
+        let videoSourceIdx = 0;
+        let videoAttached = false;
 
-        // Graceful fallback to remote host if local file fails
-        const onVideoError = function () {
-          const videoFallback = item.videoFallback || (item.fallbackSrc && VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
-          if (videoFallback && video.src !== videoFallback) {
-            video.src = videoFallback;
-            source.src = videoFallback;
-            video.load();
-          }
+        const attachVideo = (preloadMode = 'auto') => {
+          if (videoAttached) return;
+          videoAttached = true;
+          video.preload = preloadMode;
+          video.src = videoSources[videoSourceIdx];
         };
-        video.onerror = onVideoError;
-        source.onerror = onVideoError;
 
-        video.appendChild(source);
+        video.addEventListener('error', () => {
+          if (videoSourceIdx < videoSources.length - 1) {
+            videoSourceIdx += 1;
+            video.src = videoSources[videoSourceIdx];
+          }
+        });
+
+        // Premières images prêtes : on peut fondre la miniature vers la vidéo sans écran noir
+        video.addEventListener('loadeddata', () => {
+          card.classList.add('video-ready');
+          if (card.classList.contains('is-hovered') && video.paused) startHover();
+        });
+
+        if (item.poster) {
+          card._attachVideo = attachVideo;
+          if (videoPrefetchObserver) videoPrefetchObserver.observe(card);
+        } else {
+          // Sans miniature, la 1re image de la vidéo sert d'aperçu : métadonnées + 1re image seulement
+          attachVideo('metadata');
+        }
+
         mediaWrap.appendChild(video);
 
         // Hover Play / Pause Interaction (Desktop & Touch Safety)
@@ -277,9 +379,7 @@
 
         const startHover = () => {
           card.classList.add('is-hovered');
-          if (video.preload !== 'auto') {
-            video.preload = 'auto';
-          }
+          attachVideo();
           if (endTime > initialTime) {
             if (video.currentTime < initialTime || video.currentTime >= endTime - 0.05) {
               try {
@@ -351,18 +451,13 @@
         }
       } else {
         const img = document.createElement('img');
-        img.src = item.src;
         img.alt = item.title || `Création ${index + 1}`;
         img.loading = 'lazy';
         img.decoding = 'async';
         img.draggable = false;
 
-        // Image fallback on error
-        img.onerror = function () {
-          if (item.fallbackSrc && img.src !== item.fallbackSrc) {
-            img.src = item.fallbackSrc;
-          }
-        };
+        // Variante WebP adaptée (srcset) -> original -> fallback
+        loadImage(img, item.src, { fallback: item.fallbackSrc });
 
         mediaWrap.appendChild(img);
 
@@ -588,10 +683,17 @@
 
         const mainImg = document.createElement('img');
         mainImg.className = 'lb-carousel-img';
-        mainImg.src = item.slides[0];
+        loadImage(mainImg, item.slides[0], { mode: 'full', fallback: item.fallbackSrc });
         mainImg.alt = `${item.title || 'Carrousel'} (1/${totalSlides})`;
         mainImg.draggable = false;
         carouselWrap.appendChild(mainImg);
+
+        // Précharge les autres diapositives (variantes légères) pour une navigation instantanée
+        item.slides.slice(1).forEach((slideSrc) => {
+          const pre = new Image();
+          pre.decoding = 'async';
+          loadImage(pre, slideSrc, { mode: 'full', fallback: item.fallbackSrc });
+        });
 
         const controls = document.createElement('div');
         controls.className = 'lb-carousel-controls';
@@ -614,7 +716,7 @@
           activeSlideIdx = (idx + totalSlides) % totalSlides;
           mainImg.style.opacity = '0';
           setTimeout(() => {
-            mainImg.src = item.slides[activeSlideIdx];
+            loadImage(mainImg, item.slides[activeSlideIdx], { mode: 'full', fallback: item.fallbackSrc });
             mainImg.alt = `${item.title || 'Carrousel'} (${activeSlideIdx + 1}/${totalSlides})`;
             mainImg.style.opacity = '1';
           }, 100);
@@ -676,7 +778,7 @@
         wrap.setAttribute('aria-label', `Vidéo ${item.title || 'YouTube'}`);
 
         const thumb = document.createElement('img');
-        thumb.src = item.poster || item.src;
+        loadImage(thumb, item.poster || item.src, { mode: 'full' });
         thumb.alt = item.title || 'Miniature YouTube';
         thumb.className = 'lb-yt-thumb';
 
@@ -749,7 +851,7 @@
         wrap.style.cssText = 'position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;max-width:90vw;max-height:85vh;';
 
         const img = document.createElement('img');
-        img.src = item.src;
+        loadImage(img, item.src, { mode: 'full', fallback: item.fallbackSrc });
         img.alt = item.title || 'Document PDF';
         img.style.cssText = 'max-height:68vh;max-width:90vw;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,0.35);object-fit:contain;cursor:pointer;';
         img.addEventListener('click', () => {
@@ -773,15 +875,12 @@
         wrap.style.cssText = 'position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;max-width:90vw;max-height:85vh;';
 
         const img = document.createElement('img');
-        img.src = item.poster || item.src;
         img.alt = item.title || 'Site Web';
         img.style.cssText = 'max-height:68vh;max-width:90vw;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,0.35);object-fit:contain;cursor:pointer;';
-        img.onerror = function () {
-          const imgFallback = item.posterFallback || (item.fallbackSrc && !VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
-          if (imgFallback && img.src !== imgFallback) {
-            img.src = imgFallback;
-          }
-        };
+        loadImage(img, item.poster || item.src, {
+          mode: 'full',
+          fallback: item.posterFallback || (item.fallbackSrc && !VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null),
+        });
         img.addEventListener('click', () => {
           window.open(item.link || item.src, '_blank', 'noopener,noreferrer');
         });
@@ -804,32 +903,32 @@
         video.controls = true;
         video.loop = true;
         video.playsInline = true;
+        video.preload = 'auto';
 
-        const source = document.createElement('source');
-        source.src = item.src;
-        const ext = item.src.split('.').pop().toLowerCase();
-        source.type = ext === 'webm' ? 'video/webm' : 'video/mp4';
-
-        source.onerror = function () {
-          if (item.fallbackSrc && source.src !== item.fallbackSrc) {
-            source.src = item.fallbackSrc;
-            video.load();
+        // Version web compressée (.web.mp4) -> original -> fallback ; jamais l'original de 50-250 Mo en premier
+        const lbFullVideo = VIDEO_EXT_RE.test(item.src || '') ? item.src : item.video;
+        const lbVideoSources = unique([
+          videoVariantOf(lbFullVideo, 'web'),
+          lbFullVideo,
+          item.fallbackSrc && VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null,
+        ]);
+        let lbVideoIdx = 0;
+        video.addEventListener('error', () => {
+          if (lbVideoIdx < lbVideoSources.length - 1) {
+            lbVideoIdx += 1;
+            video.src = lbVideoSources[lbVideoIdx];
+            const p = video.play();
+            if (p !== undefined) p.catch(() => {});
           }
-        };
-
-        video.appendChild(source);
+        });
+        video.src = lbVideoSources[0];
         lbMediaEl.appendChild(video);
       } else {
         const img = document.createElement('img');
-        img.src = item.src;
         img.alt = item.title || 'Projet';
         img.draggable = false;
 
-        img.onerror = function () {
-          if (item.fallbackSrc && img.src !== item.fallbackSrc) {
-            img.src = item.fallbackSrc;
-          }
-        };
+        loadImage(img, item.src, { mode: 'full', fallback: item.fallbackSrc });
 
         lbMediaEl.appendChild(img);
       }
@@ -1047,24 +1146,33 @@
   function initScrollTop() {
     if (!scrollTopBtn) return;
 
+    // Un seul traitement par frame d'affichage, quel que soit le nombre d'événements scroll
+    let scrollTicking = false;
+    const onScrollFrame = () => {
+      scrollTicking = false;
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 300);
+
+      // Only pause preview videos when the cursor is no longer hovering the card
+      document.querySelectorAll('.item.is-hovered').forEach((c) => {
+        if (!c.matches(':hover')) {
+          c.classList.remove('is-hovered');
+          const v = c.querySelector('video');
+          if (v) {
+            v.pause();
+            try {
+              v.currentTime = 0;
+            } catch (e) {}
+          }
+        }
+      });
+    };
+
     window.addEventListener(
       'scroll',
       () => {
-        scrollTopBtn.classList.toggle('visible', window.scrollY > 300);
-
-        // Only pause preview videos when the cursor is no longer hovering the card
-        document.querySelectorAll('.item.is-hovered').forEach((c) => {
-          if (!c.matches(':hover')) {
-            c.classList.remove('is-hovered');
-            const v = c.querySelector('video');
-            if (v) {
-              v.pause();
-              try {
-                v.currentTime = 0;
-              } catch (e) {}
-            }
-          }
-        });
+        if (scrollTicking) return;
+        scrollTicking = true;
+        requestAnimationFrame(onScrollFrame);
       },
       { passive: true }
     );
@@ -1147,32 +1255,61 @@
     marquee.addEventListener('focusin', () => { isPaused = true; });
     marquee.addEventListener('focusout', () => { isPaused = false; });
 
+    // Largeur mesurée une seule fois (puis à chaque redimensionnement), pas à chaque frame
+    let halfWidth = 0;
+    const measure = () => {
+      halfWidth = track.scrollWidth / 2;
+    };
+    measure();
+    window.addEventListener('load', measure, { once: true });
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(measure).observe(track);
+    } else {
+      window.addEventListener('resize', measure);
+    }
+
+    let running = false;
+    let rafId = 0;
+
     function tick(now) {
+      if (!running) return;
       if (lastTime === null) {
         lastTime = now;
       }
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
 
-      // Uniquement si la section intro est active
-      const introPage = document.getElementById('page-intro');
-      const isIntroActive = !introPage || introPage.classList.contains('active');
-
-      if (isIntroActive) {
-        const halfWidth = track.scrollWidth / 2;
-        if (!isPaused && halfWidth > 50) {
-          x -= speed * dt;
-          while (x <= -halfWidth) {
-            x += halfWidth;
-          }
-          track.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
+      if (!isPaused && halfWidth > 50) {
+        x -= speed * dt;
+        while (x <= -halfWidth) {
+          x += halfWidth;
         }
+        track.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
       }
 
-      requestAnimationFrame(tick);
+      rafId = requestAnimationFrame(tick);
     }
 
-    requestAnimationFrame(tick);
+    const start = () => {
+      if (running) return;
+      running = true;
+      lastTime = null;
+      measure();
+      rafId = requestAnimationFrame(tick);
+    };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(rafId);
+    };
+
+    // L'animation ne tourne que si le bandeau est réellement visible (intro active, défilé en haut de page)
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        entries.forEach((entry) => (entry.isIntersecting ? start() : stop()));
+      }).observe(marquee);
+    } else {
+      start();
+    }
   }
 
   // --- Initialization ---

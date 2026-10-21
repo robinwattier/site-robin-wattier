@@ -69,7 +69,13 @@ Ce portfolio est conçu selon une esthétique minimaliste, tactile et cinétique
    ```
    Le site est accessible sur `http://localhost:3000`.
 
-2. **Lancer une synchronisation manuelle Instagram** :
+2. **Optimiser les médias (images WebP & vidéos compressées)** :
+   ```bash
+   npm run optimize
+   ```
+   Génère automatiquement les déclinaisons légères (WebP 480/800/1200w, vidéos d'aperçu au survol `.preview.mp4` et versions web légères `.web.mp4`).
+
+3. **Lancer une synchronisation manuelle Instagram** :
    ```bash
    npm run sync
    ```

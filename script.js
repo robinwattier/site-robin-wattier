@@ -181,6 +181,9 @@
       const isVideo = hasPlayableVideo(item);
       const isCarousel = item.type === 'carousel' || (Array.isArray(item.slides) && item.slides.length > 1);
 
+      let startPreview = null;
+      let stopPreview = null;
+
       if (isCarousel) {
         card.classList.add('is-carousel');
 
@@ -251,21 +254,22 @@
           }, 1100);
         };
 
-        const stopCarousel = () => {
-          if (card.matches(':hover')) return;
+        const stopCarousel = (force = false) => {
+          if (!force && card.matches(':hover')) return;
           card.classList.remove('is-hovered');
           clearInterval(carouselInterval);
           setSlide(0);
         };
 
+        startPreview = startCarousel;
+        stopPreview = () => stopCarousel(true);
+        card._warmup = loadRemainingSlides;
+
         card.addEventListener('mouseenter', startCarousel);
-        card.addEventListener('mouseleave', stopCarousel);
+        card.addEventListener('mouseleave', () => stopCarousel(false));
         card.addEventListener('focusin', loadRemainingSlides, { once: true });
-        card.addEventListener('touchstart', loadRemainingSlides, { once: true, passive: true });
         card.addEventListener('reset-hover', () => {
-          card.classList.remove('is-hovered');
-          clearInterval(carouselInterval);
-          setSlide(0);
+          stopCarousel(true);
         });
       } else if (isVideo) {
         if (item.poster) {
@@ -422,15 +426,14 @@
           });
         }
 
+        startPreview = startHover;
+        stopPreview = stopHover;
+        card._warmup = attachVideo;
+
         card.addEventListener('mouseenter', startHover);
         card.addEventListener('mouseleave', stopHover);
         card.addEventListener('reset-hover', () => {
-          card.classList.remove('is-hovered');
-          cancelAnimationFrame(loopRafId);
-          video.pause();
-          try {
-            video.currentTime = initialTime;
-          } catch (e) {}
+          stopHover();
         });
 
         // Add link badge for external website projects or subtle video badge for video/youtube
@@ -491,12 +494,150 @@
           mediaWrap.appendChild(badge);
           card.style.cursor = 'pointer';
         }
+
+        const startHover = () => {
+          card.classList.add('is-hovered');
+        };
+        const stopHover = () => {
+          card.classList.remove('is-hovered');
+        };
+
+        startPreview = startHover;
+        stopPreview = stopHover;
+
+        card.addEventListener('mouseenter', startHover);
+        card.addEventListener('mouseleave', stopHover);
+        card.addEventListener('reset-hover', stopHover);
       }
 
       card.appendChild(mediaWrap);
 
+      // --- Touch Long-Press Preview (Mobile & Tablette) ---
+      // Un appui en continu sur la miniature déclenche le même aperçu interactif qu'au survol souris.
+      // Un clic simple (tap rapide) ouvre toujours le projet normalement (lightbox ou lien externe).
+      let longPressTimer = null;
+      let isLongPressActive = false;
+      let suppressNextClick = false;
+      let suppressClickTimeout = null;
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      const cancelLongPress = () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        if (isLongPressActive) {
+          isLongPressActive = false;
+          if (stopPreview) stopPreview();
+          suppressNextClick = true;
+          clearTimeout(suppressClickTimeout);
+          suppressClickTimeout = setTimeout(() => {
+            suppressNextClick = false;
+          }, 400);
+        }
+      };
+
+      card.addEventListener(
+        'touchstart',
+        (e) => {
+          if (e.touches.length !== 1) {
+            cancelLongPress();
+            return;
+          }
+
+          // Précharge la vidéo ou les slides pour un affichage immédiat sans latence
+          if (typeof card._warmup === 'function') {
+            card._warmup();
+          }
+
+          // Réinitialise tout autre aperçu de carte actif dans la grille
+          document.querySelectorAll('.item.is-hovered').forEach((c) => {
+            if (c !== card) {
+              c.dispatchEvent(new CustomEvent('reset-hover'));
+            }
+          });
+
+          const touch = e.touches[0];
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+          isLongPressActive = false;
+
+          clearTimeout(longPressTimer);
+          longPressTimer = setTimeout(() => {
+            isLongPressActive = true;
+            suppressNextClick = true;
+            if (startPreview) startPreview();
+            if (navigator.vibrate) {
+              try {
+                navigator.vibrate(12);
+              } catch (_) {}
+            }
+          }, 260);
+        },
+        { passive: true }
+      );
+
+      card.addEventListener(
+        'touchmove',
+        (e) => {
+          if (!longPressTimer && !isLongPressActive) return;
+          const touch = e.touches[0];
+          if (!touch) return;
+          const dx = touch.clientX - touchStartX;
+          const dy = touch.clientY - touchStartY;
+          // Dès que le doigt glisse de plus de 9px (scroll fluide de la page), annuler l'aperçu
+          if (Math.hypot(dx, dy) > 9) {
+            cancelLongPress();
+          }
+        },
+        { passive: true }
+      );
+
+      card.addEventListener(
+        'touchend',
+        () => {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+          if (isLongPressActive) {
+            isLongPressActive = false;
+            if (stopPreview) stopPreview();
+            suppressNextClick = true;
+            clearTimeout(suppressClickTimeout);
+            suppressClickTimeout = setTimeout(() => {
+              suppressNextClick = false;
+            }, 400);
+          }
+        },
+        { passive: true }
+      );
+
+      card.addEventListener(
+        'touchcancel',
+        () => {
+          cancelLongPress();
+        },
+        { passive: true }
+      );
+
+      // Bloque le menu contextuel natif iOS / Android lors du maintien de l'aperçu
+      card.addEventListener('contextmenu', (e) => {
+        if (isLongPressActive || suppressNextClick) {
+          e.preventDefault();
+        }
+      });
+
       // Open PDF / External Link directly or Open Lightbox on Click or Enter
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
+        if (suppressNextClick) {
+          suppressNextClick = false;
+          clearTimeout(suppressClickTimeout);
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return;
+        }
         if (item.type === 'link' || item.type === 'website' || item.type === 'pdf' || (item.link && item.link.endsWith('.pdf'))) {
           const targetUrl = item.link || item.pdf || item.src;
           window.open(targetUrl, '_blank', 'noopener,noreferrer');

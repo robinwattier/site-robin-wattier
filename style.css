@@ -1132,6 +1132,9 @@ main.main-content {
   cursor: zoom-in;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
   transform: translateY(18px) translateZ(0);
   opacity: 0;
   transition: opacity 0.55s var(--ease-spring), transform 0.55s var(--ease-spring), box-shadow 0.35s ease;
@@ -1148,7 +1151,8 @@ main.main-content {
   will-change: auto;
 }
 
-.item:hover {
+.item:hover,
+.item.is-hovered {
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
 }
 
@@ -1159,6 +1163,7 @@ main.main-content {
   position: relative;
   border-radius: inherit;
   background-color: #141414;
+  -webkit-touch-callout: none;
 }
 
 .item img,
@@ -1176,7 +1181,9 @@ main.main-content {
 }
 
 .item:hover img,
-.item:hover video {
+.item:hover video,
+.item.is-hovered img,
+.item.is-hovered video {
   transform: scale(1.035);
 }
 
@@ -1273,14 +1280,18 @@ main.main-content {
   transition: opacity 0.25s var(--ease-smooth), transform 0.25s var(--ease-smooth);
 }
 
-.item:hover .item-media-wrap video ~ .video-badge {
+.item:hover .item-media-wrap video ~ .video-badge,
+.item.is-hovered .item-media-wrap video ~ .video-badge {
   opacity: 0;
   transform: scale(0.8);
 }
 
 .item:hover .item-media-wrap img ~ .video-badge,
 .item:hover .pdf-badge,
-.item:hover .link-badge {
+.item:hover .link-badge,
+.item.is-hovered .item-media-wrap img ~ .video-badge,
+.item.is-hovered .pdf-badge,
+.item.is-hovered .link-badge {
   opacity: 1;
   transform: scale(1.08);
 }

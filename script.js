@@ -212,58 +212,151 @@
         };
         mediaWrap.appendChild(track);
 
-        // Matchbox-style Pill Indicators
+        // Matchbox-style Pill Indicators (Image de référence 1)
         const indicatorsWrap = document.createElement('div');
         indicatorsWrap.className = 'carousel-indicators';
-        indicatorsWrap.setAttribute('aria-hidden', 'true');
+        indicatorsWrap.setAttribute('role', 'tablist');
+        indicatorsWrap.setAttribute('aria-label', 'Pagination des diapositives');
 
         const dots = [];
         item.slides.forEach((_, sIdx) => {
           const dot = document.createElement('span');
           dot.className = sIdx === 0 ? 'carousel-dot active' : 'carousel-dot';
+          dot.setAttribute('role', 'tab');
+          dot.setAttribute('aria-selected', sIdx === 0 ? 'true' : 'false');
+          dot.setAttribute('aria-label', `Diapositive ${sIdx + 1} sur ${item.slides.length}`);
+          dot.setAttribute('tabindex', '0');
           indicatorsWrap.appendChild(dot);
           dots.push(dot);
         });
         mediaWrap.appendChild(indicatorsWrap);
 
-        // Instagram multi-post badge
+        // Instagram multi-post badge (Image de référence 1 - coin supérieur droit)
         const badge = document.createElement('div');
         badge.className = 'carousel-badge';
         badge.setAttribute('aria-hidden', 'true');
-        badge.title = 'Carrousel Instagram (survoler pour défiler)';
+        badge.title = 'Carrousel Instagram (survoler ou utiliser les flèches pour défiler)';
         badge.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="13" height="13" rx="2.5"></rect><path d="M8 21h11a2 2 0 0 0 2-2V8"></path></svg>`;
         mediaWrap.appendChild(badge);
 
-        // Hover auto-advance (Matchbox style)
+        // Boutons de navigation Flèches Gauche et Droite (Image de référence 1)
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.className = 'carousel-nav-btn carousel-nav-prev';
+        prevBtn.setAttribute('aria-label', 'Diapositive précédente');
+        prevBtn.title = 'Diapositive précédente';
+        prevBtn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'carousel-nav-btn carousel-nav-next';
+        nextBtn.setAttribute('aria-label', 'Diapositive suivante');
+        nextBtn.title = 'Diapositive suivante';
+        nextBtn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+
+        mediaWrap.appendChild(prevBtn);
+        mediaWrap.appendChild(nextBtn);
+
+        // Gestion du défilement des diapositives
         let currentSlide = 0;
         let carouselInterval = null;
 
         const setSlide = (idx) => {
-          currentSlide = idx;
-          slideImgs.forEach((img, i) => img.classList.toggle('active', i === idx));
-          dots.forEach((dot, i) => dot.classList.toggle('active', i === idx));
+          currentSlide = (idx + item.slides.length) % item.slides.length;
+          slideImgs.forEach((img, i) => img.classList.toggle('active', i === currentSlide));
+          dots.forEach((dot, i) => {
+            const isActive = i === currentSlide;
+            dot.classList.toggle('active', isActive);
+            dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
+          });
         };
 
+        // Navigation manuelle via flèches
+        prevBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          loadRemainingSlides();
+          clearInterval(carouselInterval);
+          setSlide(currentSlide - 1);
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          loadRemainingSlides();
+          clearInterval(carouselInterval);
+          setSlide(currentSlide + 1);
+        });
+
+        // Navigation manuelle via clic direct sur les pastilles / dots
+        dots.forEach((dot, sIdx) => {
+          dot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            loadRemainingSlides();
+            clearInterval(carouselInterval);
+            setSlide(sIdx);
+          });
+          dot.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.stopPropagation();
+              e.preventDefault();
+              loadRemainingSlides();
+              clearInterval(carouselInterval);
+              setSlide(sIdx);
+            }
+          });
+        });
+
+        // Support du balayage tactile (swipe) sur mobile / tablette
+        let cTouchStartX = 0;
+        let cTouchStartY = 0;
+        let cTouchStartTime = 0;
+        card.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) {
+            cTouchStartX = e.touches[0].clientX;
+            cTouchStartY = e.touches[0].clientY;
+            cTouchStartTime = Date.now();
+          }
+        }, { passive: true });
+
+        card.addEventListener('touchend', (e) => {
+          if (e.changedTouches.length === 1) {
+            const dx = e.changedTouches[0].clientX - cTouchStartX;
+            const dy = e.changedTouches[0].clientY - cTouchStartY;
+            const dt = Date.now() - cTouchStartTime;
+            if (dt < 400 && Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+              loadRemainingSlides();
+              clearInterval(carouselInterval);
+              if (dx < 0) {
+                setSlide(currentSlide + 1);
+              } else {
+                setSlide(currentSlide - 1);
+              }
+            }
+          }
+        }, { passive: true });
+
+        // Défilement automatique au survol
         const startCarousel = () => {
           loadRemainingSlides();
           card.classList.add('is-hovered');
           clearInterval(carouselInterval);
           carouselInterval = setInterval(() => {
-            const nextIdx = (currentSlide + 1) % item.slides.length;
-            setSlide(nextIdx);
-          }, 1100);
+            setSlide(currentSlide + 1);
+          }, 1250);
         };
 
         const stopCarousel = (force = false) => {
           if (!force && card.matches(':hover')) return;
           card.classList.remove('is-hovered');
           clearInterval(carouselInterval);
-          setSlide(0);
         };
 
         startPreview = startCarousel;
         stopPreview = () => stopCarousel(true);
         card._warmup = loadRemainingSlides;
+        card._getCurrentSlide = () => currentSlide;
 
         card.addEventListener('mouseenter', startCarousel);
         card.addEventListener('mouseleave', () => stopCarousel(false));
@@ -409,8 +502,32 @@
           }
         };
 
+        let isPlayingInline = false;
+        const toggleInlinePlay = (e) => {
+          if (e) {
+            e.stopPropagation();
+            e.preventDefault();
+          }
+          attachVideo();
+          if (video.paused) {
+            isPlayingInline = true;
+            card.classList.add('is-hovered', 'is-playing-video');
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {});
+            }
+          } else {
+            isPlayingInline = false;
+            card.classList.remove('is-playing-video');
+            video.pause();
+          }
+        };
+        card._toggleInlinePlay = toggleInlinePlay;
+        card._isPlayingInline = () => isPlayingInline;
+
         const stopHover = () => {
-          card.classList.remove('is-hovered');
+          if (isPlayingInline) return; // Maintenir la lecture si démarrée par clic utilisateur
+          card.classList.remove('is-hovered', 'is-playing-video');
           cancelAnimationFrame(loopRafId);
           video.pause();
           try {
@@ -433,6 +550,8 @@
         card.addEventListener('mouseenter', startHover);
         card.addEventListener('mouseleave', stopHover);
         card.addEventListener('reset-hover', () => {
+          isPlayingInline = false;
+          card.classList.remove('is-playing-video');
           stopHover();
         });
 
@@ -446,11 +565,28 @@
           mediaWrap.appendChild(badge);
           card.style.cursor = 'pointer';
         } else if (item.hasBadge || item.featured || item.type === 'youtube' || item.type === 'video') {
+          // Play icon badge (Image de référence 2 - coin supérieur droit)
           const badge = document.createElement('div');
           badge.className = 'video-badge';
-          badge.setAttribute('aria-hidden', 'true');
-          badge.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>`;
+          badge.setAttribute('role', 'button');
+          badge.setAttribute('aria-label', 'Lire ou mettre en pause la vidéo');
+          badge.title = 'Lire la vidéo (survoler ou cliquer)';
+          badge.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="7 4 19 12 7 20 7 4"></polygon></svg>`;
+          badge.addEventListener('click', toggleInlinePlay);
           mediaWrap.appendChild(badge);
+
+          // Bouton Agrandir / Plein écran (Lightbox) au survol
+          const expandBtn = document.createElement('button');
+          expandBtn.type = 'button';
+          expandBtn.className = 'video-expand-btn';
+          expandBtn.setAttribute('aria-label', 'Ouvrir en plein écran');
+          expandBtn.title = 'Ouvrir en plein écran';
+          expandBtn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`;
+          expandBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openLightbox(index);
+          });
+          mediaWrap.appendChild(expandBtn);
         }
       } else {
         const img = document.createElement('img');
@@ -629,7 +765,7 @@
         }
       });
 
-      // Open PDF / External Link directly or Open Lightbox on Click or Enter
+      // Gestion du clic sur la carte : lecture vidéo en ligne (Image 2) OU ouverture lightbox / liens externes
       card.addEventListener('click', (e) => {
         if (suppressNextClick) {
           suppressNextClick = false;
@@ -643,8 +779,24 @@
           window.open(targetUrl, '_blank', 'noopener,noreferrer');
           return;
         }
-        openLightbox(index);
+        // Pour les Reels / Vidéos : lecture / pause directement au clic (Image de référence 2)
+        if (isVideo && typeof card._toggleInlinePlay === 'function') {
+          card._toggleInlinePlay(e);
+          return;
+        }
+        // Pour les carrousels : ouvrir la lightbox directement sur la diapositive visualisée
+        const initialSlide = typeof card._getCurrentSlide === 'function' ? card._getCurrentSlide() : 0;
+        openLightbox(index, initialSlide);
       });
+
+      // Double-clic sur les vidéos pour ouvrir la vue agrandie / plein écran (Lightbox)
+      card.addEventListener('dblclick', (e) => {
+        if (isVideo) {
+          e.stopPropagation();
+          openLightbox(index);
+        }
+      });
+
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -653,7 +805,12 @@
             window.open(targetUrl, '_blank', 'noopener,noreferrer');
             return;
           }
-          openLightbox(index);
+          if (isVideo && typeof card._toggleInlinePlay === 'function') {
+            card._toggleInlinePlay(e);
+            return;
+          }
+          const initialSlide = typeof card._getCurrentSlide === 'function' ? card._getCurrentSlide() : 0;
+          openLightbox(index, initialSlide);
         }
       });
 
@@ -743,14 +900,16 @@
   });
 
   // --- Lightbox Implementation ---
-  function openLightbox(index) {
+  let lightboxSlideIndex = 0;
+  function openLightbox(index, initialSlide = 0) {
     if (!galleryItems || galleryItems.length === 0) return;
     lightboxIndex = index;
+    lightboxSlideIndex = initialSlide || 0;
     isLightboxOpen = true;
 
     // Reset all card hover states and pause all preview videos
     document.querySelectorAll('.item').forEach((c) => {
-      c.classList.remove('is-hovered');
+      c.classList.remove('is-hovered', 'is-playing-video');
       const v = c.querySelector('video');
       if (v) {
         v.pause();
@@ -771,6 +930,7 @@
 
   function closeLightbox() {
     isLightboxOpen = false;
+    lightboxSlideIndex = 0;
     if (lightboxEl) {
       lightboxEl.classList.remove('open');
       lightboxEl.setAttribute('aria-hidden', 'true');
@@ -779,7 +939,7 @@
 
     // Guarantee all cards revert to static thumbnails
     document.querySelectorAll('.item').forEach((c) => {
-      c.classList.remove('is-hovered');
+      c.classList.remove('is-hovered', 'is-playing-video');
       c.dispatchEvent(new CustomEvent('reset-hover'));
       const v = c.querySelector('video');
       if (v) {
@@ -802,6 +962,7 @@
   function lightboxNav(dir) {
     if (!galleryItems.length) return;
     lightboxIndex = (lightboxIndex + dir + galleryItems.length) % galleryItems.length;
+    lightboxSlideIndex = 0;
     renderLightboxMedia();
   }
 
@@ -819,21 +980,23 @@
         const carouselWrap = document.createElement('div');
         carouselWrap.className = 'lb-carousel-container';
 
-        let activeSlideIdx = 0;
         const totalSlides = item.slides.length;
+        let activeSlideIdx = Math.min(Math.max(0, lightboxSlideIndex), totalSlides - 1);
 
         const mainImg = document.createElement('img');
         mainImg.className = 'lb-carousel-img';
-        loadImage(mainImg, item.slides[0], { mode: 'full', fallback: item.fallbackSrc });
-        mainImg.alt = `${item.title || 'Carrousel'} (1/${totalSlides})`;
+        loadImage(mainImg, item.slides[activeSlideIdx], { mode: 'full', fallback: item.fallbackSrc });
+        mainImg.alt = `${item.title || 'Carrousel'} (${activeSlideIdx + 1}/${totalSlides})`;
         mainImg.draggable = false;
         carouselWrap.appendChild(mainImg);
 
         // Précharge les autres diapositives (variantes légères) pour une navigation instantanée
-        item.slides.slice(1).forEach((slideSrc) => {
-          const pre = new Image();
-          pre.decoding = 'async';
-          loadImage(pre, slideSrc, { mode: 'full', fallback: item.fallbackSrc });
+        item.slides.forEach((slideSrc, i) => {
+          if (i !== activeSlideIdx) {
+            const pre = new Image();
+            pre.decoding = 'async';
+            loadImage(pre, slideSrc, { mode: 'full', fallback: item.fallbackSrc });
+          }
         });
 
         const controls = document.createElement('div');
@@ -851,7 +1014,7 @@
 
         const subCounter = document.createElement('span');
         subCounter.className = 'lb-carousel-counter';
-        subCounter.textContent = `1 / ${totalSlides}`;
+        subCounter.textContent = `${activeSlideIdx + 1} / ${totalSlides}`;
 
         const updateSlide = (idx) => {
           activeSlideIdx = (idx + totalSlides) % totalSlides;
@@ -868,7 +1031,7 @@
         item.slides.forEach((_, i) => {
           const dot = document.createElement('button');
           dot.type = 'button';
-          dot.className = i === 0 ? 'lb-carousel-dot active' : 'lb-carousel-dot';
+          dot.className = i === activeSlideIdx ? 'lb-carousel-dot active' : 'lb-carousel-dot';
           dot.setAttribute('aria-label', `Diapositive ${i + 1}`);
           dot.addEventListener('click', (e) => {
             e.stopPropagation();

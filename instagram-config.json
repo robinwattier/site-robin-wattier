@@ -4,9 +4,19 @@
   "autoSyncIntervalMinutes": 60,
   "downloadMedia": true,
   "excludeStories": true,
-  "excludedCodes": [
-    "C6TqEWBKVPh",
-    "DV32A1nAakB"
+  "baselineDate": "2026-10-21T18:55:00+02:00",
+  "baselineCodes": [
+    "Dew0lndIAqE",
+    "DersLAZIAVN",
+    "DehXUZxgjKY",
+    "DZF7ROvCp-T",
+    "DV32A1nAakB",
+    "DU6MhcLjOpu",
+    "DT0wr-7DHih",
+    "DQH7JufjL0z",
+    "DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0",
+    "C6TqEWBKVPh"
   ],
-  "comment": "Configuration du scrapper automatique Instagram pour Robin Wattier. Les contenus sont capturés sans stories et synchronisés dans la galerie."
+  "excludedCodes": [],
+  "comment": "Configuration du scrapper automatique Instagram pour Robin Wattier. Règle stricte : seuls les futurs posts publiés après baselineDate (codes absents de baselineCodes) sont importés."
 }

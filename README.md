@@ -25,20 +25,23 @@ Ce portfolio est conçu selon une esthétique minimaliste, tactile et cinétique
 - Bandeau cinétique motorisé en `requestAnimationFrame` présentant les partenaires et labels de confiance (Trap City, House City, Wave City, DanElec, CH1M3RA, Trinsic, Ville de Mons, etc.).
 - Équilibrage optique des logos vectoriels et infobulles élégantes au survol.
 
-### 3. Galerie de Projets Interactive
+### 3. Galerie de Projets Interactive (Section Content)
 - **Maçonnerie dynamique 2 à 5 colonnes** ultra-réactive adaptée à chaque résolution d'écran.
-- **Prévisualisation vidéo** : Lecture fluide et silencieuse des boucles vidéo au survol.
-- **Carrousels Matchbox** : Défilement automatique par étapes des diapositives au survol avec indicateurs pills.
+- **Carrousels interactifs** : Navigation tactile par swipe ou clics sur les flèches directionnelles `<` et `>`, pastilles de pagination cliquables avec pastille active allongée (style Instagram), défilement fluide au survol et badge multi-post.
+- **Reels & Vidéos** : Miniature statique à l'arrêt, badge Play circulaire blanc, **lecture fluide en boucle au survol OU au clic direct sur la carte/badge** (avec toggle lecture/pause), et ouverture grand écran dans la Lightbox par double-clic ou bouton d'agrandissement.
 - **Badges contextuels** : Distinction visuelle immédiate des types de contenus (vidéos, liens externes, PDF, carrousels).
 
 ### 4. Modale Lightbox Plein Écran
 - Flou d'arrière-plan cinématographique (`backdrop-filter: blur(24px)`).
 - Navigation tactile native (gestes de glissement / swipe gauche, droite et bas).
 - Contrôle clavier complet (`Échap`, `Flèche Gauche`, `Flèche Droite`) et glisser-déposer à la souris.
+- Prise en charge des carrousels avec ouverture directe sur la diapositive visualisée dans la grille.
 - Compteur dynamique de projets.
 
 ### 5. Synchronisation Automatique Instagram
-- Script autonome [`sync-instagram.js`](file:///c:/Users/Robin/Documents/datanomade/projets/sites-apps/site-robin-wattier-2/sync-instagram.js) exécutant une capture haute fidélité du profil public ([@robinwattier](https://www.instagram.com/robinwattier/)) sans dépendance à des jetons API expirables.
+- Script autonome [`sync-instagram.js`](sync-instagram.js) exécutant une capture haute fidélité du profil public ([@robinwattier](https://www.instagram.com/robinwattier/)) sans dépendance à des jetons API officiels Meta.
+- **Filtrage strict par baseline** : Seuls les futurs posts publiés après l'installation sont importés, protégeant l'ensemble des créations existantes contre toute réimportation.
+- **Tri automatique** : Détection intelligente des Carrousels, Reels/Vidéos et Photos.
 - Téléchargement et hébergement local des médias haute résolution dans `assets/projets/instagram/` pour garantir une disponibilité permanente sans rupture de liens CDN.
 - Tâche d'arrière-plan périodique intégrée au serveur Node.js (`server.js`) avec exclusion mutuelle (`isSyncing`) et mise à jour synchronisée de `data.json` et `projects-data.js`.
 

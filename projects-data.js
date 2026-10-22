@@ -6,10 +6,10 @@
 window.PORTFOLIO_ITEMS = [
   {
     "src": "assets/projets/screen-video-dan-elec.mp4",
-    "fallbackSrc": "assets/screen-vidéo-dan-elec.mp4",
+    "fallbackSrc": "assets/projets/screen-video-dan-elec.mp4",
     "video": "assets/projets/screen-video-dan-elec.mp4",
     "poster": "assets/projets/danelec.webp",
-    "posterFallback": "assets/projets/danelec.jpg",
+    "posterFallback": "assets/projets/danelec.webp",
     "title": "DanElec - Votre Partenaire en Sécurité",
     "type": "video",
     "link": "https://danelec.be/",
@@ -83,7 +83,7 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/aesthetic_life/slide_1.webp"
   },
   {
-    "src": "assets/projets/gemini_generated_video_a01a496e.mp4",
+    "src": "assets/projets/gtr_r34_tunnel.mp4",
     "fallbackSrc": "assets/projets/gtr_r34_tunnel.mp4",
     "title": "Nissan Skyline GT-R R34 - Tunnel Run",
     "type": "video",
@@ -94,7 +94,7 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/gtr_r34_tunnel.webp"
   },
   {
-    "src": "assets/projets/gemini_generated_video_6797de65.mp4",
+    "src": "assets/projets/gtr_r33_highway.mp4",
     "fallbackSrc": "assets/projets/gtr_r33_highway.mp4",
     "title": "Nissan Skyline GT-R R33 - Highway Run",
     "type": "video",
@@ -113,7 +113,7 @@ window.PORTFOLIO_ITEMS = [
     "hasBadge": true,
     "w": 1280,
     "h": 720,
-    "poster": "assets/projets/red_waterproof_speaker.jpg"
+    "poster": "assets/projets/red_waterproof_speaker.webp"
   },
   {
     "src": "assets/projets/lakeside.mp4",
@@ -155,7 +155,7 @@ window.PORTFOLIO_ITEMS = [
   },
   {
     "src": "assets/projets/animation-logo-3d-ville-de-Mons.mp4",
-    "fallbackSrc": "assets/projets/rw-gare-de-mons-export-cover-3000X3000.jpg",
+    "fallbackSrc": "assets/projets/animation-logo-3d-ville-de-Mons.mp4",
     "title": "RW Logo 3D - Gare de Mons",
     "type": "video",
     "featured": true,
@@ -163,22 +163,22 @@ window.PORTFOLIO_ITEMS = [
     "link": "https://pin.it/2xpsxbkK7",
     "w": 3000,
     "h": 3000,
-    "poster": "assets/projets/rw-gare-de-mons-export-cover-3000X3000.jpg"
+    "poster": "assets/projets/rw-gare-de-mons-export-cover-3000X3000.webp"
   },
   {
     "src": "assets/projets/animes_cette_video.mp4",
-    "fallbackSrc": "assets/projets/Animes_cette_vidéo.mp4",
+    "fallbackSrc": "assets/projets/animes_cette_video.mp4",
     "title": "S'well - Stainless Steel Bottle",
     "type": "video",
     "featured": true,
     "hasBadge": true,
     "w": 720,
     "h": 1290,
-    "poster": "assets/projets/stainless_steel_bottle.jpg"
+    "poster": "assets/projets/stainless_steel_bottle.webp"
   },
   {
     "src": "assets/projets/dior_sauvage.mp4",
-    "fallbackSrc": "assets/projets/gemini_generated_video_F01432A6.MP4",
+    "fallbackSrc": "assets/projets/dior_sauvage.mp4",
     "title": "Dior Sauvage",
     "type": "video",
     "featured": true,
@@ -198,7 +198,7 @@ window.PORTFOLIO_ITEMS = [
     "hasBadge": true,
     "w": 1168,
     "h": 638,
-    "poster": "assets/projets/skeler_pin.jpg"
+    "poster": "assets/projets/skeler_pin.webp"
   },
   {
     "src": "assets/projets/house_city.mp4",
@@ -215,7 +215,7 @@ window.PORTFOLIO_ITEMS = [
   },
   {
     "src": "assets/projets/book-stage-mons.webp",
-    "fallbackSrc": "assets/projets/book-stage-mons.png",
+    "fallbackSrc": "assets/projets/book-stage-mons.webp",
     "title": "Book de stage - Ville de Mons",
     "type": "pdf",
     "link": "assets/projets/portfolio-vdm/Book-stage-AA-Pub-juin2023-WATTIER-Robin.pdf",

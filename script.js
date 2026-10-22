@@ -50,48 +50,22 @@
   const unique = (list) => list.filter((s, i, a) => s && a.indexOf(s) === i);
 
   /**
-   * Charge une image en essayant d'abord la variante WebP adaptée, puis l'original,
-   * puis le fallback éventuel.
-   * mode 'grid' : srcset 480w/800w (la grille ne charge que la taille utile)
-   * mode 'full' : variante 1200w (lightbox)
+   * Charge une image directement avec support de fallback en cas d'erreur.
+   * Les assets étant déjà tous optimisés au format WebP léger, le chargement
+   * est direct, propre et sans requêtes 404 superflues.
    */
-  function loadImage(img, src, { fallback = null, mode = 'grid' } = {}) {
-    const small = variantOf(src, 480);
-    const mid = variantOf(src, 800);
-    const big = variantOf(src, 1200);
-    const stages = [];
+  function loadImage(img, src, { fallback = null } = {}) {
+    if (!src) return;
+    img.removeAttribute('srcset');
+    img.removeAttribute('sizes');
 
-    if (mode === 'grid' && small && mid) {
-      stages.push(() => {
-        img.sizes = GRID_SIZES;
-        img.srcset = `${small} 480w, ${mid} 800w`;
-        img.src = mid;
-      });
-    } else if (mode === 'full' && big) {
-      stages.push(() => {
-        img.removeAttribute('srcset');
-        img.src = big;
-      });
-    }
-    stages.push(() => {
-      img.removeAttribute('srcset');
-      img.removeAttribute('sizes');
-      img.src = src;
-    });
-    if (fallback && fallback !== src) {
-      stages.push(() => {
-        img.removeAttribute('srcset');
-        img.removeAttribute('sizes');
-        img.src = fallback;
-      });
-    }
-
-    let stage = 0;
     img.onerror = () => {
-      stage += 1;
-      if (stage < stages.length) stages[stage]();
+      if (fallback && fallback !== src && img.src !== fallback) {
+        img.onerror = null;
+        img.src = fallback;
+      }
     };
-    stages[0]();
+    img.src = src;
   }
 
   // Précharge discrètement les aperçus vidéo des cartes proches de l'écran (fichiers de ~100-700 Ko),
@@ -393,13 +367,10 @@
           video.className = 'item-hover-video';
         }
 
-        // Chaîne de sources : aperçu léger (.preview.mp4) -> vidéo d'origine -> fallback distant.
-        // Un découpage personnalisé (startTime/endTime) exige la vidéo complète.
+        // Chaîne de sources : vidéo directe -> fallback éventuel
         const fullVideoSrc = (item.video && VIDEO_EXT_RE.test(item.video)) ? item.video : item.src;
-        const hasCustomBounds = typeof item.startTime === 'number' || typeof item.endTime === 'number';
         const videoFallbackSrc = item.videoFallback || (item.fallbackSrc && VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null);
         const videoSources = unique([
-          hasCustomBounds ? null : videoVariantOf(fullVideoSrc, 'preview'),
           fullVideoSrc,
           videoFallbackSrc,
         ]);
@@ -1209,10 +1180,9 @@
         video.playsInline = true;
         video.preload = 'auto';
 
-        // Version web compressée (.web.mp4) -> original -> fallback ; jamais l'original de 50-250 Mo en premier
+        // Vidéo optimisée directe -> fallback
         const lbFullVideo = VIDEO_EXT_RE.test(item.src || '') ? item.src : item.video;
         const lbVideoSources = unique([
-          videoVariantOf(lbFullVideo, 'web'),
           lbFullVideo,
           item.fallbackSrc && VIDEO_EXT_RE.test(item.fallbackSrc) ? item.fallbackSrc : null,
         ]);

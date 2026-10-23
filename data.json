@@ -112,21 +112,21 @@
     "poster": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg"
   },
   {
-    "src": "assets/projets/aesthetic_life/slide_1.webp",
-    "fallbackSrc": "assets/projets/aesthetic_life/slide_1.webp",
     "title": "Aesthetic Life ✨ feat KYLLER",
     "type": "carousel",
+    "link": "https://www.instagram.com/p/DQH7JufjL0z/",
     "featured": true,
     "hasBadge": true,
-    "link": "https://www.instagram.com/p/DQH7JufjL0z/",
     "w": 1080,
     "h": 1350,
     "slides": [
-      "assets/projets/aesthetic_life/slide_1.webp",
-      "assets/projets/aesthetic_life/slide_2.webp",
-      "assets/projets/aesthetic_life/slide_3.webp"
+      "assets/projets/instagram/DQH7JufjL0z/slide_1.jpg",
+      "assets/projets/instagram/DQH7JufjL0z/slide_2.jpg",
+      "assets/projets/instagram/DQH7JufjL0z/slide_3.jpg"
     ],
-    "poster": "assets/projets/aesthetic_life/slide_1.webp"
+    "src": "assets/projets/instagram/DQH7JufjL0z/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/DQH7JufjL0z/slide_1.jpg",
+    "poster": "assets/projets/instagram/DQH7JufjL0z/slide_1.jpg"
   },
 
   {

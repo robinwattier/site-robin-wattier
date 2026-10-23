@@ -20,6 +20,23 @@ window.PORTFOLIO_ITEMS = [
     "posterPosition": "center 60%"
   },
   {
+    "title": "Silvia S15 🎃🔮",
+    "type": "carousel",
+    "link": "https://www.instagram.com/p/De18lCJIIe-/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1350,
+    "slides": [
+      "assets/projets/instagram/De18lCJIIe-/slide_1.jpg",
+      "assets/projets/instagram/De18lCJIIe-/slide_2.jpg",
+      "assets/projets/instagram/De18lCJIIe-/slide_3.jpg"
+    ],
+    "src": "assets/projets/instagram/De18lCJIIe-/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/De18lCJIIe-/slide_1.jpg",
+    "poster": "assets/projets/instagram/De18lCJIIe-/slide_1.jpg"
+  },
+  {
     "title": "nightmode.",
     "type": "carousel",
     "link": "https://www.instagram.com/p/DersLAZIAVN/",

@@ -30,7 +30,7 @@
   <link rel="shortcut icon" href="assets/favicon.ico">
 
   <!-- Core Design System & Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=47">
+  <link rel="stylesheet" href="style.css?v=48">
 
   <!-- Pinterest Tag (Chargement asynchrone non-bloquant) -->
   <script>
@@ -105,22 +105,65 @@
     </button>
   </nav>
 
-  <!-- Menu Déroulant Mobile / Tablette (shadcn navigation-menu-01) -->
-  <div class="mobile-menu" id="mobile-menu" aria-label="Menu mobile">
-    <button type="button" class="m-nav-link active" data-page="intro" aria-label="Intro">
-      Intro
-    </button>
-    <button type="button" class="m-nav-link" data-page="projects" aria-label="Content">
-      Content
-    </button>
-    <a href="https://shop.robinwattier.com" class="m-nav-link" id="m-nav-btn-shop" target="_blank"
-      rel="noopener noreferrer" aria-label="Shop (Boutique de merch)">
-      Shop
-    </a>
-    <a href="https://linktr.ee/robinwattier" class="m-nav-link" id="m-nav-btn-contact" target="_blank"
-      rel="noopener noreferrer" aria-label="Contact/Follow (Linktree)">
-      Contact/Follow
-    </a>
+  <!-- Menu Plein Écran Mobile / Tablette (21st.dev Animated Menu Style) -->
+  <div class="mobile-menu" id="mobile-menu" aria-label="Menu de navigation" aria-hidden="true">
+    <div class="mobile-menu-inner">
+      <ul class="mobile-menu-list" role="menu">
+        <li class="mobile-menu-item" role="none">
+          <button type="button" class="m-nav-link active" data-page="intro" id="m-nav-btn-intro" role="menuitem" aria-label="Intro">
+            <span class="m-nav-badge" aria-hidden="true">[01]</span>
+            <span class="m-roll-wrapper">
+              <span class="m-roll-text" data-text="Intro">Intro</span>
+            </span>
+            <span class="m-active-dot" aria-hidden="true"></span>
+          </button>
+        </li>
+        <li class="mobile-menu-item" role="none">
+          <button type="button" class="m-nav-link" data-page="projects" id="m-nav-btn-projects" role="menuitem" aria-label="Content">
+            <span class="m-nav-badge" aria-hidden="true">[02]</span>
+            <span class="m-roll-wrapper">
+              <span class="m-roll-text" data-text="Content">Content</span>
+            </span>
+            <span class="m-active-dot" aria-hidden="true"></span>
+          </button>
+        </li>
+        <li class="mobile-menu-item" role="none">
+          <a href="https://shop.robinwattier.com" class="m-nav-link" id="m-nav-btn-shop" role="menuitem" target="_blank"
+            rel="noopener noreferrer" aria-label="Shop (Boutique de merch)">
+            <span class="m-nav-badge" aria-hidden="true">[03]</span>
+            <span class="m-roll-wrapper">
+              <span class="m-roll-text" data-text="Shop">Shop</span>
+            </span>
+            <svg class="m-external-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M4 12L12 4M12 4H6M12 4V10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </li>
+        <li class="mobile-menu-item" role="none">
+          <a href="https://linktr.ee/robinwattier" class="m-nav-link" id="m-nav-btn-contact" role="menuitem" target="_blank"
+            rel="noopener noreferrer" aria-label="Contact/Follow (Linktree)">
+            <span class="m-nav-badge" aria-hidden="true">[04]</span>
+            <span class="m-roll-wrapper">
+              <span class="m-roll-text" data-text="Contact/Follow">Contact/Follow</span>
+            </span>
+            <svg class="m-external-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M4 12L12 4M12 4H6M12 4V10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Footer Info en bas de menu (robinwattier.com) -->
+      <div class="mobile-menu-footer">
+        <div class="m-footer-status">
+          <span class="m-status-pulse"></span>
+          <span>Based in Brussels • Creative Technologist</span>
+        </div>
+        <div class="m-footer-copyright">
+          <span>© <span id="m-footer-year">2026</span> Robin Wattier</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Contenu Principal (Défile sous la barre de navigation fixe) -->

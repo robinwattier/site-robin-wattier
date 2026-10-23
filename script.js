@@ -1382,6 +1382,8 @@
     const isOpen = burgerBtn.classList.toggle('open');
     mobileMenu.classList.toggle('open', isOpen);
     burgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    mobileMenu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.body.classList.toggle('mobile-menu-open', isOpen);
   }
 
   function closeMobileMenu() {
@@ -1389,6 +1391,62 @@
     burgerBtn.classList.remove('open');
     mobileMenu.classList.remove('open');
     burgerBtn.setAttribute('aria-expanded', 'false');
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('mobile-menu-open');
+  }
+
+  // --- 21st.dev Animated Menu (TextRoll) ---
+  function initAnimatedMenuRoll() {
+    const STAGGER = 0.035;
+    const rollElements = document.querySelectorAll('.m-roll-text');
+
+    rollElements.forEach((el) => {
+      if (el.dataset.rolled === 'true') return;
+      el.dataset.rolled = 'true';
+
+      const text = el.getAttribute('data-text') || el.textContent.trim();
+      if (!text) return;
+
+      const chars = Array.from(text);
+      const count = chars.length;
+      const center = (count - 1) / 2;
+
+      el.innerHTML = '';
+
+      const topRow = document.createElement('span');
+      topRow.className = 'm-roll-row m-roll-row-top';
+      topRow.setAttribute('aria-hidden', 'true');
+
+      const bottomRow = document.createElement('span');
+      bottomRow.className = 'm-roll-row m-roll-row-bottom';
+      bottomRow.setAttribute('aria-hidden', 'true');
+
+      chars.forEach((char, i) => {
+        const topChar = document.createElement('span');
+        topChar.className = 'm-roll-char';
+        topChar.textContent = char === ' ' ? '\u00A0' : char;
+        const delay = (STAGGER * Math.abs(i - center)).toFixed(3);
+        topChar.style.transitionDelay = `${delay}s`;
+        topRow.appendChild(topChar);
+
+        const bottomChar = document.createElement('span');
+        bottomChar.className = 'm-roll-char';
+        bottomChar.textContent = char === ' ' ? '\u00A0' : char;
+        bottomChar.style.transitionDelay = `${delay}s`;
+        bottomRow.appendChild(bottomChar);
+      });
+
+      el.appendChild(topRow);
+      el.appendChild(bottomRow);
+
+      const parentLink = el.closest('.m-nav-link');
+      if (parentLink) {
+        parentLink.addEventListener('touchstart', () => {
+          parentLink.classList.add('rolling');
+          setTimeout(() => parentLink.classList.remove('rolling'), 600);
+        }, { passive: true });
+      }
+    });
   }
 
   // --- Variable Font Hover Animation (matches 21st.dev m-variable-font-hover-1) ---
@@ -1632,12 +1690,31 @@
     initLightboxGestures();
     initScrollTop();
     initVariableFontHover();
+    initAnimatedMenuRoll();
     initTrustedMarquee();
     guardMedia();
+
+    // Close mobile menu on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileMenu && mobileMenu.classList.contains('open')) {
+        closeMobileMenu();
+      }
+    });
+
+    // Close mobile menu on clicking background outside interactive elements
+    if (mobileMenu) {
+      mobileMenu.addEventListener('click', (e) => {
+        if (e.target === mobileMenu || e.target.classList.contains('mobile-menu-inner') || e.target.classList.contains('mobile-menu-list')) {
+          closeMobileMenu();
+        }
+      });
+    }
 
     // Footer year update
     const yearEl = document.getElementById('footer-year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
+    const mYearEl = document.getElementById('m-footer-year');
+    if (mYearEl) mYearEl.textContent = new Date().getFullYear();
 
     // 2. Load Gallery Assets
     let items = Array.isArray(window.PORTFOLIO_ITEMS) ? window.PORTFOLIO_ITEMS : [];

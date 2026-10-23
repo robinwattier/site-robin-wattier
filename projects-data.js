@@ -37,6 +37,23 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/instagram/DersLAZIAVN/slide_1.jpg"
   },
   {
+    "title": "Night Spa 🌒🏃‍♂️",
+    "type": "carousel",
+    "link": "https://www.instagram.com/p/DehXUZxgjKY/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1350,
+    "slides": [
+      "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg",
+      "assets/projets/instagram/DehXUZxgjKY/slide_2.jpg",
+      "assets/projets/instagram/DehXUZxgjKY/slide_3.jpg"
+    ],
+    "src": "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg",
+    "poster": "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg"
+  },
+  {
     "title": "Midnight Alsthetic",
     "type": "carousel",
     "link": "https://www.instagram.com/robinwattier/p/DU6MhcLjOpu/",

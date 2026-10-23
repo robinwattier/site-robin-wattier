@@ -37,6 +37,23 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/instagram/De18lCJIIe-/slide_1.jpg"
   },
   {
+    "title": "nocturnal.",
+    "type": "carousel",
+    "link": "https://www.instagram.com/p/Dew0lndIAqE/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1350,
+    "slides": [
+      "assets/projets/instagram/Dew0lndIAqE/slide_1.jpg",
+      "assets/projets/instagram/Dew0lndIAqE/slide_2.jpg",
+      "assets/projets/instagram/Dew0lndIAqE/slide_3.jpg"
+    ],
+    "src": "assets/projets/instagram/Dew0lndIAqE/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/Dew0lndIAqE/slide_1.jpg",
+    "poster": "assets/projets/instagram/Dew0lndIAqE/slide_1.jpg"
+  },
+  {
     "title": "nightmode.",
     "type": "carousel",
     "link": "https://www.instagram.com/p/DersLAZIAVN/",

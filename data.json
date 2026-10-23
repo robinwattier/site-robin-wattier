@@ -77,39 +77,7 @@
     ],
     "poster": "assets/projets/aesthetic_life/slide_1.webp"
   },
-  {
-    "src": "assets/projets/gtr_r34_tunnel.mp4",
-    "fallbackSrc": "assets/projets/gtr_r34_tunnel.mp4",
-    "title": "Nissan Skyline GT-R R34 - Tunnel Run",
-    "type": "video",
-    "featured": true,
-    "hasBadge": true,
-    "w": 824,
-    "h": 1024,
-    "poster": "assets/projets/gtr_r34_tunnel.webp"
-  },
-  {
-    "src": "assets/projets/gtr_r33_highway.mp4",
-    "fallbackSrc": "assets/projets/gtr_r33_highway.mp4",
-    "title": "Nissan Skyline GT-R R33 - Highway Run",
-    "type": "video",
-    "featured": true,
-    "hasBadge": true,
-    "w": 824,
-    "h": 1024,
-    "poster": "assets/projets/gtr_r33_highway.webp"
-  },
-  {
-    "src": "assets/projets/anime_cette_image.mp4",
-    "fallbackSrc": "assets/projets/anime_cette_image.mp4",
-    "title": "Red Waterproof Speaker",
-    "type": "video",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1280,
-    "h": 720,
-    "poster": "assets/projets/red_waterproof_speaker.webp"
-  },
+
   {
     "src": "assets/projets/lakeside.mp4",
     "fallbackSrc": "https://youtu.be/NTnm2GXDqq8",
@@ -160,28 +128,7 @@
     "h": 3000,
     "poster": "assets/projets/rw-gare-de-mons-export-cover-3000X3000.webp"
   },
-  {
-    "src": "assets/projets/animes_cette_video.mp4",
-    "fallbackSrc": "assets/projets/animes_cette_video.mp4",
-    "title": "S'well - Stainless Steel Bottle",
-    "type": "video",
-    "featured": true,
-    "hasBadge": true,
-    "w": 720,
-    "h": 1290,
-    "poster": "assets/projets/stainless_steel_bottle.webp"
-  },
-  {
-    "src": "assets/projets/dior_sauvage.mp4",
-    "fallbackSrc": "assets/projets/dior_sauvage.mp4",
-    "title": "Dior Sauvage",
-    "type": "video",
-    "featured": true,
-    "hasBadge": true,
-    "w": 720,
-    "h": 1280,
-    "poster": "assets/projets/dior_sauvage.webp"
-  },
+
   {
     "src": "assets/projets/trap_city.mp4",
     "fallbackSrc": "https://v1.pinimg.com/videos/iht/expMp4/81/a0/51/81a051b82162f67a47913b6892c4e7a8_720w.mp4",

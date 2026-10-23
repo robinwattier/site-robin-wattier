@@ -1713,8 +1713,6 @@
     // Footer year update
     const yearEl = document.getElementById('footer-year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
-    const mYearEl = document.getElementById('m-footer-year');
-    if (mYearEl) mYearEl.textContent = new Date().getFullYear();
 
     // 2. Load Gallery Assets
     let items = Array.isArray(window.PORTFOLIO_ITEMS) ? window.PORTFOLIO_ITEMS : [];

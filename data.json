@@ -102,14 +102,15 @@
   {
     "title": "Snow Strippers - Under Your Spell (Remix by Izzy X & Robin Wattier)",
     "type": "video",
-    "link": "https://www.instagram.com/israelortega._/reel/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/",
+    "link": "https://www.instagram.com/reel/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/",
     "featured": true,
     "hasBadge": true,
-    "w": 1080,
-    "h": 1440,
-    "src": "assets/projets/video-edit-snow-strippers-under-your-spell-remix-robin-wattier-izzy-x.mp4",
-    "fallbackSrc": "assets/projets/video-edit-snow-strippers-under-your-spell-remix-robin-wattier-izzy-x.mp4",
-    "poster": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg"
+    "w": 720,
+    "h": 1280,
+    "src": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/video.mp4",
+    "fallbackSrc": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/video.mp4",
+    "poster": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.webp",
+    "posterFallback": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg"
   },
   {
     "title": "Aesthetic Life ✨ feat KYLLER",
@@ -143,16 +144,17 @@
     "poster": "assets/projets/lakeside.webp"
   },
   {
-    "src": "assets/projets/reel-CH1M3RA.mp4",
-    "fallbackSrc": "assets/projets/reel-CH1M3RA.mp4",
-    "title": "CH1M3RA",
+    "title": "41 Frozen - @trinsic.music x @robinwattier",
     "type": "video",
+    "link": "https://www.instagram.com/p/DV32A1nAakB/",
     "featured": true,
     "hasBadge": true,
-    "link": "https://www.instagram.com/reel/DV32A1nAakB/",
     "w": 720,
     "h": 1280,
-    "poster": "assets/projets/ch1m3ra.webp"
+    "src": "assets/projets/instagram/DV32A1nAakB/video.mp4",
+    "fallbackSrc": "assets/projets/instagram/DV32A1nAakB/video.mp4",
+    "poster": "assets/projets/instagram/DV32A1nAakB/poster.webp",
+    "posterFallback": "assets/projets/instagram/DV32A1nAakB/poster.jpg"
   },
   {
     "src": "assets/projets/mysterieux.mp4",

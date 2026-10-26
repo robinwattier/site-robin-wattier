@@ -862,7 +862,7 @@
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      if (window.innerWidth > 768) {
+      if (window.innerWidth > 960) {
         closeMobileMenu();
       }
       runMasonry();

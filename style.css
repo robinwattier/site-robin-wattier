@@ -369,7 +369,7 @@ nav.navbar {
 }
 
 /* Guarantee mobile menu is strictly hidden on desktop screens */
-@media (min-width: 769px) {
+@media (min-width: 961px) {
   .mobile-menu,
   .mobile-menu.open {
     display: none !important;
@@ -2297,7 +2297,7 @@ body.page-is-intro footer.site-footer {
 }
 
 /* Breakpoint for Navbar Burger (Tablets & Mobile) */
-@media (max-width: 768px) {
+@media (max-width: 960px) {
   .nav-links {
     display: none !important;
   }

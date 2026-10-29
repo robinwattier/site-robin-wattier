@@ -313,16 +313,54 @@ async function enrichPostDetails(post, chromePath) {
 
     // Si carrousel : extraire toutes les diapositives
     if (post.type === 'carousel') {
-      const imgRegex = /https:\/\/[^"'\s\\]+\.(?:jpg|webp)[^"'\s\\]*/gi;
-      const allUrls = (postHtml.match(imgRegex) || [])
-        .map(u => u.replace(/&amp;/g, '&'))
-        .filter(u => (u.includes('scontent') || u.includes('fbcdn.net')) && !u.includes('s150x150') && !u.includes('profile_pic'));
+      let jsonSlideUrls = [];
+      const cIdx = postHtml.indexOf('"carousel_media":');
+      if (cIdx !== -1) {
+        const startBracket = postHtml.indexOf('[', cIdx);
+        let depth = 0;
+        let endBracket = -1;
+        for (let i = startBracket; i < postHtml.length; i++) {
+          if (postHtml[i] === '[') depth++;
+          else if (postHtml[i] === ']') {
+            depth--;
+            if (depth === 0) {
+              endBracket = i;
+              break;
+            }
+          }
+        }
+        if (endBracket !== -1) {
+          try {
+            const carouselData = JSON.parse(postHtml.slice(startBracket, endBracket + 1));
+            carouselData.forEach(slide => {
+              if (slide.image_versions2 && Array.isArray(slide.image_versions2.candidates) && slide.image_versions2.candidates.length > 0) {
+                const bestCandidate = slide.image_versions2.candidates[0];
+                if (bestCandidate && bestCandidate.url) {
+                  jsonSlideUrls.push(bestCandidate.url.replace(/&amp;/g, '&'));
+                }
+              }
+            });
+          } catch (e) {
+            console.warn(`⚠️ Échec parsing JSON carousel_media : ${e.message}`);
+          }
+        }
+      }
 
-      // Dédoublonnage par clé d'image
-      const uniqueSlideUrls = Array.from(new Set(allUrls));
-      if (uniqueSlideUrls.length > 1) {
-        post.slideUrls = uniqueSlideUrls.slice(0, 10);
-        console.log(`📸 [${post.code}] ${post.slideUrls.length} diapositives trouvées pour le carrousel.`);
+      if (jsonSlideUrls.length > 1) {
+        post.slideUrls = jsonSlideUrls;
+        console.log(`📸 [${post.code}] ${post.slideUrls.length} diapositives trouvées via carousel_media JSON.`);
+      } else {
+        const imgRegex = /https:\/\/[^"'\s\\]+\.(?:jpg|webp)[^"'\s\\]*/gi;
+        const allUrls = (postHtml.match(imgRegex) || [])
+          .map(u => u.replace(/&amp;/g, '&'))
+          .filter(u => (u.includes('scontent') || u.includes('fbcdn.net')) && !u.includes('s150x150') && !u.includes('profile_pic'));
+
+        // Dédoublonnage par clé d'image
+        const uniqueSlideUrls = Array.from(new Set(allUrls));
+        if (uniqueSlideUrls.length > 1) {
+          post.slideUrls = uniqueSlideUrls.slice(0, 10);
+          console.log(`📸 [${post.code}] ${post.slideUrls.length} diapositives trouvées pour le carrousel.`);
+        }
       }
     }
   } catch (err) {
@@ -602,6 +640,33 @@ async function snapshotBaseline() {
   return config;
 }
 
+// Importer manuellement un post spécifique par son URL ou son shortcode
+async function syncSinglePost(urlOrCode) {
+  const match = urlOrCode.match(/(?:p|reel)\/([A-Za-z0-9_-]+)/i);
+  const code = match ? match[1] : urlOrCode.trim();
+  const chromePath = findChromePath();
+  if (!chromePath) {
+    throw new Error('Google Chrome introuvable pour exécuter le scraper.');
+  }
+
+  const isReel = urlOrCode.includes('/reel/');
+  const permalink = `https://www.instagram.com/${isReel ? 'reel' : 'p'}/${code}/`;
+  console.log(`🚀 Import direct du post Instagram : ${permalink}`);
+
+  const post = {
+    code,
+    type: isReel ? 'video' : 'carousel',
+    permalink,
+    w: 1080,
+    h: 1350
+  };
+
+  const enriched = await enrichPostDetails(post, chromePath);
+  const galleryItem = await downloadPostMedia(enriched);
+  const result = updateGalleryWithNewPosts([galleryItem]);
+  return { success: true, item: galleryItem, ...result };
+}
+
 // Exécution directe en ligne de commande
 if (require.main === module) {
   const arg = process.argv[2];
@@ -611,6 +676,16 @@ if (require.main === module) {
       .then(() => process.exit(0))
       .catch(err => {
         console.error(`❌ Échec snapshot baseline : ${err.message}`);
+        process.exit(1);
+      });
+  } else if (arg && (arg.startsWith('http://') || arg.startsWith('https://') || arg.startsWith('www.') || arg.includes('instagram.com/'))) {
+    syncSinglePost(arg)
+      .then(res => {
+        console.log(`\n✅ Post importé avec succès ! (${res.total} total dans la galerie)`);
+        process.exit(0);
+      })
+      .catch(err => {
+        console.error(`\n❌ Échec import du post : ${err.message}`);
         process.exit(1);
       });
   } else {
@@ -628,10 +703,12 @@ if (require.main === module) {
 
 module.exports = {
   syncInstagram,
+  syncSinglePost,
   snapshotBaseline,
   scrapeInstagramProfile,
   enrichPostDetails,
   downloadPostMedia,
   updateGalleryWithNewPosts,
+  findChromePath,
   loadConfig
 };

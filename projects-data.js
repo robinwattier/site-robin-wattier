@@ -20,6 +20,23 @@ window.PORTFOLIO_ITEMS = [
     "posterPosition": "center 60%"
   },
   {
+    "title": "Streetwear Noir",
+    "type": "carousel",
+    "link": "https://www.instagram.com/p/DfAST-woNwX/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1350,
+    "slides": [
+      "assets/projets/instagram/DfAST-woNwX/slide_1.jpg",
+      "assets/projets/instagram/DfAST-woNwX/slide_2.jpg",
+      "assets/projets/instagram/DfAST-woNwX/slide_3.jpg"
+    ],
+    "src": "assets/projets/instagram/DfAST-woNwX/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/DfAST-woNwX/slide_1.jpg",
+    "poster": "assets/projets/instagram/DfAST-woNwX/slide_1.jpg"
+  },
+  {
     "title": "Silvia S15 🎃🔮",
     "type": "carousel",
     "link": "https://www.instagram.com/p/De18lCJIIe-/",
@@ -134,7 +151,6 @@ window.PORTFOLIO_ITEMS = [
     "fallbackSrc": "assets/projets/instagram/DQH7JufjL0z/slide_1.jpg",
     "poster": "assets/projets/instagram/DQH7JufjL0z/slide_1.jpg"
   },
-
   {
     "src": "assets/projets/lakeside.mp4",
     "fallbackSrc": "https://youtu.be/NTnm2GXDqq8",
@@ -186,7 +202,6 @@ window.PORTFOLIO_ITEMS = [
     "h": 3000,
     "poster": "assets/projets/rw-gare-de-mons-export-cover-3000X3000.webp"
   },
-
   {
     "src": "assets/projets/trap_city.mp4",
     "fallbackSrc": "https://v1.pinimg.com/videos/iht/expMp4/81/a0/51/81a051b82162f67a47913b6892c4e7a8_720w.mp4",

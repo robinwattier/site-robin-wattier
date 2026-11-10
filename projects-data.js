@@ -20,6 +20,39 @@ window.PORTFOLIO_ITEMS = [
     "posterPosition": "center 60%"
   },
   {
+    "title": "Our new track « sometimes » drops soon!",
+    "type": "carousel",
+    "link": "https://www.instagram.com/p/DfXkmltAnsg/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1350,
+    "slides": [
+      "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg",
+      "assets/projets/instagram/DfXkmltAnsg/slide_2.jpg"
+    ],
+    "src": "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg",
+    "poster": "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg"
+  },
+  {
+    "title": "R32",
+    "type": "carousel",
+    "link": "https://www.instagram.com/p/DfFhlg7gt27/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1080,
+    "h": 1350,
+    "slides": [
+      "assets/projets/instagram/DfFhlg7gt27/slide_1.jpg",
+      "assets/projets/instagram/DfFhlg7gt27/slide_2.jpg",
+      "assets/projets/instagram/DfFhlg7gt27/slide_3.jpg"
+    ],
+    "src": "assets/projets/instagram/DfFhlg7gt27/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/DfFhlg7gt27/slide_1.jpg",
+    "poster": "assets/projets/instagram/DfFhlg7gt27/slide_1.jpg"
+  },
+  {
     "title": "Streetwear Noir",
     "type": "carousel",
     "link": "https://www.instagram.com/p/DfAST-woNwX/",

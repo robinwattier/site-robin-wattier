@@ -1,0 +1,81 @@
+name: Instagram Sync (agent Content)
+
+# Detecte les nouvelles publications de @robinwattier et les integre a la section "Content".
+# Reel seul -> carte video ; Carrousel (meme avec une video) -> carte carrousel.
+# Rien n'est reimporte : les posts deja presents / anterieurs a la baseline sont ignores.
+on:
+  schedule:
+    - cron: "17 * * * *"   # toutes les heures (decale de la minute 0 pour eviter les pics GitHub)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simulation : detecte et classe sans rien publier"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # commit des nouveaux contenus
+  actions: write    # declenche le deploiement (un push via GITHUB_TOKEN ne le declenche pas seul)
+
+concurrency:
+  group: instagram-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies (sharp pour les posters WebP)
+        run: npm ci || echo "Installation partielle : posters JPG uniquement"
+
+      - name: Detect & integrate new Instagram posts
+        id: sync
+        continue-on-error: true
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            node sync-instagram.js --dry-run
+          else
+            node sync-instagram.js
+          fi
+
+      - name: Commit & push new content
+        id: commit
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.name "instagram-agent[bot]"
+          git config user.email "instagram-agent@users.noreply.github.com"
+          git add data.json projects-data.js index.html instagram-config.json assets/projets/instagram
+          if git diff --cached --quiet; then
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            echo "Aucun nouveau contenu."
+          else
+            git commit -m "feat(content): ajout automatique de publications Instagram"
+            git pull --rebase origin main
+            git push origin HEAD:main
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger site deployment
+        if: ${{ steps.commit.outputs.pushed == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main
+
+      - name: Fail the run if the sync reported an error
+        if: ${{ steps.sync.outcome == 'failure' }}
+        run: |
+          echo "::error::La synchronisation Instagram a echoue (blocage Instagram, mur de connexion ou post en erreur). Voir les logs de l'etape precedente."
+          exit 1

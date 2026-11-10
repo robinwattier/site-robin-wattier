@@ -8,3 +8,7 @@ Thumbs.db
 scratch/
 .vscode/
 .idea/
+
+.sync-instagram.lock
+*.part
+*.tmp

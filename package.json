@@ -9,7 +9,10 @@
     "optimize": "node scripts/optimize-assets.js",
     "build": "node scripts/optimize-assets.js",
     "sync": "node sync-instagram.js",
-    "sync:instagram": "node sync-instagram.js"
+    "sync:instagram": "node sync-instagram.js",
+    "sync:dry": "node sync-instagram.js --dry-run",
+    "agent": "node scripts/instagram-agent.js",
+    "test": "node --test scripts/test-instagram-sync.js"
   },
   "keywords": [
     "portfolio",

@@ -85,6 +85,23 @@ Ce portfolio est conçu selon une esthétique minimaliste, tactile et cinétique
 
 ---
 
+## ✦ Agent Instagram → Content (automatique)
+
+Chaque nouvelle publication de [@robinwattier](https://www.instagram.com/robinwattier/) est détectée puis intégrée à la section **Content** :
+
+| Publication Instagram | Carte dans Content |
+|---|---|
+| **Reel seul** | `type: "video"` : carte portrait + badge Play circulaire (Image de référence 1), lecture au survol ou au clic |
+| **Carrousel** (même avec une vidéo dedans) | `type: "carousel"` : flèches `<` `>`, pastilles de pagination, icône multi-post (Image de référence 2) |
+| Photo seule | `type: "image"` |
+
+- **Cloud** : [`.github/workflows/instagram-sync.yml`](.github/workflows/instagram-sync.yml) (toutes les heures + lancement manuel) → commit → déploiement GitHub Pages.
+- **Local** : `npm run agent` (pull, sync, commit, push) ; automation « Instagram Content Agent » (toutes les heures). Journal : `instagram-agent.log`.
+- `npm run sync:dry` : détecte et classe sans rien écrire · `npm test` : tests unitaires de l'agent.
+- Règles : seuls les posts publiés après `baselineDate` (`instagram-config.json`) sont importés, jamais de doublon ; un post dont un média échoue est réessayé au passage suivant (jamais de carrousel tronqué) ; si Instagram ne renvoie rien (blocage), l'agent échoue explicitement.
+
+---
+
 ## ✦ Licence & Droits
 
 © Robin Wattier. Tous droits réservés.

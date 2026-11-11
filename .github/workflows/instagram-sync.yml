@@ -37,7 +37,8 @@ jobs:
           node-version: 20
 
       - name: Install dependencies (sharp pour les posters WebP)
-        run: npm ci || echo "Installation partielle : posters JPG uniquement"
+        run: |
+          npm ci || echo "Installation partielle (posters JPG uniquement)"
 
       - name: Detect & integrate new Instagram posts
         id: sync

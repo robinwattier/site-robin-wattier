@@ -694,7 +694,7 @@ async function downloadPostMedia(post) {
     h: post.h || 1080
   };
 
-  // CARROUSEL (photos, videos ou mixte) : une image par diapositive. Tout ou rien.
+  // CARROUSEL (photos, videos ou mixte) : images + videos MP4 pour les diapositives animees
   if (post.type === 'carousel') {
     const urls = post.slideUrls || [];
     const slides = post.slides || [];
@@ -703,16 +703,31 @@ async function downloadPostMedia(post) {
       throw new Error(`Carrousel ${post.code} : ${slideCount} diapositive(s) exploitable(s) trouvée(s)`);
     }
     const localSlides = [];
+    const localSlideVideos = {};
     for (let i = 0; i < slideCount; i++) {
       const dest = path.join(postDir, `slide_${i + 1}.jpg`);
       const slide = slides[i];
       const imgUrl = (slide && slide.url) || urls[i];
-      if (!fs.existsSync(dest)) {
-        console.log(`⬇️ [${post.code}] Téléchargement diapositive ${i + 1}/${slideCount}${slide && slide.kind === 'video' ? ' (couverture de la vidéo)' : ''}...`);
-        const extracted = (slide && slide.kind === 'video' && slide.videoUrl)
-          ? await extractVideoCover(slide.videoUrl, dest, 2)
-          : false;
-        if (!extracted) {
+      const isVideoSlide = slide && slide.kind === 'video' && slide.videoUrl;
+
+      if (isVideoSlide) {
+        const videoDest = path.join(postDir, `slide_${i + 1}.mp4`);
+        if (!fs.existsSync(videoDest)) {
+          console.log(`⬇️ [${post.code}] Téléchargement flux vidéo diapositive ${i + 1}/${slideCount}...`);
+          await downloadWithRetry(slide.videoUrl, videoDest);
+        }
+        localSlideVideos[String(i)] = rel(`slide_${i + 1}.mp4`);
+
+        if (!fs.existsSync(dest)) {
+          console.log(`⬇️ [${post.code}] Extraction couverture diapositive ${i + 1}/${slideCount}...`);
+          const extracted = await extractFrameFromVideoFile(videoDest, dest, 2);
+          if (!extracted && imgUrl) {
+            await downloadWithRetry(imgUrl, dest);
+          }
+        }
+      } else {
+        if (!fs.existsSync(dest)) {
+          console.log(`⬇️ [${post.code}] Téléchargement diapositive ${i + 1}/${slideCount}...`);
           if (!imgUrl) throw new Error(`Carrousel ${post.code} : URL manquante pour la diapositive ${i + 1}`);
           await downloadWithRetry(imgUrl, dest);
         }
@@ -720,6 +735,9 @@ async function downloadPostMedia(post) {
       localSlides.push(rel(`slide_${i + 1}.jpg`));
     }
     item.slides = localSlides;
+    if (Object.keys(localSlideVideos).length > 0) {
+      item.slideVideos = localSlideVideos;
+    }
     item.src = localSlides[0];
     item.fallbackSrc = localSlides[0];
     item.poster = localSlides[0];

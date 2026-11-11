@@ -31,6 +31,9 @@ window.PORTFOLIO_ITEMS = [
       "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg",
       "assets/projets/instagram/DfXkmltAnsg/slide_2.jpg"
     ],
+    "slideVideos": {
+      "1": "assets/projets/instagram/DfXkmltAnsg/slide_2.mp4"
+    },
     "src": "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg",
     "fallbackSrc": "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg",
     "poster": "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg"

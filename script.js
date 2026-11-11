@@ -166,23 +166,84 @@
 
         // Seule la 1re diapositive est chargée au départ ; les suivantes le sont au premier
         // survol / focus / toucher (une carte = 1 image au lieu de N).
-        const slideImgs = [];
+        const slideEls = [];
         const pendingSlideLoads = [];
+        let isCarouselHovered = false;
+
         item.slides.forEach((slideSrc, sIdx) => {
-          const sImg = document.createElement('img');
-          sImg.alt = `${item.title || 'Carrousel'} - Diapositive ${sIdx + 1}`;
-          sImg.className = sIdx === 0 ? 'carousel-slide active' : 'carousel-slide';
-          sImg.loading = 'lazy';
-          sImg.decoding = 'async';
-          sImg.draggable = false;
-          const load = () => loadImage(sImg, slideSrc, { fallback: item.fallbackSrc });
-          if (sIdx === 0) load();
-          else pendingSlideLoads.push(load);
-          track.appendChild(sImg);
-          slideImgs.push(sImg);
+          const videoSrc = item.slideVideos && (item.slideVideos[sIdx] || item.slideVideos[String(sIdx)]);
+
+          if (videoSrc) {
+            const wrap = document.createElement('div');
+            wrap.className = sIdx === 0 ? 'carousel-slide carousel-slide-video-wrap active' : 'carousel-slide carousel-slide-video-wrap';
+
+            const sImg = document.createElement('img');
+            sImg.alt = `${item.title || 'Carrousel'} - Diapositive ${sIdx + 1}`;
+            sImg.className = 'carousel-slide-poster';
+            sImg.loading = 'lazy';
+            sImg.decoding = 'async';
+            sImg.draggable = false;
+            wrap.appendChild(sImg);
+
+            const sVideo = document.createElement('video');
+            sVideo.className = 'carousel-slide-media-video';
+            sVideo.muted = true;
+            sVideo.loop = true;
+            sVideo.playsInline = true;
+            sVideo.preload = 'none';
+            wrap.appendChild(sVideo);
+
+            let videoAttached = false;
+            const attachVideo = () => {
+              if (videoAttached) return;
+              videoAttached = true;
+              sVideo.preload = 'auto';
+              sVideo.src = videoSrc;
+            };
+            wrap._attach = attachVideo;
+
+            const load = () => {
+              loadImage(sImg, slideSrc, { fallback: item.fallbackSrc });
+              attachVideo();
+            };
+            if (sIdx === 0) load();
+            else pendingSlideLoads.push(load);
+
+            wrap._play = () => {
+              attachVideo();
+              const p = sVideo.play();
+              if (p !== undefined) p.catch(() => {});
+              wrap.classList.add('is-playing');
+            };
+
+            wrap._stop = () => {
+              sVideo.pause();
+              try { sVideo.currentTime = 0; } catch (_) {}
+              wrap.classList.remove('is-playing');
+            };
+
+            track.appendChild(wrap);
+            slideEls.push(wrap);
+          } else {
+            const sImg = document.createElement('img');
+            sImg.alt = `${item.title || 'Carrousel'} - Diapositive ${sIdx + 1}`;
+            sImg.className = sIdx === 0 ? 'carousel-slide active' : 'carousel-slide';
+            sImg.loading = 'lazy';
+            sImg.decoding = 'async';
+            sImg.draggable = false;
+            const load = () => loadImage(sImg, slideSrc, { fallback: item.fallbackSrc });
+            if (sIdx === 0) load();
+            else pendingSlideLoads.push(load);
+            track.appendChild(sImg);
+            slideEls.push(sImg);
+          }
         });
+
         const loadRemainingSlides = () => {
           while (pendingSlideLoads.length) pendingSlideLoads.shift()();
+          slideEls.forEach((el) => {
+            if (typeof el._attach === 'function') el._attach();
+          });
         };
         mediaWrap.appendChild(track);
 
@@ -233,16 +294,44 @@
 
         // Gestion du défilement des diapositives
         let currentSlide = 0;
-        let carouselInterval = null;
+        let carouselTimer = null;
 
         const setSlide = (idx) => {
           currentSlide = (idx + item.slides.length) % item.slides.length;
-          slideImgs.forEach((img, i) => img.classList.toggle('active', i === currentSlide));
+          slideEls.forEach((el, i) => {
+            const isActive = i === currentSlide;
+            el.classList.toggle('active', isActive);
+            if (!isActive && typeof el._stop === 'function') {
+              el._stop();
+            }
+          });
           dots.forEach((dot, i) => {
             const isActive = i === currentSlide;
             dot.classList.toggle('active', isActive);
             dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
           });
+
+          // Si la diapositive active est une vidéo et que le projet est survolé :
+          const activeEl = slideEls[currentSlide];
+          if (activeEl && typeof activeEl._play === 'function') {
+            if (isCarouselHovered) {
+              activeEl._play();
+            }
+          }
+        };
+
+        const scheduleNext = () => {
+          clearTimeout(carouselTimer);
+          if (!isCarouselHovered) return;
+          const activeEl = slideEls[currentSlide];
+          const isVideo = activeEl && typeof activeEl._play === 'function';
+          // Pour une diapositive vidéo on laisse le temps de voir la vidéo (3.8s), pour les photos 1.25s
+          const delay = isVideo ? 3800 : 1250;
+          carouselTimer = setTimeout(() => {
+            if (!isCarouselHovered) return;
+            setSlide(currentSlide + 1);
+            scheduleNext();
+          }, delay);
         };
 
         // Navigation manuelle via flèches
@@ -250,16 +339,18 @@
           e.stopPropagation();
           e.preventDefault();
           loadRemainingSlides();
-          clearInterval(carouselInterval);
+          clearTimeout(carouselTimer);
           setSlide(currentSlide - 1);
+          if (isCarouselHovered) scheduleNext();
         });
 
         nextBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
           loadRemainingSlides();
-          clearInterval(carouselInterval);
+          clearTimeout(carouselTimer);
           setSlide(currentSlide + 1);
+          if (isCarouselHovered) scheduleNext();
         });
 
         // Navigation manuelle via clic direct sur les pastilles / dots
@@ -268,16 +359,18 @@
             e.stopPropagation();
             e.preventDefault();
             loadRemainingSlides();
-            clearInterval(carouselInterval);
+            clearTimeout(carouselTimer);
             setSlide(sIdx);
+            if (isCarouselHovered) scheduleNext();
           });
           dot.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.stopPropagation();
               e.preventDefault();
               loadRemainingSlides();
-              clearInterval(carouselInterval);
+              clearTimeout(carouselTimer);
               setSlide(sIdx);
+              if (isCarouselHovered) scheduleNext();
             }
           });
         });
@@ -301,11 +394,15 @@
             const dt = Date.now() - cTouchStartTime;
             if (dt < 400 && Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.3) {
               loadRemainingSlides();
-              clearInterval(carouselInterval);
+              clearTimeout(carouselTimer);
               if (dx < 0) {
                 setSlide(currentSlide + 1);
               } else {
                 setSlide(currentSlide - 1);
+              }
+              const activeEl = slideEls[currentSlide];
+              if (activeEl && typeof activeEl._play === 'function') {
+                activeEl._play();
               }
             }
           }
@@ -313,18 +410,26 @@
 
         // Défilement automatique au survol
         const startCarousel = () => {
+          isCarouselHovered = true;
           loadRemainingSlides();
           card.classList.add('is-hovered');
-          clearInterval(carouselInterval);
-          carouselInterval = setInterval(() => {
-            setSlide(currentSlide + 1);
-          }, 1250);
+
+          const activeEl = slideEls[currentSlide];
+          if (activeEl && typeof activeEl._play === 'function') {
+            activeEl._play();
+          }
+
+          scheduleNext();
         };
 
         const stopCarousel = (force = false) => {
           if (!force && card.matches(':hover')) return;
+          isCarouselHovered = false;
           card.classList.remove('is-hovered');
-          clearInterval(carouselInterval);
+          clearTimeout(carouselTimer);
+          slideEls.forEach((el) => {
+            if (typeof el._stop === 'function') el._stop();
+          });
         };
 
         startPreview = startCarousel;
@@ -956,10 +1061,17 @@
 
         const mainImg = document.createElement('img');
         mainImg.className = 'lb-carousel-img';
-        loadImage(mainImg, item.slides[activeSlideIdx], { mode: 'full', fallback: item.fallbackSrc });
-        mainImg.alt = `${item.title || 'Carrousel'} (${activeSlideIdx + 1}/${totalSlides})`;
         mainImg.draggable = false;
         carouselWrap.appendChild(mainImg);
+
+        const mainVideo = document.createElement('video');
+        mainVideo.className = 'lb-carousel-video';
+        mainVideo.muted = true;
+        mainVideo.loop = true;
+        mainVideo.playsInline = true;
+        mainVideo.controls = true;
+        mainVideo.style.display = 'none';
+        carouselWrap.appendChild(mainVideo);
 
         // Précharge les autres diapositives (variantes légères) pour une navigation instantanée
         item.slides.forEach((slideSrc, i) => {
@@ -989,15 +1101,32 @@
 
         const updateSlide = (idx) => {
           activeSlideIdx = (idx + totalSlides) % totalSlides;
-          mainImg.style.opacity = '0';
-          setTimeout(() => {
-            loadImage(mainImg, item.slides[activeSlideIdx], { mode: 'full', fallback: item.fallbackSrc });
-            mainImg.alt = `${item.title || 'Carrousel'} (${activeSlideIdx + 1}/${totalSlides})`;
-            mainImg.style.opacity = '1';
-          }, 100);
+          const videoSrc = item.slideVideos && (item.slideVideos[activeSlideIdx] || item.slideVideos[String(activeSlideIdx)]);
+
+          if (videoSrc) {
+            mainImg.style.display = 'none';
+            mainVideo.style.display = 'block';
+            mainVideo.src = videoSrc;
+            mainVideo.muted = true;
+            mainVideo.currentTime = 0;
+            const p = mainVideo.play();
+            if (p !== undefined) p.catch(() => {});
+          } else {
+            mainVideo.pause();
+            mainVideo.style.display = 'none';
+            mainImg.style.display = 'block';
+            mainImg.style.opacity = '0';
+            setTimeout(() => {
+              loadImage(mainImg, item.slides[activeSlideIdx], { mode: 'full', fallback: item.fallbackSrc });
+              mainImg.alt = `${item.title || 'Carrousel'} (${activeSlideIdx + 1}/${totalSlides})`;
+              mainImg.style.opacity = '1';
+            }, 100);
+          }
           dotsList.forEach((dot, i) => dot.classList.toggle('active', i === activeSlideIdx));
           subCounter.textContent = `${activeSlideIdx + 1} / ${totalSlides}`;
         };
+
+        updateSlide(activeSlideIdx);
 
         item.slides.forEach((_, i) => {
           const dot = document.createElement('button');

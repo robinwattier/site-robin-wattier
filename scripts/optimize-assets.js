@@ -57,6 +57,11 @@ async function main() {
     checkFile(item.posterFallback, 'Poster fallback');
     if (item.type === 'pdf') checkFile(item.link, 'PDF');
     (item.slides || []).forEach((s, idx) => checkFile(s, `Slide ${idx + 1}`));
+    if (item.slideVideos) {
+      Object.entries(item.slideVideos).forEach(([idx, vSrc]) => {
+        checkFile(vSrc, `Slide ${Number(idx) + 1} Vidéo`);
+      });
+    }
   }
 
   if (missing === 0) {

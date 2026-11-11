@@ -1519,6 +1519,48 @@ main.main-content {
   z-index: 2;
 }
 
+/* Diapositives vidéo au sein d'un carrousel (lecture vidéo au survol, sans son) */
+.carousel-slide-video-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.carousel-slide-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  transition: opacity 0.35s var(--ease-smooth);
+  z-index: 1;
+}
+
+.carousel-slide-media-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-smooth);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.carousel-slide-video-wrap.is-playing .carousel-slide-media-video {
+  opacity: 1;
+}
+
+.carousel-slide-video-wrap.is-playing .carousel-slide-poster {
+  opacity: 0.05;
+}
+
 .item.is-carousel:hover .carousel-slide,
 .item.is-carousel.is-hovered .carousel-slide {
   transform: scale(1.035);
@@ -1691,6 +1733,16 @@ main.main-content {
   border-radius: var(--radius);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
   cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+
+.lb-carousel-video {
+  max-width: 90vw;
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  background: #000;
   transition: opacity 0.25s ease;
 }
 

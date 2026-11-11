@@ -318,6 +318,9 @@ test('sync : Reel -> carte video, carrousels (meme avec video) -> cartes carrous
   assert.equal(withVideo.slides.length, 2);
   assert.equal(withVideo.video, undefined);
   assert.ok(withVideo.slides.every((s) => s.endsWith('.jpg')));
+  assert.ok(withVideo.slideVideos);
+  assert.ok(withVideo.slideVideos['1'].endsWith('.mp4'));
+  assert.equal(fs.existsSync(path.join(TMP, withVideo.slideVideos['1'])), true);
 
   // projects-data.js synchronise + cache buster
   const js = fs.readFileSync(path.join(TMP, 'projects-data.js'), 'utf8');

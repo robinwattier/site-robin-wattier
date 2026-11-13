@@ -12,6 +12,10 @@ on:
         description: "Simulation : detecte et classe sans rien publier"
         type: boolean
         default: false
+      fail_on_block:
+        description: "Echouer le workflow si Instagram bloque l'IP GitHub Actions"
+        type: boolean
+        default: false
 
 permissions:
   contents: write   # commit des nouveaux contenus
@@ -23,38 +27,41 @@ concurrency:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           lfs: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
 
-      - name: Install dependencies (sharp pour les posters WebP)
+      - name: Install dependencies (sharp + ffmpeg-static)
         run: |
-          npm ci || echo "Installation partielle (posters JPG uniquement)"
+          npm ci --no-audit --no-fund || echo "Installation partielle (posters JPG uniquement)"
 
       - name: Detect & integrate new Instagram posts
         id: sync
         continue-on-error: true
         env:
-          CHROME_BIN: /usr/bin/google-chrome
+          IG_COOKIE: ${{ secrets.IG_COOKIE }}
         run: |
+          ARGS=()
           if [ "${{ inputs.dry_run }}" = "true" ]; then
-            node sync-instagram.js --dry-run
-          else
-            node sync-instagram.js
+            ARGS+=("--dry-run")
           fi
+          if [ "${{ inputs.fail_on_block }}" != "true" ]; then
+            ARGS+=("--soft-on-block")
+          fi
+          node sync-instagram.js "${ARGS[@]}"
 
       - name: Commit & push new content
         id: commit
-        if: ${{ inputs.dry_run != true }}
+        if: ${{ inputs.dry_run != true && (steps.sync.outputs.sync_status == 'ok' || steps.sync.outputs.sync_status == 'partial') }}
         run: |
           git config user.name "instagram-agent[bot]"
           git config user.email "instagram-agent@users.noreply.github.com"
@@ -75,8 +82,33 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run deploy.yml --ref main
 
+      - name: Job summary & observability
+        if: ${{ always() }}
+        env:
+          SYNC_STATUS: ${{ steps.sync.outputs.sync_status || 'unknown' }}
+          BLOCK_CODE: ${{ steps.sync.outputs.block_code }}
+          ADDED_COUNT: ${{ steps.sync.outputs.added_count || '0' }}
+          TOTAL_COUNT: ${{ steps.sync.outputs.total_count }}
+        run: |
+          {
+            echo "## Instagram Sync (agent Content)"
+            echo "- **Statut** : \`$SYNC_STATUS\`"
+            [ -n "$BLOCK_CODE" ] && echo "- **Code diagnostic** : \`$BLOCK_CODE\`"
+            [ -n "$TOTAL_COUNT" ] && echo "- **Ajouts / Total galerie** : $ADDED_COUNT / $TOTAL_COUNT"
+            if [ "$SYNC_STATUS" = "blocked" ]; then
+              echo ""
+              echo "> Instagram bloque l'acces anonyme depuis l'IP cloud GitHub Actions (\`$BLOCK_CODE\`). Pour une synchro 100% cloud, ajoutez le secret \`IG_COOKIE\`, ou laissez l'agent local \`npm run sync\` tourner sur votre poste."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$SYNC_STATUS" = "blocked" ]; then
+            echo "::warning::Instagram bloque l'acces anonyme depuis l'IP GitHub Actions ($BLOCK_CODE). Ajoutez le secret IG_COOKIE ou synchronisez localement (npm run sync)."
+          fi
+
       - name: Fail the run if the sync reported an error
         if: ${{ steps.sync.outcome == 'failure' }}
+        env:
+          BLOCK_CODE: ${{ steps.sync.outputs.block_code || 'ERROR' }}
+          BLOCK_MESSAGE: ${{ steps.sync.outputs.block_message || 'voir les logs de l etape sync' }}
         run: |
-          echo "::error::La synchronisation Instagram a echoue (blocage Instagram, mur de connexion ou post en erreur). Voir les logs de l'etape precedente."
+          echo "::error::La synchronisation Instagram a echoue [$BLOCK_CODE] : $BLOCK_MESSAGE"
           exit 1

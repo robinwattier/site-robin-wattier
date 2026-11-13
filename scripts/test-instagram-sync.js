@@ -402,9 +402,83 @@ test('syncSinglePost : accepte un shortcode nu ou une URL (/p/, /reel/, /reels/)
 test('sync : Instagram sans publication (mur de connexion) -> echec explicite, rien ecrit', async () => {
   const before = fs.readFileSync(path.join(TMP, 'data.json'), 'utf8');
   agent.setDomFetcher(async () => '<html><body>Se connecter</body></html>');
-  await assert.rejects(() => agent.syncInstagram(), /n'a renvoy/);
+  await assert.rejects(() => agent.syncInstagram(), (err) => {
+    assert.match(err.message, /n'a renvoy/);
+    assert.equal(err.code, 'INSTAGRAM_LOGIN_WALL');
+    return true;
+  });
   assert.equal(fs.readFileSync(path.join(TMP, 'data.json'), 'utf8'), before);
   assert.equal(fs.existsSync(path.join(TMP, '.sync-instagram.lock')), false);
+});
+
+test('resilience : classification des pannes (mur de connexion, 429, derive de schema, chrome, reseau)', () => {
+  assert.equal(
+    agent.classifyHtmlFailure({ statusCode: 302, finalUrl: 'https://www.instagram.com/accounts/login/' }).code,
+    'INSTAGRAM_LOGIN_WALL'
+  );
+  assert.equal(
+    agent.classifyHtmlFailure({ statusCode: 429, html: 'Please wait a few minutes' }).code,
+    'INSTAGRAM_RATE_LIMIT'
+  );
+  assert.equal(
+    agent.classifyHtmlFailure({ statusCode: 200, finalUrl: 'https://www.instagram.com/robinwattier/', html: '<html><title>Robin Wattier (@robinwattier) • Instagram</title><body></body></html>' }).code,
+    'SCHEMA_DRIFT'
+  );
+  assert.equal(
+    agent.classifyHtmlFailure({ statusCode: 403, html: '', chromePath: null }).code,
+    'CHROMIUM_UNAVAILABLE'
+  );
+  assert.equal(
+    agent.classifyHtmlFailure({ statusCode: 0, chromeError: 'segfault', chromePath: '/bin/chrome' }).code,
+    'CHROME_ERROR'
+  );
+  assert.equal(
+    agent.classifyHtmlFailure({ statusCode: 0, networkError: 'ECONNRESET', chromePath: null }).code,
+    'NETWORK_ERROR'
+  );
+});
+
+test('resilience : isExpectedBlockError ne tolere que les blocages IP sans cookie', () => {
+  const prevCookie = process.env.IG_COOKIE;
+  try {
+    delete process.env.IG_COOKIE;
+    assert.equal(agent.isExpectedBlockError({ code: 'INSTAGRAM_LOGIN_WALL' }), true);
+    assert.equal(agent.isExpectedBlockError({ code: 'INSTAGRAM_RATE_LIMIT' }), true);
+    assert.equal(agent.isExpectedBlockError({ code: 'SCHEMA_DRIFT' }), false);
+    assert.equal(agent.isExpectedBlockError({ code: 'CHROME_ERROR' }), false);
+
+    process.env.IG_COOKIE = 'sessionid=abc;';
+    assert.equal(agent.isExpectedBlockError({ code: 'INSTAGRAM_LOGIN_WALL' }), false);
+  } finally {
+    if (prevCookie === undefined) delete process.env.IG_COOKIE;
+    else process.env.IG_COOKIE = prevCookie;
+  }
+});
+
+test('resilience : Niveau 1 HTTP SSR avec cookie fonctionne sans passer par Chrome', async () => {
+  let capturedCookie = null;
+  let capturedSecFetch = null;
+  const ssrSrv = http.createServer((req, res) => {
+    capturedCookie = req.headers.cookie || null;
+    capturedSecFetch = req.headers['sec-fetch-mode'] || null;
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(profileHtml([{ code: 'HTTPONLY111', media_type: 2, product_type: 'clips' }]));
+  });
+  await new Promise((r) => ssrSrv.listen(0, '127.0.0.1', r));
+  const ssrPort = ssrSrv.address().port;
+
+  try {
+    process.env.IG_COOKIE = 'sessionid=testcookie;';
+    agent.setDomFetcher(null);
+    const { posts } = await agent.scrapeInstagramProfile(`http://127.0.0.1:${ssrPort}/robinwattier/`);
+    assert.equal(capturedCookie, 'sessionid=testcookie;');
+    assert.equal(capturedSecFetch, 'navigate');
+    assert.equal(posts.length, 1);
+    assert.equal(posts[0].code, 'HTTPONLY111');
+  } finally {
+    ssrSrv.close();
+    delete process.env.IG_COOKIE;
+  }
 });
 
 test('verrou : une 2e synchronisation simultanee est refusee', async () => {

@@ -46,11 +46,12 @@ const LOCK_FILE = path.join(ROOT, '.sync-instagram.lock');
 const LOCK_STALE_MS = 20 * 60 * 1000;
 const DEFAULT_CAROUSEL_SIZE = { w: 1080, h: 1350 };
 const DEFAULT_REEL_SIZE = { w: 720, h: 1280 };
+const DESKTOP_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
-// Recuperation du DOM (remplacable pour les tests)
-let domFetcher = (url, chromePath) => dumpPageDom(url, chromePath);
+// Recuperation du DOM (remplacable pour les tests via setDomFetcher)
+let customDomFetcher = null;
 function setDomFetcher(fn) {
-  domFetcher = fn || ((url, chromePath) => dumpPageDom(url, chromePath));
+  customDomFetcher = fn || null;
 }
 let retryBaseMs = 3000;
 function setRetryBaseMs(ms) {
@@ -58,6 +59,18 @@ function setRetryBaseMs(ms) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+class InstagramFetchError extends Error {
+  /**
+   * Erreur structuree distinguant blocage IP / mur de connexion, Chrome ou derive de schema.
+   */
+  constructor(code, message, diagnostics = {}) {
+    super(message);
+    this.name = 'InstagramFetchError';
+    this.code = code || 'SCRAPE_FAILED';
+    this.diagnostics = diagnostics;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -159,7 +172,66 @@ function findChromePath() {
   return null;
 }
 
-// Dump du DOM via Chrome headless
+// Récupération HTML SSR directe (évite Chrome si la réponse contient déjà le JSON embarqué)
+function fetchPageHtmlHttp(url, redirects = 0) {
+  return new Promise((resolve) => {
+    if (redirects > 5) {
+      return resolve({ statusCode: 0, finalUrl: url, html: '', networkError: 'Trop de redirections' });
+    }
+    const headers = {
+      'User-Agent': DESKTOP_USER_AGENT,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+      'Upgrade-Insecure-Requests': '1'
+    };
+    if (process.env.IG_COOKIE && process.env.IG_COOKIE.trim()) {
+      headers.Cookie = process.env.IG_COOKIE.trim();
+    }
+
+    const client = /^http:/i.test(url) ? http : https;
+    const req = client.get(url, { headers }, (response) => {
+      const code = response.statusCode || 0;
+      if (code >= 300 && code < 400 && response.headers.location) {
+        response.resume();
+        let next = url;
+        try {
+          next = new URL(response.headers.location, url).toString();
+        } catch (_) { /* ignore */ }
+        if (/\/accounts\/login|\/challenge\//i.test(next)) {
+          return resolve({ statusCode: code, finalUrl: next, html: '', networkError: null });
+        }
+        return fetchPageHtmlHttp(next, redirects + 1).then(resolve);
+      }
+
+      const chunks = [];
+      let totalBytes = 0;
+      const maxBytes = 15 * 1024 * 1024;
+      response.on('data', (chunk) => {
+        totalBytes += chunk.length;
+        if (totalBytes <= maxBytes) chunks.push(chunk);
+      });
+      response.on('end', () => {
+        resolve({
+          statusCode: code,
+          finalUrl: url,
+          html: Buffer.concat(chunks).toString('utf-8'),
+          networkError: null
+        });
+      });
+    });
+
+    req.setTimeout(20000, () => req.destroy(new Error('Délai dépassé HTTP (20s)')));
+    req.on('error', (err) => {
+      resolve({ statusCode: 0, finalUrl: url, html: '', networkError: err.message });
+    });
+  });
+}
+
+// Dump du DOM via Chrome headless durci (User-Agent desktop, anti-empreinte HeadlessChrome)
 function dumpPageDom(url, chromePath, timeoutMs = 60000) {
   return new Promise((resolve, reject) => {
     if (!chromePath) {
@@ -175,6 +247,10 @@ function dumpPageDom(url, chromePath, timeoutMs = 60000) {
       '--disable-extensions',
       '--mute-audio',
       '--no-first-run',
+      `--user-agent=${DESKTOP_USER_AGENT}`,
+      '--window-size=1440,900',
+      '--lang=fr-FR',
+      '--disable-blink-features=AutomationControlled',
       '--dump-dom',
       url
     ];
@@ -186,22 +262,135 @@ function dumpPageDom(url, chromePath, timeoutMs = 60000) {
   });
 }
 
+function extractHtmlTitle(html) {
+  const m = String(html || '').match(/<title[^>]*>([^<]*)<\/title>/i);
+  return m ? m[1].replace(/\s+/g, ' ').trim().slice(0, 120) : '';
+}
+
+function classifyHtmlFailure({ statusCode = null, finalUrl = '', html = '', networkError = null, chromeError = null, chromePath = null } = {}) {
+  const text = String(html || '');
+  const title = extractHtmlTitle(text);
+  const diag = { statusCode, finalUrl, title, htmlLength: text.length };
+
+  if (/\/accounts\/login|\/challenge\//i.test(finalUrl || '')) {
+    return {
+      ...diag,
+      code: 'INSTAGRAM_LOGIN_WALL',
+      message: `mur de connexion / challenge Instagram (${statusCode || 'redirection'} -> ${finalUrl})`
+    };
+  }
+
+  if (statusCode === 429 || /Please wait a few minutes|rate.?limit/i.test(text)) {
+    return {
+      ...diag,
+      code: 'INSTAGRAM_RATE_LIMIT',
+      message: `limite de requêtes Instagram atteinte (HTTP ${statusCode || '?'})`
+    };
+  }
+
+  const hasLoginMarker = /not-logged-in|login_and_signup_page|\/accounts\/login|>Se connecter<|>Log in<|Connectez-vous|Log into Instagram|\bSe connecter\b|\blogin\b/i.test(text);
+  if (hasLoginMarker) {
+    return {
+      ...diag,
+      code: 'INSTAGRAM_LOGIN_WALL',
+      message: `mur de connexion Instagram détecté${title ? ` ("${title}")` : ''}`
+    };
+  }
+
+  if (text.length > 0 && /instagram/i.test(text)) {
+    return {
+      ...diag,
+      code: 'SCHEMA_DRIFT',
+      message: `page Instagram chargée (${(text.length / 1024).toFixed(1)} Ko${title ? `, "${title}"` : ''}) mais aucune donnée média reconnue (structure modifiée ?)`
+    };
+  }
+
+  if (chromeError) {
+    return { ...diag, code: 'CHROME_ERROR', message: `échec Chrome headless : ${chromeError}` };
+  }
+
+  if (networkError) {
+    return { ...diag, code: 'NETWORK_ERROR', message: `erreur réseau HTTP : ${networkError}` };
+  }
+
+  if (!chromePath && (!statusCode || statusCode >= 400 || text.length === 0)) {
+    return {
+      ...diag,
+      code: 'CHROMIUM_UNAVAILABLE',
+      message: `HTTP inutilisable (status ${statusCode || 0}) et Chrome/Chromium introuvable`
+    };
+  }
+
+  return {
+    ...diag,
+    code: 'SCRAPE_FAILED',
+    message: 'contenu Instagram absent de la page (mur de connexion, blocage ou structure modifiée)'
+  };
+}
+
+async function fetchOnce(url, chromePath, isUsable) {
+  if (customDomFetcher) {
+    const html = await customDomFetcher(url, chromePath);
+    if (isUsable(html)) return { html, tier: 'custom' };
+    const diag = classifyHtmlFailure({ statusCode: null, finalUrl: url, html, chromePath });
+    throw new InstagramFetchError(diag.code, diag.message, diag);
+  }
+
+  // Niveau 1 : HTML SSR direct
+  const httpRes = await fetchPageHtmlHttp(url);
+  if (!httpRes.networkError && isUsable(httpRes.html)) {
+    return { html: httpRes.html, tier: 'http', statusCode: httpRes.statusCode, finalUrl: httpRes.finalUrl };
+  }
+
+  // Niveau 2 : repli Chrome headless si disponible
+  let chromeHtml = '';
+  let chromeError = null;
+  if (chromePath) {
+    try {
+      chromeHtml = await dumpPageDom(url, chromePath);
+      if (isUsable(chromeHtml)) {
+        return { html: chromeHtml, tier: 'chrome', statusCode: 200, finalUrl: url };
+      }
+    } catch (err) {
+      chromeError = err.message;
+    }
+  }
+
+  const usedChromeBody = Boolean(chromeHtml && !chromeError && chromeHtml.length >= (httpRes.html || '').length);
+  const diag = classifyHtmlFailure({
+    statusCode: usedChromeBody ? 200 : httpRes.statusCode,
+    finalUrl: usedChromeBody && !/\/accounts\/login|\/challenge\//i.test(chromeHtml) ? url : httpRes.finalUrl,
+    html: usedChromeBody ? chromeHtml : (httpRes.html || chromeHtml),
+    networkError: httpRes.networkError,
+    chromeError,
+    chromePath
+  });
+  throw new InstagramFetchError(diag.code, diag.message, diag);
+}
+
 // Telecharge un DOM avec reessais (backoff) tant que `isUsable(html)` est faux
 async function fetchDomWithRetry(url, chromePath, isUsable, attempts = 3) {
   let lastError = null;
+  const noRetryCodes = new Set(['CHROMIUM_UNAVAILABLE', 'SCHEMA_DRIFT']);
   for (let i = 1; i <= attempts; i++) {
     try {
-      const html = await domFetcher(url, chromePath);
-      if (isUsable(html)) return html;
-      lastError = new Error('contenu Instagram absent de la page (mur de connexion, blocage ou structure modifiée)');
+      const res = await fetchOnce(url, chromePath, isUsable);
+      if (res.tier !== 'custom') {
+        console.log(`📡 Source ${res.tier.toUpperCase()} utilisée pour ${url}`);
+      }
+      return res.html;
     } catch (e) {
       lastError = e;
     }
-    if (i < attempts) {
-      const wait = retryBaseMs * i * i;
-      console.warn(`⚠️ Tentative ${i}/${attempts} échouée pour ${url} (${lastError.message}). Nouvel essai dans ${wait / 1000}s...`);
-      await sleep(wait);
+    const maxAttempts = (!customDomFetcher && lastError && lastError.code === 'INSTAGRAM_LOGIN_WALL')
+      ? Math.min(attempts, 2)
+      : attempts;
+    if (i >= maxAttempts || (!customDomFetcher && lastError && noRetryCodes.has(lastError.code))) {
+      break;
     }
+    const wait = retryBaseMs * i * i;
+    console.warn(`⚠️ Tentative ${i}/${maxAttempts} échouée pour ${url} [${lastError.code || 'ERR'}] (${lastError.message}). Nouvel essai dans ${wait / 1000}s...`);
+    await sleep(wait);
   }
   throw lastError;
 }
@@ -223,7 +412,7 @@ function downloadFile(url, destPath, redirects = 0) {
     const client = /^http:/i.test(url) ? http : https;
     const req = client.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'User-Agent': DESKTOP_USER_AGENT,
         'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,video/mp4,video/*,*/*;q=0.8',
         'Referer': 'https://www.instagram.com/'
       }
@@ -642,17 +831,17 @@ function applyMediaDetails(post, media) {
 
 async function scrapeInstagramProfile(profileUrl) {
   const chromePath = findChromePath();
-  if (!chromePath) {
-    throw new Error('Google Chrome introuvable pour exécuter le scraper.');
-  }
-
-  console.log(`🚀 Analyse du profil public Instagram via Chrome headless (${profileUrl})...`);
+  console.log(`🚀 Analyse du profil public Instagram (${profileUrl})${chromePath ? ' [HTTP SSR + repli Chrome]' : ' [HTTP SSR]'}...`);
   let posts = [];
   const html = await fetchDomWithRetry(profileUrl, chromePath, (h) => {
     posts = parseProfilePosts(h);
     return posts.length > 0;
   }).catch((e) => {
-    throw new Error(`Instagram n'a renvoyé aucune publication pour ${profileUrl} : ${e.message}`);
+    throw new InstagramFetchError(
+      e.code || 'SCRAPE_FAILED',
+      `Instagram n'a renvoyé aucune publication pour ${profileUrl} : ${e.message}`,
+      e.diagnostics
+    );
   });
 
   console.log(`📄 Page profil chargée (${(html.length / 1024).toFixed(1)} Ko).`);
@@ -1012,9 +1201,6 @@ async function syncSinglePost(urlOrCode) {
       throw new Error(`Shortcode ou URL Instagram invalide : ${urlOrCode}`);
     }
     const chromePath = findChromePath();
-    if (!chromePath) {
-      throw new Error('Google Chrome introuvable pour exécuter le scraper.');
-    }
 
     const currentItems = readGalleryItems();
     if (codesOfItems(currentItems).has(code)) {
@@ -1041,11 +1227,38 @@ async function syncSinglePost(urlOrCode) {
   });
 }
 
+function hasValidCookie() {
+  return Boolean(process.env.IG_COOKIE && process.env.IG_COOKIE.trim());
+}
+
+/**
+ * Un blocage datacenter (mur de connexion / rate-limit) n'est tolere en mode CI doux
+ * que lorsqu'aucun cookie IG_COOKIE n'a ete configure (evite les faux positifs horaires
+ * sans masquer une expiration de session ou une derive de schema).
+ */
+function isExpectedBlockError(err) {
+  if (!err || hasValidCookie()) return false;
+  return err.code === 'INSTAGRAM_LOGIN_WALL' || err.code === 'INSTAGRAM_RATE_LIMIT';
+}
+
+function writeGithubOutput(pairs) {
+  const outFile = process.env.GITHUB_OUTPUT;
+  if (!outFile) return;
+  const lines = Object.entries(pairs)
+    .filter(([, v]) => v !== undefined && v !== null)
+    .map(([k, v]) => `${k}=${String(v).replace(/[\r\n]+/g, ' ')}`);
+  if (lines.length) {
+    fs.appendFileSync(outFile, `${lines.join('\n')}\n`, 'utf-8');
+  }
+}
+
 // Execution directe en ligne de commande
 if (require.main === module) {
   const arg = process.argv[2];
+  const softOnBlock = process.argv.includes('--soft-on-block');
   const fail = (label) => (err) => {
-    console.error(`\n❌ ${label} : ${err.message}`);
+    console.error(`\n❌ ${label}${err && err.code ? ` [${err.code}]` : ''} : ${err.message}`);
+    writeGithubOutput({ sync_status: 'error', block_code: (err && err.code) || 'ERROR', block_message: err && err.message });
     process.exit(1);
   };
 
@@ -1057,6 +1270,7 @@ if (require.main === module) {
     syncSinglePost(arg)
       .then((res) => {
         console.log(`\n✅ Post importé avec succès ! (${res.total} total dans la galerie)`);
+        writeGithubOutput({ sync_status: 'ok', added_count: res.added || 0, total_count: res.total || 0 });
         process.exit(0);
       })
       .catch(fail('Échec import du post'));
@@ -1072,11 +1286,21 @@ if (require.main === module) {
         }
         if (res.failed && res.failed.length) {
           console.error(`⚠️ ${res.failed.length} post(s) en échec : ${res.failed.map((f) => f.code).join(', ')}`);
+          writeGithubOutput({ sync_status: 'partial', added_count: res.added || 0, total_count: res.total || 0, failed_count: res.failed.length });
           process.exit(1);
         }
+        writeGithubOutput({ sync_status: 'ok', added_count: res.added || 0, total_count: res.total || 0, dry_run: !!res.dryRun });
         process.exit(0);
       })
-      .catch(fail('Échec synchronisation Instagram'));
+      .catch((err) => {
+        if (softOnBlock && isExpectedBlockError(err)) {
+          console.warn(`\n⚠️ Synchronisation suspendue (${err.code}) : ${err.message}`);
+          console.warn('ℹ️ Pour activer la synchronisation autonome 100% cloud, ajoutez le secret GitHub IG_COOKIE, ou utilisez la synchronisation locale (npm run sync).');
+          writeGithubOutput({ sync_status: 'blocked', block_code: err.code, block_message: err.message });
+          process.exit(0);
+        }
+        fail('Échec synchronisation Instagram')(err);
+      });
   }
 }
 
@@ -1090,7 +1314,7 @@ module.exports = {
   updateGalleryWithNewPosts,
   findChromePath,
   loadConfig,
-  // Analyse pure (tests)
+  // Analyse & resilience (tests)
   classifyMedia,
   bestImageUrl,
   bestVideoUrl,
@@ -1103,5 +1327,9 @@ module.exports = {
   titleFromCaption,
   setDomFetcher,
   setRetryBaseMs,
-  downloadFile
+  downloadFile,
+  InstagramFetchError,
+  classifyHtmlFailure,
+  isExpectedBlockError,
+  DESKTOP_USER_AGENT
 };

@@ -648,65 +648,6 @@ main.main-content {
   text-align: center;
 }
 
-.studio-cta {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: clamp(8px, 1.5vw, 12px);
-  flex-wrap: nowrap;
-  margin: clamp(10px, 1.6vh, 18px) auto 0;
-  width: auto;
-}
-
-.cta-pill {
-  font-family: var(--font-geist);
-  font-size: clamp(12.5px, 1.5vh, 13.5px);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  text-decoration: none;
-  padding: clamp(8px, 1.1vh, 11px) clamp(16px, 2vw, 24px);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s var(--ease-spring);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0.5px solid rgba(255, 255, 255, 0.14);
-  outline: none;
-  line-height: 1;
-  white-space: nowrap;
-  flex: 0 0 auto;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.cta-pill:active {
-  transform: scale(0.96);
-}
-
-.cta-pill-solid {
-  background-color: var(--fg);
-  color: #0c0c0c;
-}
-
-.cta-pill-solid:hover {
-  background-color: #e5e5e5;
-  color: #0c0c0c;
-}
-
-.cta-pill-ghost {
-  background-color: var(--pill-bg-ghost);
-  color: #ffffff;
-  border: 0.5px solid rgba(255, 255, 255, 0.14);
-}
-
-.cta-pill-ghost:hover {
-  background-color: var(--pill-hover-ghost);
-  border-color: rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
 .disciplines {
   display: flex;
   flex-direction: column;
@@ -1070,22 +1011,6 @@ main.main-content {
     text-align: center;
     margin: clamp(6px, 1vh, 10px) auto 0;
     max-width: 360px;
-  }
-  .studio-cta {
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(6px, 1.8vw, 8px);
-    flex-wrap: nowrap;
-    margin: clamp(10px, 1.5vh, 16px) auto 0;
-    max-width: 100%;
-  }
-  .cta-pill {
-    padding: clamp(8px, 1.1vh, 10px) clamp(12px, 2.2vw, 16px);
-    font-size: clamp(12px, 1.5vh, 13px);
-    font-weight: 500;
-    text-align: center;
-    flex: 0 0 auto;
   }
   .studio-trusted {
     margin-bottom: 0;

@@ -1266,7 +1266,6 @@
         openBtn.href = item.link || item.src;
         openBtn.target = '_blank';
         openBtn.rel = 'noopener noreferrer';
-        openBtn.className = 'cta-pill';
         openBtn.style.cssText = 'display:inline-flex;align-items:center;gap:10px;padding:12px 24px;font-size:13px;font-weight:600;letter-spacing:-0.01em;text-decoration:none;border-radius:999px;background:#e11d48;color:#ffffff;box-shadow:0 6px 20px rgba(225,29,72,0.4);transition:transform 0.2s, background 0.2s;';
         openBtn.innerHTML = `<span>Ouvrir le Book PDF</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
 
@@ -1293,7 +1292,6 @@
         openBtn.href = item.link || item.src;
         openBtn.target = '_blank';
         openBtn.rel = 'noopener noreferrer';
-        openBtn.className = 'cta-pill';
         openBtn.style.cssText = 'display:inline-flex;align-items:center;gap:10px;padding:12px 24px;font-size:13px;font-weight:600;letter-spacing:-0.01em;text-decoration:none;border-radius:999px;background:#111111;color:#ffffff;box-shadow:0 6px 20px rgba(0,0,0,0.3);transition:transform 0.2s, background 0.2s;';
         const displayHost = (item.link || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
         openBtn.innerHTML = `<span>Visiter ${displayHost || 'le site web'}</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
@@ -1797,7 +1795,7 @@
     });
 
     // Handle external shop link clicks
-    document.querySelectorAll('#nav-btn-shop, #m-nav-btn-shop, #cta-shop').forEach((link) => {
+    document.querySelectorAll('#nav-btn-shop, #m-nav-btn-shop').forEach((link) => {
       link.addEventListener('click', (e) => {
         closeMobileMenu();
         const href = link.getAttribute('href');

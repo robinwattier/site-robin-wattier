@@ -341,6 +341,7 @@ body.mobile-menu-open nav.navbar {
   background-color: var(--bg);
   padding: 16px 24px 24px;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
   border-bottom: 0.5px solid var(--border-subtle);
   animation: menuIn 0.2s ease both;
@@ -374,9 +375,10 @@ body.mobile-menu-open nav.navbar {
   width: max-content;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   height: 36px;
-  text-align: left;
+  margin: 0 auto;
+  text-align: center;
   font-family: var(--font-geist);
   font-size: 14px;
   font-weight: 500;

@@ -34,24 +34,36 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const https = require('https');
-const { execFile, execSync } = require('child_process');
+const crypto = require('crypto');
+const { execFile, execFileSync, execSync } = require('child_process');
 
 const ROOT = process.env.PORTFOLIO_ROOT ? path.resolve(process.env.PORTFOLIO_ROOT) : __dirname;
 const CONFIG_FILE = path.join(ROOT, 'instagram-config.json');
 const PROJECTS_FILE = path.join(ROOT, 'projects-data.js');
 const DATA_JSON_FILE = path.join(ROOT, 'data.json');
 const INDEX_HTML_FILE = path.join(ROOT, 'index.html');
+const ASSETS_DIR = path.join(ROOT, 'assets');
 const MEDIA_DIR = path.join(ROOT, 'assets', 'projets', 'instagram');
+const PROFILE_PIC_FILE = path.join(ASSETS_DIR, 'robin-wattier-profile.jpg');
+const FAVICON_PNG_FILE = path.join(ASSETS_DIR, 'favicon.png');
+const FAVICON_32_FILE = path.join(ASSETS_DIR, 'favicon-32x32.png');
+const APPLE_TOUCH_ICON_FILE = path.join(ASSETS_DIR, 'apple-touch-icon.png');
+const FAVICON_ICO_FILE = path.join(ASSETS_DIR, 'favicon.ico');
 const LOCK_FILE = path.join(ROOT, '.sync-instagram.lock');
 const LOCK_STALE_MS = 20 * 60 * 1000;
 const DEFAULT_CAROUSEL_SIZE = { w: 1080, h: 1350 };
 const DEFAULT_REEL_SIZE = { w: 720, h: 1280 };
 const DESKTOP_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const DEFAULT_PROFILE_QUERY_DOC_ID = '40158838120366999';
 
 // Recuperation du DOM (remplacable pour les tests via setDomFetcher)
 let customDomFetcher = null;
 function setDomFetcher(fn) {
   customDomFetcher = fn || null;
+}
+let customProfilePicUploader = null;
+function setProfilePicUploader(fn) {
+  customProfilePicUploader = fn || null;
 }
 let retryBaseMs = 3000;
 function setRetryBaseMs(ms) {
@@ -84,6 +96,8 @@ function loadConfig() {
     downloadMedia: true,
     excludeStories: true,
     mirror: true,
+    syncProfilePic: true,
+    profilePicState: null,
     baselineDate: null,
     baselineCodes: [],
     excludedCodes: []
@@ -103,6 +117,13 @@ function loadConfig() {
 function writeFileAtomic(file, content) {
   const tmp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, content, 'utf-8');
+  fs.renameSync(tmp, file);
+}
+
+function writeBufferAtomic(file, buf) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, buf);
   fs.renameSync(tmp, file);
 }
 
@@ -847,7 +868,605 @@ async function scrapeInstagramProfile(profileUrl) {
 
   console.log(`📄 Page profil chargée (${(html.length / 1024).toFixed(1)} Ko).`);
   console.log(`🎯 ${posts.length} publication(s) trouvée(s) sur le profil public.`);
-  return { posts, chromePath };
+  return { posts, chromePath, html };
+}
+
+// ---------------------------------------------------------------------------
+// Synchronisation bidirectionnelle de la photo de profil (Intro + Favicon)
+// ---------------------------------------------------------------------------
+
+function sha256Buffer(buf) {
+  return crypto.createHash('sha256').update(buf).digest('hex');
+}
+
+function getImageDimensions(buf) {
+  if (!Buffer.isBuffer(buf) || buf.length < 24) return null;
+  // PNG
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) {
+    return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20), format: 'png' };
+  }
+  // JPEG
+  if (buf[0] === 0xff && buf[1] === 0xd8) {
+    let i = 2;
+    while (i + 9 < buf.length) {
+      if (buf[i] !== 0xff) { i += 1; continue; }
+      const marker = buf[i + 1];
+      if (marker === 0xff) { i += 1; continue; }
+      if (marker === 0xd8 || marker === 0xd9) { i += 2; continue; }
+      const len = buf.readUInt16BE(i + 2);
+      if (len < 2) break;
+      if (marker >= 0xc0 && marker <= 0xc3) {
+        return { height: buf.readUInt16BE(i + 5), width: buf.readUInt16BE(i + 7), format: 'jpeg' };
+      }
+      i += 2 + len;
+    }
+  }
+  return null;
+}
+
+function decodeHtmlEntities(str) {
+  return String(str || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
+function extractProfilePicId(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return null;
+  const clean = decodeHtmlEntities(rawUrl).replace(/\\\//g, '/');
+  try {
+    const u = new URL(clean);
+    const base = path.posix.basename(u.pathname);
+    if (base && /\.(?:jpe?g|png|webp)$/i.test(base)) return base;
+    const cacheKey = u.searchParams.get('ig_cache_key');
+    if (cacheKey) return cacheKey.split('.')[0];
+    return base || clean;
+  } catch (_) {
+    const m = clean.match(/\/([^/?#]+\.(?:jpe?g|png|webp))(?:[?#]|$)/i);
+    return m ? m[1] : clean;
+  }
+}
+
+function extractProfileUserInfo(html, username = 'robinwattier') {
+  if (!html || typeof html !== 'string') return null;
+  const targetUser = String(username || 'robinwattier').toLowerCase();
+  const blocks = [];
+  const re = /<script[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/gi;
+  let match;
+  while ((match = re.exec(html)) !== null) {
+    const text = match[1];
+    if (text.indexOf('profile_pic') === -1 && text.indexOf(targetUser) === -1) continue;
+    try {
+      blocks.push(JSON.parse(text));
+    } catch (_) { /* ignore */ }
+  }
+  let best = null;
+
+  function visit(node) {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+      return;
+    }
+    const uname = typeof node.username === 'string' ? node.username.toLowerCase() : '';
+    const hdObjUrl = node.hd_profile_pic_url_info && typeof node.hd_profile_pic_url_info.url === 'string'
+      ? node.hd_profile_pic_url_info.url
+      : null;
+    const hdDirectUrl = typeof node.profile_pic_url_hd === 'string' ? node.profile_pic_url_hd : null;
+    const stdUrl = typeof node.profile_pic_url === 'string' ? node.profile_pic_url : null;
+
+    if ((uname === targetUser || !uname) && (hdObjUrl || hdDirectUrl || stdUrl)) {
+      const candidate = {
+        userId: String(node.pk || node.id || best?.userId || '53640291603'),
+        username: node.username || username,
+        profilePicUrl: stdUrl || hdObjUrl || hdDirectUrl,
+        hdProfilePicUrl: hdObjUrl || hdDirectUrl || null
+      };
+      if (!best || (candidate.hdProfilePicUrl && !best.hdProfilePicUrl) || (uname === targetUser)) {
+        best = {
+          ...best,
+          ...candidate,
+          hdProfilePicUrl: candidate.hdProfilePicUrl || best?.hdProfilePicUrl || null,
+          profilePicUrl: candidate.profilePicUrl || best?.profilePicUrl || null
+        };
+      }
+    }
+    for (const v of Object.values(node)) visit(v);
+  }
+
+  blocks.forEach(visit);
+
+  if (!best) {
+    const ogMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+    if (ogMatch && ogMatch[1]) {
+      const url = decodeHtmlEntities(ogMatch[1]);
+      best = {
+        userId: '53640291603',
+        username,
+        profilePicUrl: url,
+        hdProfilePicUrl: null
+      };
+    }
+  }
+
+  if (!best || (!best.profilePicUrl && !best.hdProfilePicUrl)) return null;
+  best.igPicId = extractProfilePicId(best.hdProfilePicUrl || best.profilePicUrl);
+  return best;
+}
+
+function postFormRequest(url, headers, bodyStr) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const client = u.protocol === 'http:' ? http : https;
+    const req = client.request(url, {
+      method: 'POST',
+      headers: {
+        'User-Agent': DESKTOP_USER_AGENT,
+        'Content-Length': Buffer.byteLength(bodyStr),
+        ...headers
+      },
+      timeout: 15000
+    }, (res) => {
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => resolve({
+        status: res.statusCode,
+        headers: res.headers,
+        text: Buffer.concat(chunks).toString('utf-8')
+      }));
+    });
+    req.on('timeout', () => req.destroy(new Error('Timeout requête GraphQL Instagram')));
+    req.on('error', reject);
+    req.write(bodyStr);
+    req.end();
+  });
+}
+
+async function discoverProfileQueryDocId(html) {
+  if (!html) return DEFAULT_PROFILE_QUERY_DOC_ID;
+  const bundleUrls = [...html.matchAll(/src="(https:\/\/static\.cdninstagram\.com\/rsrc\.php\/[^"]+\.js[^"]*)"/g)]
+    .map((m) => decodeHtmlEntities(m[1]));
+  for (const bundleUrl of bundleUrls) {
+    try {
+      const js = await new Promise((resolve, reject) => {
+        https.get(bundleUrl, { headers: { 'User-Agent': DESKTOP_USER_AGENT } }, (res) => {
+          let d = '';
+          res.on('data', (c) => { d += c; });
+          res.on('end', () => resolve(d));
+        }).on('error', reject);
+      });
+      const m = js.match(/PolarisProfilePageContentQuery_instagramRelayOperation"[^"]*"(\d+)"/);
+      if (m && m[1]) return m[1];
+    } catch (_) { /* continuer */ }
+  }
+  return DEFAULT_PROFILE_QUERY_DOC_ID;
+}
+
+async function fetchHdProfilePicUrl(profileUrl, html, userInfo) {
+  if (!userInfo) return null;
+  if (userInfo.hdProfilePicUrl) return userInfo.hdProfilePicUrl;
+  if (customDomFetcher) return userInfo.profilePicUrl;
+
+  const lsd = ((html || '').match(/"LSD"\s*,\s*\[\]\s*,\s*\{\s*"token"\s*:\s*"([^"]+)"/) || [])[1] || '';
+  const csrf = ((html || '').match(/"csrf_token"\s*:\s*"([^"]+)"/) || [])[1] || '';
+  const userId = userInfo.userId || '53640291603';
+
+  const tryQuery = async (docId) => {
+    const variables = {
+      enable_integrity_filters: true,
+      id: String(userId),
+      render_surface: 'PROFILE',
+      __relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider: false,
+      __relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider: false,
+      __relay_internal__pv__PolarisProfileInformTreatmentBannerEnabledrelayprovider: false,
+      __relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider: false,
+      __relay_internal__pv__PolarisProfileRingsGradientEnabledrelayprovider: false,
+      __relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider: false,
+      __relay_internal__pv__PolarisShortDramaEnabledrelayprovider: false
+    };
+    const body = new URLSearchParams({
+      av: '0',
+      __d: 'www',
+      __user: '0',
+      __a: '1',
+      __req: '1',
+      __comet_req: '7',
+      lsd,
+      fb_api_req_friendly_name: 'PolarisProfilePageContentQuery',
+      variables: JSON.stringify(variables),
+      server_timestamps: 'true',
+      doc_id: docId
+    }).toString();
+
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-FB-LSD': lsd,
+      'X-CSRFToken': csrf,
+      'X-IG-App-ID': '936619743392459',
+      'X-FB-Friendly-Name': 'PolarisProfilePageContentQuery',
+      'X-ASBD-ID': '129477',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin',
+      'Referer': profileUrl || 'https://www.instagram.com/robinwattier/'
+    };
+    if (process.env.IG_COOKIE && process.env.IG_COOKIE.trim()) {
+      headers.Cookie = process.env.IG_COOKIE.trim();
+    }
+
+    const res = await postFormRequest('https://www.instagram.com/graphql/query', headers, body);
+    if (res.status === 200 && res.text.trim().startsWith('{')) {
+      const parsed = JSON.parse(res.text);
+      const u = parsed && parsed.data && parsed.data.user;
+      if (u && u.hd_profile_pic_url_info && u.hd_profile_pic_url_info.url) {
+        return u.hd_profile_pic_url_info.url;
+      }
+      if (u && u.profile_pic_url_hd) {
+        return u.profile_pic_url_hd;
+      }
+    }
+    return null;
+  };
+
+  try {
+    let hdUrl = await tryQuery(DEFAULT_PROFILE_QUERY_DOC_ID);
+    if (!hdUrl) {
+      const discoveredDocId = await discoverProfileQueryDocId(html);
+      if (discoveredDocId && discoveredDocId !== DEFAULT_PROFILE_QUERY_DOC_ID) {
+        hdUrl = await tryQuery(discoveredDocId);
+      }
+    }
+    if (hdUrl) return hdUrl;
+  } catch (e) {
+    console.warn(`⚠️ Repli sur l'URL profil standard (${e.message})`);
+  }
+  return userInfo.profilePicUrl;
+}
+
+function buildIcoFromPngBuffers(pngEntries) {
+  const count = pngEntries.length;
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(count, 4);
+
+  const dirEntries = [];
+  let offset = 6 + count * 16;
+  for (const { size, buf } of pngEntries) {
+    const entry = Buffer.alloc(16);
+    entry.writeUInt8(size >= 256 ? 0 : size, 0);
+    entry.writeUInt8(size >= 256 ? 0 : size, 1);
+    entry.writeUInt8(0, 2);
+    entry.writeUInt8(0, 3);
+    entry.writeUInt16LE(1, 4);
+    entry.writeUInt16LE(32, 6);
+    entry.writeUInt32LE(buf.length, 8);
+    entry.writeUInt32LE(offset, 12);
+    dirEntries.push(entry);
+    offset += buf.length;
+  }
+  return Buffer.concat([header, ...dirEntries, ...pngEntries.map((e) => e.buf)]);
+}
+
+function applyProfilePictureToSite(imageBuffer, versionTag) {
+  if (!Buffer.isBuffer(imageBuffer) || imageBuffer.length === 0) {
+    throw new Error('Buffer de photo de profil invalide ou vide.');
+  }
+  // 1. Ecriture sans aucune recompression ni perte de qualite pour l'avatar Intro
+  writeBufferAtomic(PROFILE_PIC_FILE, imageBuffer);
+
+  // Nettoyage des anciennes miniatures WebP basse resolution si presentes
+  for (const oldName of ['robin-wattier-profile-248.webp', 'robin-wattier-profile-372.webp']) {
+    const oldPath = path.join(ASSETS_DIR, oldName);
+    if (fs.existsSync(oldPath)) {
+      try { fs.unlinkSync(oldPath); } catch (_) { /* ignore */ }
+    }
+  }
+
+  // 2. Generation simultanee des favicons haute qualite a partir de l'image originale
+  const dims = getImageDimensions(imageBuffer);
+  let ffmpegPath = null;
+  try { ffmpegPath = require('ffmpeg-static'); } catch (_) { /* optionnel */ }
+
+  if (dims && ffmpegPath && fs.existsSync(ffmpegPath)) {
+    const renderPng = (targetFile, size = null) => {
+      const tmpOut = `${targetFile}.${process.pid}.tmp.png`;
+      const args = ['-y', '-i', PROFILE_PIC_FILE];
+      if (size) {
+        args.push('-vf', `scale=${size}:${size}:flags=lanczos`);
+      }
+      args.push('-frames:v', '1', '-compression_level', '9', tmpOut);
+      execFileSync(ffmpegPath, args, { stdio: 'ignore', timeout: 20000 });
+      const buf = fs.readFileSync(tmpOut);
+      try { fs.unlinkSync(tmpOut); } catch (_) { /* ignore */ }
+      writeBufferAtomic(targetFile, buf);
+      return buf;
+    };
+
+    // favicon.png en resolution maximale d'origine sans perte (PNG lossless)
+    renderPng(FAVICON_PNG_FILE, null);
+    // apple-touch-icon.png (180x180) et favicon-32x32.png (32x32)
+    renderPng(APPLE_TOUCH_ICON_FILE, 180);
+    const png32 = renderPng(FAVICON_32_FILE, 32);
+
+    // favicon.ico multi-resolution (16x16, 32x32, 48x48)
+    const tmp16 = `${FAVICON_ICO_FILE}.${process.pid}.16.png`;
+    const tmp48 = `${FAVICON_ICO_FILE}.${process.pid}.48.png`;
+    execFileSync(ffmpegPath, ['-y', '-i', PROFILE_PIC_FILE, '-vf', 'scale=16:16:flags=lanczos', '-frames:v', '1', tmp16], { stdio: 'ignore', timeout: 15000 });
+    execFileSync(ffmpegPath, ['-y', '-i', PROFILE_PIC_FILE, '-vf', 'scale=48:48:flags=lanczos', '-frames:v', '1', tmp48], { stdio: 'ignore', timeout: 15000 });
+    const png16 = fs.readFileSync(tmp16);
+    const png48 = fs.readFileSync(tmp48);
+    try { fs.unlinkSync(tmp16); fs.unlinkSync(tmp48); } catch (_) { /* ignore */ }
+
+    const icoBuf = buildIcoFromPngBuffers([
+      { size: 16, buf: png16 },
+      { size: 32, buf: png32 },
+      { size: 48, buf: png48 }
+    ]);
+    writeBufferAtomic(FAVICON_ICO_FILE, icoBuf);
+  } else {
+    // Repli (ex: environnement de test unitaire avec buffer synthetique)
+    writeBufferAtomic(FAVICON_PNG_FILE, imageBuffer);
+    writeBufferAtomic(APPLE_TOUCH_ICON_FILE, imageBuffer);
+    writeBufferAtomic(FAVICON_32_FILE, imageBuffer);
+    writeBufferAtomic(FAVICON_ICO_FILE, imageBuffer);
+  }
+
+  // 3. Mise a jour du cache-buster dans index.html pour l'avatar Intro et les favicons
+  const v = versionTag || sha256Buffer(imageBuffer).slice(0, 8);
+  try {
+    if (fs.existsSync(INDEX_HTML_FILE)) {
+      let html = fs.readFileSync(INDEX_HTML_FILE, 'utf-8');
+      const targets = [
+        'assets/robin-wattier-profile.jpg',
+        'assets/favicon.png',
+        'assets/favicon-32x32.png',
+        'assets/apple-touch-icon.png',
+        'assets/favicon.ico'
+      ];
+      for (const rel of targets) {
+        const escaped = rel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`${escaped}(?:\\?v=[A-Za-z0-9_-]+)?`, 'g');
+        html = html.replace(re, `${rel}?v=${v}`);
+      }
+      writeFileAtomic(INDEX_HTML_FILE, html);
+    }
+  } catch (_) { /* non bloquant */ }
+
+  return { version: v, dimensions: dims };
+}
+
+async function uploadProfilePictureToInstagram(imageBuffer, config = {}) {
+  if (customProfilePicUploader) {
+    return customProfilePicUploader(imageBuffer, config);
+  }
+
+  // 1. Verification de l'API officielle Instagram Graph (Meta Graph API)
+  const accessToken = process.env.IG_ACCESS_TOKEN || config.igAccessToken;
+  if (accessToken) {
+    console.log('📡 Vérification des permissions de l\'API officielle Instagram Graph...');
+  }
+
+  // 2. Endpoint d'ecriture Web Instagram authentifie (si IG_COOKIE contient sessionid + csrftoken)
+  const rawCookie = (process.env.IG_COOKIE || config.igCookie || '').trim();
+  if (rawCookie && /sessionid=/i.test(rawCookie)) {
+    const csrfMatch = rawCookie.match(/csrftoken=([^;\s]+)/i);
+    const csrf = csrfMatch ? csrfMatch[1] : '';
+    const boundary = `----WebKitFormBoundary${crypto.randomBytes(8).toString('hex')}`;
+    const preamble = Buffer.from(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="profile_pic"; filename="profile_pic.jpg"\r\n` +
+      `Content-Type: image/jpeg\r\n\r\n`,
+      'utf-8'
+    );
+    const epilogue = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
+    const multipartBody = Buffer.concat([preamble, imageBuffer, epilogue]);
+
+    try {
+      const res = await new Promise((resolve, reject) => {
+        const req = https.request('https://www.instagram.com/api/v1/web/accounts/web_change_profile_picture/', {
+          method: 'POST',
+          headers: {
+            'User-Agent': DESKTOP_USER_AGENT,
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Content-Length': multipartBody.length,
+            'Cookie': rawCookie,
+            'X-CSRFToken': csrf,
+            'X-IG-App-ID': '936619743392459',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Origin': 'https://www.instagram.com',
+            'Referer': config.profileUrl || 'https://www.instagram.com/robinwattier/'
+          },
+          timeout: 20000
+        }, (resp) => {
+          const chunks = [];
+          resp.on('data', (c) => chunks.push(c));
+          resp.on('end', () => resolve({
+            status: resp.statusCode,
+            text: Buffer.concat(chunks).toString('utf-8')
+          }));
+        });
+        req.on('error', reject);
+        req.on('timeout', () => req.destroy(new Error('Timeout upload photo de profil Instagram')));
+        req.write(multipartBody);
+        req.end();
+      });
+
+      if (res.status === 200 && res.text.trim().startsWith('{')) {
+        const parsed = JSON.parse(res.text);
+        if (parsed.changed_profile || parsed.status === 'ok') {
+          const u = parsed.user || parsed;
+          const newUrl = (u.hd_profile_pic_url_info && u.hd_profile_pic_url_info.url) || u.profile_pic_url_hd || u.profile_pic_url;
+          const newIgPicId = extractProfilePicId(newUrl);
+          console.log('✅ [Miroir Bidirectionnel] Nouvelle photo de profil téléversée avec succès sur Instagram !');
+          return {
+            uploaded: true,
+            method: 'instagram_web_api',
+            newIgPicId,
+            note: 'Photo de profil synchronisée du site vers Instagram.'
+          };
+        }
+      }
+      console.warn(`⚠️ Téléversement Instagram refusé (HTTP ${res.status}) : ${res.text.slice(0, 140)}`);
+    } catch (e) {
+      console.warn(`⚠️ Échec téléversement de la photo de profil vers Instagram : ${e.message}`);
+    }
+  }
+
+  const note = "L'API officielle Instagram Graph (Meta) expose la photo de profil en lecture seule (aucun endpoint d'écriture d'avatar autorisé par les scopes OAuth Meta). Pour activer le téléversement automatique Site -> Instagram, renseignez IG_COOKIE (sessionid + csrftoken).";
+  console.log(`ℹ️ [Synchronisation Bidirectionnelle] ${note}`);
+  return {
+    uploaded: false,
+    method: 'official_api_read_only',
+    newIgPicId: null,
+    note
+  };
+}
+
+async function syncProfilePicture(profileHtml, config, options = {}) {
+  const dryRun = !!options.dryRun;
+  if (config.syncProfilePic === false) {
+    return { changed: false, direction: 'disabled' };
+  }
+
+  const userInfo = extractProfileUserInfo(profileHtml, config.username);
+  if (!userInfo || !userInfo.igPicId) {
+    return { changed: false, direction: 'none', reason: 'no_profile_pic_metadata' };
+  }
+
+  const state = config.profilePicState || {};
+  const currentIgPicId = userInfo.igPicId;
+  const localExists = fs.existsSync(PROFILE_PIC_FILE);
+  const localBuf = localExists ? fs.readFileSync(PROFILE_PIC_FILE) : null;
+  const currentLocalSha256 = localBuf ? sha256Buffer(localBuf) : null;
+
+  const igChanged = !state.igPicId || currentIgPicId !== state.igPicId || !localExists;
+  const siteChanged = Boolean(!igChanged && localBuf && state.localSha256 && currentLocalSha256 !== state.localSha256);
+
+  // Cas 1 : Mise a jour depuis Instagram vers le site (ou initialisation HD)
+  if (igChanged) {
+    const hdUrl = await fetchHdProfilePicUrl(config.profileUrl, profileHtml, userInfo);
+    if (!hdUrl) {
+      return { changed: false, direction: 'none', reason: 'no_hd_url' };
+    }
+
+    if (dryRun) {
+      console.log(`🖼️ [Simulation] Nouvelle photo de profil Instagram détectée (${currentIgPicId}) -> prête à remplacer l'avatar Intro et le favicon.`);
+      return {
+        changed: true,
+        dryRun: true,
+        direction: 'instagram_to_site',
+        igPicId: currentIgPicId,
+        url: hdUrl
+      };
+    }
+
+    const tmpPic = `${PROFILE_PIC_FILE}.${process.pid}.download.tmp`;
+    await downloadFile(hdUrl, tmpPic);
+    const downloadedBuf = fs.readFileSync(tmpPic);
+    try { fs.unlinkSync(tmpPic); } catch (_) { /* ignore */ }
+
+    const newSha256 = sha256Buffer(downloadedBuf);
+    const applied = applyProfilePictureToSite(downloadedBuf, newSha256.slice(0, 8));
+    config.profilePicState = {
+      igPicId: currentIgPicId,
+      localSha256: newSha256,
+      dimensions: applied.dimensions,
+      source: 'instagram',
+      updatedAt: new Date().toISOString()
+    };
+    saveConfig(config);
+
+    const dimLabel = applied.dimensions ? `${applied.dimensions.width}×${applied.dimensions.height}` : `${(downloadedBuf.length / 1024).toFixed(1)} Ko`;
+    console.log(`🖼️ [Photo de profil] Synchronisée depuis Instagram en résolution maximale (${dimLabel}, sans recompression) -> avatar Intro + favicon mis à jour !`);
+    return {
+      changed: true,
+      direction: 'instagram_to_site',
+      igPicId: currentIgPicId,
+      localSha256: newSha256,
+      dimensions: applied.dimensions
+    };
+  }
+
+  // Cas 2 : La photo de profil a ete modifiee directement sur le site -> mise a jour du favicon + envoi vers Instagram
+  if (siteChanged) {
+    if (dryRun) {
+      console.log('🖼️ [Simulation] Modification locale de la photo de profil détectée sur le site -> synchronisation Site -> Instagram.');
+      return {
+        changed: true,
+        dryRun: true,
+        direction: 'site_to_instagram',
+        localSha256: currentLocalSha256
+      };
+    }
+
+    console.log('🖼️ [Photo de profil] Modification directe détectée sur le site -> mise à jour du favicon et synchronisation vers Instagram...');
+    const applied = applyProfilePictureToSite(localBuf, currentLocalSha256.slice(0, 8));
+    const uploadRes = await uploadProfilePictureToInstagram(localBuf, config);
+
+    config.profilePicState = {
+      igPicId: uploadRes.newIgPicId || state.igPicId,
+      localSha256: currentLocalSha256,
+      dimensions: applied.dimensions,
+      source: 'site',
+      syncedToInstagram: Boolean(uploadRes.uploaded),
+      instagramSyncNote: uploadRes.note,
+      updatedAt: new Date().toISOString()
+    };
+    saveConfig(config);
+
+    return {
+      changed: true,
+      direction: 'site_to_instagram',
+      uploadedToInstagram: Boolean(uploadRes.uploaded),
+      igPicId: config.profilePicState.igPicId,
+      localSha256: currentLocalSha256,
+      dimensions: applied.dimensions,
+      note: uploadRes.note
+    };
+  }
+
+  return {
+    changed: false,
+    direction: 'none',
+    igPicId: currentIgPicId,
+    localSha256: currentLocalSha256
+  };
+}
+
+async function setSiteProfilePicture(sourceFilePath) {
+  return withLock(async () => {
+    const absPath = path.resolve(sourceFilePath);
+    if (!fs.existsSync(absPath)) {
+      throw new Error(`Fichier image introuvable : ${sourceFilePath}`);
+    }
+    const buf = fs.readFileSync(absPath);
+    const sha = sha256Buffer(buf);
+    const config = loadConfig();
+    const applied = applyProfilePictureToSite(buf, sha.slice(0, 8));
+    const uploadRes = await uploadProfilePictureToInstagram(buf, config);
+
+    config.profilePicState = {
+      igPicId: uploadRes.newIgPicId || (config.profilePicState && config.profilePicState.igPicId) || null,
+      localSha256: sha,
+      dimensions: applied.dimensions,
+      source: 'site',
+      syncedToInstagram: Boolean(uploadRes.uploaded),
+      instagramSyncNote: uploadRes.note,
+      updatedAt: new Date().toISOString()
+    };
+    saveConfig(config);
+    return {
+      success: true,
+      direction: 'site_to_instagram',
+      uploadedToInstagram: Boolean(uploadRes.uploaded),
+      dimensions: applied.dimensions,
+      localSha256: sha,
+      note: uploadRes.note
+    };
+  });
 }
 
 // Detail d'un post : type definitif, diapositives (images/videos), flux MP4, legende, date
@@ -1105,7 +1724,15 @@ async function syncInstagram(options = {}) {
     console.log(`🪞 Mode miroir strict : ${config.mirror !== false ? 'ACTIF (source exclusive Instagram)' : 'INACTIF'}`);
     console.log(`======================================================`);
 
-    const { posts, chromePath } = await scrapeInstagramProfile(config.profileUrl);
+    const { posts, chromePath, html: profileHtml } = await scrapeInstagramProfile(config.profileUrl);
+
+    // Synchronisation bidirectionnelle de la photo de profil (Instagram <-> Site : Intro + Favicon)
+    let profilePicResult = { changed: false, direction: 'none' };
+    try {
+      profilePicResult = await syncProfilePicture(profileHtml, config, { dryRun });
+    } catch (e) {
+      console.warn(`⚠️ Synchronisation photo de profil ignorée (${e.message})`);
+    }
 
     const currentItems = readGalleryItems();
     const existingByCode = new Map();
@@ -1226,6 +1853,7 @@ async function syncInstagram(options = {}) {
         removed: removedCodes.length,
         removedCodes,
         removedNonInstagram: nonInstagramItems.length,
+        profilePic: profilePicResult,
         detected: ready.map((r) => ({ code: r.post.code, type: r.post.type, title: r.post.title, publishedAt: r.post.publishedAt })),
         failed,
         total: existingByCode.size - removedCodes.length + ready.length
@@ -1305,12 +1933,13 @@ async function syncInstagram(options = {}) {
       removed: removedCodes.length,
       removedCodes,
       removedNonInstagram: nonInstagramItems.length,
+      profilePic: profilePicResult,
       total: updatedList.length,
       addedCodes: ready.map((r) => r.post.code),
       addedItems: ready.map((r) => ({ code: r.post.code, type: r.post.type, title: r.post.title })),
       detected: ready.map((r) => ({ code: r.post.code, type: r.post.type, title: r.post.title })),
       failed,
-      message: listChanged
+      message: listChanged || profilePicResult.changed
         ? 'Synchronisation miroir effectuée.'
         : 'Aucun changement détecté sur le profil Instagram.'
     };
@@ -1405,6 +2034,14 @@ if (require.main === module) {
     snapshotBaseline()
       .then(() => process.exit(0))
       .catch(fail('Échec snapshot baseline'));
+  } else if (arg === '--set-profile-pic' && process.argv[3]) {
+    setSiteProfilePicture(process.argv[3])
+      .then((res) => {
+        console.log(`\n✅ Photo de profil du site et favicons mis à jour (${res.uploadedToInstagram ? 'synchronisée vers Instagram' : 'prête sur le site'}) !`);
+        writeGithubOutput({ sync_status: 'ok', profile_pic_updated: true });
+        process.exit(0);
+      })
+      .catch(fail('Échec mise à jour photo de profil'));
   } else if (arg && !arg.startsWith('--') && (arg.startsWith('http://') || arg.startsWith('https://') || arg.startsWith('www.') || arg.includes('instagram.com/') || /^[A-Za-z0-9_-]{11,}$/.test(arg))) {
     syncSinglePost(arg)
       .then((res) => {
@@ -1421,7 +2058,7 @@ if (require.main === module) {
           console.log(`\n🧪 Simulation terminée : ${res.detected.length} post(s) à importer, ${res.removed || 0} à supprimer`);
           res.detected.forEach((d) => console.log(`   - ${d.code} [${d.type}] ${d.title}`));
         } else {
-          console.log(`\n✅ Terminé ! (${res.added} ajouté(s), ${res.removed || 0} supprimé(s), ${res.total} total dans la galerie)`);
+          console.log(`\n✅ Terminé ! (${res.added} ajouté(s), ${res.removed || 0} supprimé(s), ${res.total} total dans la galerie${res.profilePic && res.profilePic.changed ? ', photo de profil mise à jour' : ''})`);
         }
         if (res.failed && res.failed.length) {
           console.error(`⚠️ ${res.failed.length} post(s) en échec : ${res.failed.map((f) => f.code).join(', ')}`);
@@ -1429,6 +2066,7 @@ if (require.main === module) {
             sync_status: 'partial',
             added_count: res.added || 0,
             removed_count: (res.removed || 0) + (res.removedNonInstagram || 0),
+            profile_pic_changed: Boolean(res.profilePic && res.profilePic.changed),
             total_count: res.total || 0,
             failed_count: res.failed.length
           });
@@ -1438,6 +2076,7 @@ if (require.main === module) {
           sync_status: 'ok',
           added_count: res.added || 0,
           removed_count: (res.removed || 0) + (res.removedNonInstagram || 0),
+          profile_pic_changed: Boolean(res.profilePic && res.profilePic.changed),
           total_count: res.total || 0,
           dry_run: !!res.dryRun
         });
@@ -1464,6 +2103,15 @@ module.exports = {
   downloadPostMedia,
   updateGalleryWithNewPosts,
   extractInstagramCode,
+  syncProfilePicture,
+  setSiteProfilePicture,
+  extractProfileUserInfo,
+  extractProfilePicId,
+  fetchHdProfilePicUrl,
+  applyProfilePictureToSite,
+  uploadProfilePictureToInstagram,
+  setProfilePicUploader,
+  getImageDimensions,
   findChromePath,
   loadConfig,
   // Analyse & resilience (tests)

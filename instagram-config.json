@@ -5,6 +5,18 @@
   "downloadMedia": true,
   "excludeStories": true,
   "mirror": true,
+  "syncProfilePic": true,
+  "profilePicState": {
+    "igPicId": "907169360_18071334707787604_2253283703891567890_n.jpg",
+    "localSha256": "908cc958d002cd91cd8db62eeb02edcce365e12306f3b3ed23d8a4c43a62bf8f",
+    "dimensions": {
+      "height": 1080,
+      "width": 1080,
+      "format": "jpeg"
+    },
+    "source": "instagram",
+    "updatedAt": "2026-11-14T22:21:35.665Z"
+  },
   "baselineDate": null,
   "baselineCodes": [],
   "excludedCodes": [],

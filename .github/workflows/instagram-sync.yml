@@ -65,7 +65,7 @@ jobs:
         run: |
           git config user.name "instagram-agent[bot]"
           git config user.email "instagram-agent@users.noreply.github.com"
-          git add -A data.json projects-data.js index.html instagram-config.json assets/projets/instagram
+          git add -A data.json projects-data.js index.html instagram-config.json assets/projets/instagram assets/robin-wattier-profile.jpg assets/favicon.png assets/favicon-32x32.png assets/apple-touch-icon.png assets/favicon.ico
           if git diff --cached --quiet; then
             echo "pushed=false" >> "$GITHUB_OUTPUT"
             echo "Aucun nouveau contenu."

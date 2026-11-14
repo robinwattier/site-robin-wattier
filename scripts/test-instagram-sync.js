@@ -509,3 +509,94 @@ test('verrou : une 2e synchronisation simultanee est refusee', async () => {
   await assert.rejects(() => agent.syncInstagram(), /déjà en cours/);
   fs.unlinkSync(path.join(TMP, '.sync-instagram.lock'));
 });
+
+test('photo de profil : synchronisation Instagram -> Site (HD sans perte, Intro + favicon) et bidirectionnelle Site -> Instagram', async () => {
+  // Preparer index.html avec l'image de profil Intro et les favicons
+  fs.writeFileSync(
+    path.join(TMP, 'index.html'),
+    [
+      '<link rel="preload" href="assets/robin-wattier-profile.jpg" as="image">',
+      '<link rel="icon" type="image/png" href="assets/favicon.png">',
+      '<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">',
+      '<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">',
+      '<link rel="shortcut icon" href="assets/favicon.ico">',
+      '<img src="assets/robin-wattier-profile.jpg" class="intro-avatar-img">',
+      '<script src="projects-data.js?v=111"></script>'
+    ].join('\n')
+  );
+
+  let currentIgAvatarName = 'avatar_hd_v1_1080x1080.jpg';
+  const buildProfileHtmlWithAvatar = () => {
+    const base = profileHtml(profileNodes);
+    const userScript = `<script type="application/json">${JSON.stringify({
+      user: {
+        pk: '53640291603',
+        username: 'robinwattier',
+        profile_pic_url: `http://127.0.0.1:${port}/thumb_${currentIgAvatarName}`,
+        hd_profile_pic_url_info: { url: `http://127.0.0.1:${port}/${currentIgAvatarName}` }
+      }
+    })}</script>`;
+    return base + userScript;
+  };
+
+  agent.setDomFetcher(async (url) => {
+    if (url.endsWith('/robinwattier/')) return buildProfileHtmlWithAvatar();
+    const m = url.match(/\/(?:p|reel)\/([A-Za-z0-9_-]+)\//);
+    if (m && postDetails[m[1]]) return postHtml(postDetails[m[1]]);
+    throw new Error('404 ' + url);
+  });
+
+  // 1. Instagram -> Site : telecharge l'image HD originale (hd_profile_pic_url_info) et met a jour Intro + favicons
+  const res1 = await agent.syncInstagram();
+  assert.equal(res1.profilePic.changed, true);
+  assert.equal(res1.profilePic.direction, 'instagram_to_site');
+  assert.equal(res1.profilePic.igPicId, 'avatar_hd_v1_1080x1080.jpg');
+  assert.equal(fs.readFileSync(path.join(TMP, 'assets/robin-wattier-profile.jpg'), 'utf8'), 'FAKE-/avatar_hd_v1_1080x1080.jpg');
+  assert.equal(fs.readFileSync(path.join(TMP, 'assets/favicon.png'), 'utf8'), 'FAKE-/avatar_hd_v1_1080x1080.jpg');
+  assert.equal(fs.readFileSync(path.join(TMP, 'assets/favicon-32x32.png'), 'utf8'), 'FAKE-/avatar_hd_v1_1080x1080.jpg');
+  assert.equal(fs.readFileSync(path.join(TMP, 'assets/apple-touch-icon.png'), 'utf8'), 'FAKE-/avatar_hd_v1_1080x1080.jpg');
+  assert.equal(fs.readFileSync(path.join(TMP, 'assets/favicon.ico'), 'utf8'), 'FAKE-/avatar_hd_v1_1080x1080.jpg');
+
+  const htmlAfter1 = fs.readFileSync(path.join(TMP, 'index.html'), 'utf8');
+  assert.match(htmlAfter1, /assets\/robin-wattier-profile\.jpg\?v=[0-9a-f]{8}/);
+  assert.match(htmlAfter1, /assets\/favicon\.png\?v=[0-9a-f]{8}/);
+
+  // 2. Idempotence : aucun changement -> rien n'est re-telecharge
+  const res2 = await agent.syncInstagram();
+  assert.equal(res2.profilePic.changed, false);
+  assert.equal(res2.profilePic.direction, 'none');
+
+  // 3. Changement de photo sur Instagram -> remplace automatiquement sur le site + favicon
+  currentIgAvatarName = 'avatar_hd_v2_1080x1080.jpg';
+  const res3 = await agent.syncInstagram();
+  assert.equal(res3.profilePic.changed, true);
+  assert.equal(res3.profilePic.direction, 'instagram_to_site');
+  assert.equal(fs.readFileSync(path.join(TMP, 'assets/robin-wattier-profile.jpg'), 'utf8'), 'FAKE-/avatar_hd_v2_1080x1080.jpg');
+  assert.equal(fs.readFileSync(path.join(TMP, 'assets/favicon.png'), 'utf8'), 'FAKE-/avatar_hd_v2_1080x1080.jpg');
+
+  // 4. Modification directe sur le site -> met a jour les favicons + synchronise vers Instagram
+  let uploadedBytes = null;
+  agent.setProfilePicUploader(async (buf) => {
+    uploadedBytes = buf.toString('utf8');
+    currentIgAvatarName = 'avatar_from_site_1080x1080.jpg';
+    return {
+      uploaded: true,
+      method: 'instagram_web_api',
+      newIgPicId: currentIgAvatarName,
+      note: 'Synchronisé vers Instagram'
+    };
+  });
+
+  try {
+    fs.writeFileSync(path.join(TMP, 'assets/robin-wattier-profile.jpg'), 'SITE-MODIFIED-HD-AVATAR');
+    const res4 = await agent.syncInstagram();
+    assert.equal(res4.profilePic.changed, true);
+    assert.equal(res4.profilePic.direction, 'site_to_instagram');
+    assert.equal(res4.profilePic.uploadedToInstagram, true);
+    assert.equal(uploadedBytes, 'SITE-MODIFIED-HD-AVATAR');
+    assert.equal(fs.readFileSync(path.join(TMP, 'assets/favicon.png'), 'utf8'), 'SITE-MODIFIED-HD-AVATAR');
+    assert.equal(fs.readFileSync(path.join(TMP, 'assets/favicon.ico'), 'utf8'), 'SITE-MODIFIED-HD-AVATAR');
+  } finally {
+    agent.setProfilePicUploader(null);
+  }
+});

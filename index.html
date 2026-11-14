@@ -19,15 +19,13 @@
   <!-- Typography : Montserrat + Geist, sous-ensembles Latin WOFF2 auto-hébergés (~28 Ko + ~25 Ko, aucune requête tierce) -->
   <link rel="preload" href="assets/fonts/montserrat-var-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/geist-var-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/robin-wattier-profile-248.webp" as="image" type="image/webp"
-    imagesrcset="assets/robin-wattier-profile-248.webp 248w, assets/robin-wattier-profile-372.webp 372w" imagesizes="124px"
-    fetchpriority="high">
+  <link rel="preload" href="assets/robin-wattier-profile.jpg?v=908cc958" as="image" type="image/jpeg" fetchpriority="high">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
-  <link rel="icon" type="image/png" href="assets/favicon.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
-  <link rel="shortcut icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" href="assets/favicon.png?v=908cc958">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png?v=908cc958">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=908cc958">
+  <link rel="shortcut icon" href="assets/favicon.ico?v=908cc958">
 
   <!-- Core Design System & Stylesheet -->
   <link rel="stylesheet" href="style.css?v=51">
@@ -120,11 +118,8 @@
         <!-- PROFIL ROBIN WATTIER (Photo Ronde & Nom Centré) -->
         <section class="intro-profile studio-section revealed" aria-label="Profil Robin Wattier">
           <div class="intro-avatar-circle">
-            <picture>
-              <source srcset="assets/robin-wattier-profile-248.webp 248w, assets/robin-wattier-profile-372.webp 372w" sizes="124px" type="image/webp">
-              <img src="assets/robin-wattier-profile.jpg" alt="Robin Wattier" class="intro-avatar-img" width="124"
-                height="124" loading="eager" decoding="async" fetchpriority="high">
-            </picture>
+            <img src="assets/robin-wattier-profile.jpg?v=908cc958" alt="Robin Wattier" class="intro-avatar-img" width="124"
+              height="124" loading="eager" decoding="async" fetchpriority="high">
           </div>
           <h2 class="intro-profile-name">
             <span class="name-first">ROBIN</span>

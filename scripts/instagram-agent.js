@@ -24,7 +24,18 @@ const NO_GIT = args.has('--no-git') || DRY;
 const NO_PUSH = args.has('--no-push');
 
 // Fichiers modifies par une synchronisation (seuls ceux-la sont commites)
-const SYNC_PATHS = ['data.json', 'projects-data.js', 'index.html', 'instagram-config.json', 'assets/projets/instagram'];
+const SYNC_PATHS = [
+  'data.json',
+  'projects-data.js',
+  'index.html',
+  'instagram-config.json',
+  'assets/projets/instagram',
+  'assets/robin-wattier-profile.jpg',
+  'assets/favicon.png',
+  'assets/favicon-32x32.png',
+  'assets/apple-touch-icon.png',
+  'assets/favicon.ico'
+];
 
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
@@ -65,11 +76,12 @@ async function main() {
   const added = result.addedItems || [];
   const removedCodes = result.removedCodes || [];
   const removedNonInstagram = result.removedNonInstagram || 0;
+  const profilePicChanged = Boolean(result.profilePic && result.profilePic.changed);
   if (result.failed && result.failed.length) {
     log(`⚠️ Posts en échec (réessayés au prochain passage) : ${result.failed.map((f) => `${f.code} (${f.error})`).join('; ')}`);
   }
 
-  if (added.length === 0 && removedCodes.length === 0 && removedNonInstagram === 0) {
+  if (added.length === 0 && removedCodes.length === 0 && removedNonInstagram === 0 && !profilePicChanged) {
     log(`Aucun changement sur le profil Instagram (${result.scraped} analysés, ${result.total} en galerie).`);
   } else {
     if (added.length > 0) {
@@ -81,6 +93,9 @@ async function main() {
     if (removedNonInstagram > 0) {
       log(`Supprimé de "Content" (source exclusive Instagram) : ${removedNonInstagram} élément(s) hors-Instagram`);
     }
+    if (profilePicChanged) {
+      log(`Photo de profil & favicon synchronisés (${result.profilePic.direction})`);
+    }
   }
 
   if (!NO_GIT) {
@@ -91,6 +106,7 @@ async function main() {
       if (added.length) parts.push(`+${added.length} (${names.join(', ')})`);
       if (removedCodes.length) parts.push(`-${removedCodes.length} (${removedCodes.join(', ')})`);
       if (removedNonInstagram) parts.push(`-${removedNonInstagram} hors-Instagram`);
+      if (profilePicChanged) parts.push('photo de profil + favicon HD');
       const msg = parts.length
         ? `feat(content): synchronisation miroir Instagram (${parts.join(', ')})`
         : 'chore(content): mise à jour automatique de la synchronisation Instagram';

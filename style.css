@@ -386,13 +386,21 @@ body.mobile-menu-open nav.navbar {
 
 .m-nav-link.m-ghost {
   background-color: #1c1c1c;
-  color: #cccccc;
+  color: #ffffff;
 }
 
-.m-nav-link.m-ghost:hover,
-.m-nav-link.m-ghost.active {
+.m-nav-link.m-ghost:hover {
   background-color: #262626;
   color: #ffffff;
+}
+
+.m-nav-link.active,
+.m-nav-link.m-ghost.active,
+.m-nav-link.active:hover,
+.m-nav-link.m-ghost.active:hover {
+  background-color: #ffffff;
+  color: #0c0c0c;
+  font-weight: 600;
 }
 
 .m-nav-link.m-solid {

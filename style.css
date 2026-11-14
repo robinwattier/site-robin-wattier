@@ -191,55 +191,62 @@ nav.navbar {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 32px;
 }
 
-/* Navigation Menu Buttons - Pill encadré identique aux liens intro (cta-pill) */
+/* Navigation Menu Buttons - @shadcnui-blocks/components/navigation-menu-05 (Underlined Navigation Menu) */
 .nav-link {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 34px;
-  padding: 0 16px;
-  background-color: var(--pill-bg-ghost);
-  color: #ffffff;
-  border: 0.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-pill);
+  height: 36px;
+  width: max-content;
+  padding: 8px 2px;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  border: none;
+  border-radius: 0;
   font-family: var(--font-geist);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 500;
   letter-spacing: -0.01em;
   text-decoration: none;
   cursor: pointer;
   user-select: none;
   outline: none;
-  line-height: 1;
+  line-height: 1.25;
   white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s var(--ease-spring);
+  transition: color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.nav-link:hover {
-  background-color: var(--pill-hover-ghost);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
-}
-
-.nav-link:active {
-  transform: scale(0.96);
-}
-
-.nav-link.active {
+.nav-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
   background-color: #ffffff;
-  color: #0c0c0c;
-  border-color: #ffffff;
-  font-weight: 600;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-link:focus-visible {
-  outline: 2px solid var(--fg);
-  outline-offset: 2px;
+.nav-link:hover,
+.nav-link:focus-visible,
+.nav-link:active,
+.nav-link.active {
+  background-color: transparent;
+  color: #ffffff;
+  outline: none;
+}
+
+.nav-link:hover::before,
+.nav-link:focus-visible::before,
+.nav-link.active::before {
+  transform: scaleX(1);
 }
 
 /* Backward-compatible pill fallback styles */
@@ -363,60 +370,70 @@ body.mobile-menu-open nav.navbar {
 }
 
 .m-nav-link {
-  width: 100%;
-  display: flex;
+  position: relative;
+  width: max-content;
+  display: inline-flex;
   align-items: center;
   justify-content: flex-start;
+  height: 36px;
   text-align: left;
   font-family: var(--font-geist);
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 500;
   letter-spacing: -0.01em;
   line-height: 1.25;
   text-decoration: none;
-  padding: 10px 16px;
-  border-radius: 999px;
+  padding: 8px 2px;
+  border-radius: 0;
   border: none;
   outline: none;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.78);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: color 0.15s ease;
 }
 
-.m-nav-link.m-ghost {
-  background-color: #1c1c1c;
-  color: #ffffff;
+.m-nav-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background-color: #ffffff;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.m-nav-link.m-ghost:hover {
-  background-color: #262626;
-  color: #ffffff;
+.m-nav-link.m-ghost,
+.m-nav-link.m-solid {
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.78);
 }
 
+.m-nav-link:hover,
+.m-nav-link.m-ghost:hover,
+.m-nav-link.m-solid:hover,
+.m-nav-link:focus-visible,
+.m-nav-link:active,
 .m-nav-link.active,
 .m-nav-link.m-ghost.active,
 .m-nav-link.active:hover,
 .m-nav-link.m-ghost.active:hover {
-  background-color: #ffffff;
-  color: #0c0c0c;
-  font-weight: 600;
+  background-color: transparent;
+  color: #ffffff;
+  font-weight: 500;
+  outline: none;
 }
 
-.m-nav-link.m-solid {
-  background-color: var(--fg);
-  color: #0c0c0c;
-  font-weight: 400;
-}
-
-.m-nav-link.m-solid:hover {
-  background-color: #e5e5e5;
-  color: #0c0c0c;
-}
-
-.m-nav-link:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 2px;
+.m-nav-link:hover::before,
+.m-nav-link:focus-visible::before,
+.m-nav-link.active::before,
+.m-nav-link.m-ghost.active::before {
+  transform: scaleX(1);
 }
 
 /* --- Main View Container --- */

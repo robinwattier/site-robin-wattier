@@ -1,20 +1,5 @@
 [
   {
-    "src": "assets/projets/screen-video-dan-elec.mp4",
-    "fallbackSrc": "assets/projets/screen-video-dan-elec.mp4",
-    "video": "assets/projets/screen-video-dan-elec.mp4",
-    "poster": "assets/projets/danelec.webp",
-    "posterFallback": "assets/projets/danelec.webp",
-    "title": "DanElec - Votre Partenaire en Sécurité",
-    "type": "video",
-    "link": "https://danelec.be/",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1280,
-    "h": 720,
-    "posterPosition": "center 60%"
-  },
-  {
     "title": "Our new track « sometimes » drops soon!",
     "type": "carousel",
     "link": "https://www.instagram.com/p/DfXkmltAnsg/",
@@ -34,23 +19,6 @@
     "poster": "assets/projets/instagram/DfXkmltAnsg/slide_1.jpg"
   },
   {
-    "title": "R32",
-    "type": "carousel",
-    "link": "https://www.instagram.com/p/DfFhlg7gt27/",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1080,
-    "h": 1350,
-    "slides": [
-      "assets/projets/instagram/DfFhlg7gt27/slide_1.jpg",
-      "assets/projets/instagram/DfFhlg7gt27/slide_2.jpg",
-      "assets/projets/instagram/DfFhlg7gt27/slide_3.jpg"
-    ],
-    "src": "assets/projets/instagram/DfFhlg7gt27/slide_1.jpg",
-    "fallbackSrc": "assets/projets/instagram/DfFhlg7gt27/slide_1.jpg",
-    "poster": "assets/projets/instagram/DfFhlg7gt27/slide_1.jpg"
-  },
-  {
     "title": "Streetwear Noir",
     "type": "carousel",
     "link": "https://www.instagram.com/p/DfAST-woNwX/",
@@ -66,23 +34,6 @@
     "src": "assets/projets/instagram/DfAST-woNwX/slide_1.jpg",
     "fallbackSrc": "assets/projets/instagram/DfAST-woNwX/slide_1.jpg",
     "poster": "assets/projets/instagram/DfAST-woNwX/slide_1.jpg"
-  },
-  {
-    "title": "Silvia S15 🎃🔮",
-    "type": "carousel",
-    "link": "https://www.instagram.com/p/De18lCJIIe-/",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1080,
-    "h": 1350,
-    "slides": [
-      "assets/projets/instagram/De18lCJIIe-/slide_1.jpg",
-      "assets/projets/instagram/De18lCJIIe-/slide_2.jpg",
-      "assets/projets/instagram/De18lCJIIe-/slide_3.jpg"
-    ],
-    "src": "assets/projets/instagram/De18lCJIIe-/slide_1.jpg",
-    "fallbackSrc": "assets/projets/instagram/De18lCJIIe-/slide_1.jpg",
-    "poster": "assets/projets/instagram/De18lCJIIe-/slide_1.jpg"
   },
   {
     "title": "nocturnal.",
@@ -136,6 +87,19 @@
     "poster": "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg"
   },
   {
+    "title": "41 Frozen - @trinsic.music x @robinwattier",
+    "type": "video",
+    "link": "https://www.instagram.com/p/DV32A1nAakB/",
+    "featured": true,
+    "hasBadge": true,
+    "w": 720,
+    "h": 1280,
+    "src": "assets/projets/instagram/DV32A1nAakB/video.mp4",
+    "fallbackSrc": "assets/projets/instagram/DV32A1nAakB/video.mp4",
+    "poster": "assets/projets/instagram/DV32A1nAakB/poster.webp",
+    "posterFallback": "assets/projets/instagram/DV32A1nAakB/poster.jpg"
+  },
+  {
     "title": "Midnight Alsthetic",
     "type": "carousel",
     "link": "https://www.instagram.com/robinwattier/p/DU6MhcLjOpu/",
@@ -153,17 +117,23 @@
     "poster": "assets/projets/instagram/DU6MhcLjOpu/slide_1.jpg"
   },
   {
-    "title": "Snow Strippers - Under Your Spell (Remix by Izzy X & Robin Wattier)",
-    "type": "video",
-    "link": "https://www.instagram.com/reel/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/",
+    "title": "My logo displayed in my hometown 🥹 (3D AI render).",
+    "type": "carousel",
+    "link": "https://www.instagram.com/p/DT0wr-7DHih/",
     "featured": true,
     "hasBadge": true,
-    "w": 720,
-    "h": 1280,
-    "src": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/video.mp4",
-    "fallbackSrc": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/video.mp4",
-    "poster": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.webp",
-    "posterFallback": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg"
+    "w": 512,
+    "h": 682,
+    "slides": [
+      "assets/projets/instagram/DT0wr-7DHih/slide_1.jpg",
+      "assets/projets/instagram/DT0wr-7DHih/slide_2.jpg"
+    ],
+    "slideVideos": {
+      "0": "assets/projets/instagram/DT0wr-7DHih/slide_1.mp4"
+    },
+    "src": "assets/projets/instagram/DT0wr-7DHih/slide_1.jpg",
+    "fallbackSrc": "assets/projets/instagram/DT0wr-7DHih/slide_1.jpg",
+    "poster": "assets/projets/instagram/DT0wr-7DHih/slide_1.jpg"
   },
   {
     "title": "Aesthetic Life ✨ feat KYLLER",
@@ -183,92 +153,29 @@
     "poster": "assets/projets/instagram/DQH7JufjL0z/slide_1.jpg"
   },
   {
-    "src": "assets/projets/lakeside.mp4",
-    "fallbackSrc": "https://youtu.be/NTnm2GXDqq8",
-    "title": "Robin Wattier - Lakeside",
-    "type": "youtube",
-    "youtubeId": "NTnm2GXDqq8",
-    "link": "https://youtu.be/NTnm2GXDqq8",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1280,
-    "h": 720,
-    "poster": "assets/projets/lakeside.webp"
-  },
-  {
-    "title": "41 Frozen - @trinsic.music x @robinwattier",
+    "title": "Snow Strippers - Under Your Spell (Remix by Izzy X & Robin Wattier)",
     "type": "video",
-    "link": "https://www.instagram.com/p/DV32A1nAakB/",
+    "link": "https://www.instagram.com/reel/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/",
     "featured": true,
     "hasBadge": true,
     "w": 720,
     "h": 1280,
-    "src": "assets/projets/instagram/DV32A1nAakB/video.mp4",
-    "fallbackSrc": "assets/projets/instagram/DV32A1nAakB/video.mp4",
-    "poster": "assets/projets/instagram/DV32A1nAakB/poster.webp",
-    "posterFallback": "assets/projets/instagram/DV32A1nAakB/poster.jpg"
+    "src": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/video.mp4",
+    "fallbackSrc": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/video.mp4",
+    "poster": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.webp",
+    "posterFallback": "assets/projets/instagram/DG1QqXdhuFFm9_SXJsA0-7svDqYJUa83XG0mwI0/poster.jpg"
   },
   {
-    "src": "assets/projets/mysterieux.mp4",
-    "fallbackSrc": "https://youtu.be/M6YW2kR5KyU?list=RDM6YW2kR5KyU",
-    "title": "Robin Wattier - Mystérieux",
-    "type": "youtube",
-    "youtubeId": "M6YW2kR5KyU",
-    "link": "https://youtu.be/M6YW2kR5KyU?list=RDM6YW2kR5KyU",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1920,
-    "h": 1080,
-    "poster": "assets/projets/mysterieux.webp"
-  },
-  {
-    "src": "assets/projets/animation-logo-3d-ville-de-Mons.mp4",
-    "fallbackSrc": "assets/projets/animation-logo-3d-ville-de-Mons.mp4",
-    "title": "RW Logo 3D - Gare de Mons",
+    "title": "Making his debut on the channel is the great @robinwattier with Lakeside.",
     "type": "video",
+    "link": "https://www.instagram.com/reel/C6TqEWBKVPh/",
     "featured": true,
     "hasBadge": true,
-    "link": "https://pin.it/2xpsxbkK7",
-    "w": 3000,
-    "h": 3000,
-    "poster": "assets/projets/rw-gare-de-mons-export-cover-3000X3000.webp"
-  },
-  {
-    "src": "assets/projets/trap_city.mp4",
-    "fallbackSrc": "https://v1.pinimg.com/videos/iht/expMp4/81/a0/51/81a051b82162f67a47913b6892c4e7a8_720w.mp4",
-    "title": "Skeler - Tel Aviv (Trap City)",
-    "type": "youtube",
-    "youtubeId": "oydJdu7i1Lc",
-    "link": "https://youtu.be/oydJdu7i1Lc?list=RDoydJdu7i1Lc",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1168,
-    "h": 638,
-    "poster": "assets/projets/skeler_pin.webp"
-  },
-  {
-    "src": "assets/projets/house_city.mp4",
-    "fallbackSrc": "assets/projets/house_city.mp4",
-    "title": "Trinsic, Robin Wattier - 41 Frozen (House City)",
-    "type": "youtube",
-    "youtubeId": "7XaZdj_MUII",
-    "link": "https://www.youtube.com/watch?v=7XaZdj_MUII&list=RD7XaZdj_MUII",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1280,
-    "h": 720,
-    "poster": "assets/projets/house_city_poster.webp"
-  },
-  {
-    "src": "assets/projets/book-stage-mons.webp",
-    "fallbackSrc": "assets/projets/book-stage-mons.webp",
-    "title": "Book de stage - Ville de Mons",
-    "type": "pdf",
-    "link": "assets/projets/portfolio-vdm/Book-stage-AA-Pub-juin2023-WATTIER-Robin.pdf",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1280,
-    "h": 720,
-    "poster": "assets/projets/book-stage-mons.webp"
+    "w": 720,
+    "h": 1280,
+    "src": "assets/projets/instagram/C6TqEWBKVPh/video.mp4",
+    "fallbackSrc": "assets/projets/instagram/C6TqEWBKVPh/video.mp4",
+    "poster": "assets/projets/instagram/C6TqEWBKVPh/poster.webp",
+    "posterFallback": "assets/projets/instagram/C6TqEWBKVPh/poster.jpg"
   }
 ]

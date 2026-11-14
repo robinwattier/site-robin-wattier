@@ -30,7 +30,7 @@
   <link rel="shortcut icon" href="assets/favicon.ico">
 
   <!-- Core Design System & Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=50">
+  <link rel="stylesheet" href="style.css?v=51">
 
   <!-- Pinterest Tag (Chargement asynchrone non-bloquant) -->
   <script>
@@ -96,51 +96,18 @@
     <!-- Menu Hamburger pour Tablettes et Mobiles -->
     <button type="button" class="burger-btn" id="burger-btn" aria-label="Ouvrir le menu de navigation"
       aria-expanded="false" aria-controls="mobile-menu">
-      <svg class="menu-toggle-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2"
-        stroke-linecap="round" stroke-linejoin="round">
-        <path class="menu-toggle-path"
-          d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22" />
-        <path class="menu-toggle-middle" d="M7 16 27 16" />
-      </svg>
+      <span></span><span></span><span></span>
     </button>
   </nav>
 
-  <!-- Menu Plein Écran Mobile / Tablette (21st.dev Animated Menu Style) -->
-  <div class="mobile-menu" id="mobile-menu" aria-label="Menu de navigation" aria-hidden="true">
-    <div class="mobile-menu-inner">
-      <ul class="mobile-menu-list" role="menu">
-        <li class="mobile-menu-item" role="none">
-          <button type="button" class="m-nav-link active" data-page="intro" id="m-nav-btn-intro" role="menuitem" aria-label="Intro">
-            <span class="m-roll-wrapper">
-              <span class="m-roll-text" data-text="Intro">Intro</span>
-            </span>
-          </button>
-        </li>
-        <li class="mobile-menu-item" role="none">
-          <button type="button" class="m-nav-link" data-page="projects" id="m-nav-btn-projects" role="menuitem" aria-label="Content">
-            <span class="m-roll-wrapper">
-              <span class="m-roll-text" data-text="Content">Content</span>
-            </span>
-          </button>
-        </li>
-        <li class="mobile-menu-item" role="none">
-          <a href="https://shop.robinwattier.com" class="m-nav-link" id="m-nav-btn-shop" role="menuitem" target="_blank"
-            rel="noopener noreferrer" aria-label="Shop">
-            <span class="m-roll-wrapper">
-              <span class="m-roll-text" data-text="Shop">Shop</span>
-            </span>
-          </a>
-        </li>
-        <li class="mobile-menu-item" role="none">
-          <a href="https://linktr.ee/robinwattier" class="m-nav-link" id="m-nav-btn-contact" role="menuitem" target="_blank"
-            rel="noopener noreferrer" aria-label="Contact/Follow">
-            <span class="m-roll-wrapper">
-              <span class="m-roll-text" data-text="Contact/Follow">Contact/Follow</span>
-            </span>
-          </a>
-        </li>
-      </ul>
-    </div>
+  <!-- Menu Hamburger Mobile / Tablette (Style iamnotsrc) -->
+  <div class="mobile-menu" id="mobile-menu" role="menu" aria-label="Menu de navigation" aria-hidden="true">
+    <button type="button" class="m-nav-link m-ghost active" data-page="intro" id="m-nav-btn-intro" role="menuitem" aria-label="Intro">Intro</button>
+    <button type="button" class="m-nav-link m-ghost" data-page="projects" id="m-nav-btn-projects" role="menuitem" aria-label="Content">Content</button>
+    <a href="https://shop.robinwattier.com" class="m-nav-link m-ghost" id="m-nav-btn-shop" role="menuitem" target="_blank"
+      rel="noopener noreferrer" aria-label="Shop">Shop</a>
+    <a href="https://linktr.ee/robinwattier" class="m-nav-link m-solid" id="m-nav-btn-contact" role="menuitem" target="_blank"
+      rel="noopener noreferrer" aria-label="Contact/Follow">Contact/Follow</a>
   </div>
 
   <!-- Contenu Principal (Défile sous la barre de navigation fixe) -->
@@ -500,7 +467,7 @@
   </button>
 
   <!-- Données des projets et Logique applicative -->
-  <script src="projects-data.js?v=799033" defer></script>
+  <script src="projects-data.js?v=094144" defer></script>
   <script src="script.js?v=36" defer></script>
 </body>
 

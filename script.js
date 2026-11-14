@@ -1511,6 +1511,7 @@
     const isOpen = burgerBtn.classList.toggle('open');
     mobileMenu.classList.toggle('open', isOpen);
     burgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    burgerBtn.setAttribute('aria-label', isOpen ? 'Fermer le menu de navigation' : 'Ouvrir le menu de navigation');
     mobileMenu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
     document.body.classList.toggle('mobile-menu-open', isOpen);
   }
@@ -1520,6 +1521,7 @@
     burgerBtn.classList.remove('open');
     mobileMenu.classList.remove('open');
     burgerBtn.setAttribute('aria-expanded', 'false');
+    burgerBtn.setAttribute('aria-label', 'Ouvrir le menu de navigation');
     mobileMenu.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('mobile-menu-open');
   }
@@ -1830,14 +1832,13 @@
       }
     });
 
-    // Close mobile menu on clicking background outside interactive elements
-    if (mobileMenu) {
-      mobileMenu.addEventListener('click', (e) => {
-        if (e.target === mobileMenu || e.target.classList.contains('mobile-menu-inner') || e.target.classList.contains('mobile-menu-list')) {
-          closeMobileMenu();
-        }
-      });
-    }
+    // Close mobile menu when clicking outside the dropdown or burger button
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu || !mobileMenu.classList.contains('open')) return;
+      if (!mobileMenu.contains(e.target) && (!burgerBtn || !burgerBtn.contains(e.target))) {
+        closeMobileMenu();
+      }
+    });
 
     // Footer year update
     const yearEl = document.getElementById('footer-year');

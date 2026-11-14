@@ -58,29 +58,43 @@ async function main() {
   const result = await syncInstagram({ dryRun: DRY });
 
   if (DRY) {
-    log(`Simulation : ${result.detected.length} post(s) à importer : ${result.detected.map((d) => `${d.code}[${d.type}]`).join(', ') || 'aucun'}`);
+    log(`Simulation : ${result.detected.length} post(s) à importer (${result.detected.map((d) => `${d.code}[${d.type}]`).join(', ') || 'aucun'}), ${result.removed || 0} à supprimer (${(result.removedCodes || []).join(', ') || 'aucun'})`);
     return result.failed && result.failed.length ? 1 : 0;
   }
 
   const added = result.addedItems || [];
+  const removedCodes = result.removedCodes || [];
+  const removedNonInstagram = result.removedNonInstagram || 0;
   if (result.failed && result.failed.length) {
     log(`⚠️ Posts en échec (réessayés au prochain passage) : ${result.failed.map((f) => `${f.code} (${f.error})`).join('; ')}`);
   }
 
-  if (added.length === 0) {
-    log(`Aucun nouveau post à publier (${result.scraped} analysés).`);
+  if (added.length === 0 && removedCodes.length === 0 && removedNonInstagram === 0) {
+    log(`Aucun changement sur le profil Instagram (${result.scraped} analysés, ${result.total} en galerie).`);
   } else {
-    log(`Ajouté à "Content" : ${added.map((a) => `${a.code} [${a.type === 'video' ? 'Reel' : a.type === 'carousel' ? 'Carrousel' : 'Photo'}] "${a.title}"`).join(' | ')}`);
+    if (added.length > 0) {
+      log(`Ajouté à "Content" : ${added.map((a) => `${a.code} [${a.type === 'video' ? 'Reel' : a.type === 'carousel' ? 'Carrousel' : 'Photo'}] "${a.title}"`).join(' | ')}`);
+    }
+    if (removedCodes.length > 0) {
+      log(`Supprimé de "Content" (miroir Instagram) : ${removedCodes.join(', ')}`);
+    }
+    if (removedNonInstagram > 0) {
+      log(`Supprimé de "Content" (source exclusive Instagram) : ${removedNonInstagram} élément(s) hors-Instagram`);
+    }
   }
 
   if (!NO_GIT) {
     const status = git('status', '--porcelain', '--', ...SYNC_PATHS);
     if (status) {
       const names = added.map((a) => a.code);
-      const msg = added.length
-        ? `feat(content): ajout automatique de ${added.length} publication(s) Instagram (${names.join(', ')})`
-        : 'chore(content): mise à jour automatique de la configuration Instagram';
-      git('add', '--', ...SYNC_PATHS);
+      const parts = [];
+      if (added.length) parts.push(`+${added.length} (${names.join(', ')})`);
+      if (removedCodes.length) parts.push(`-${removedCodes.length} (${removedCodes.join(', ')})`);
+      if (removedNonInstagram) parts.push(`-${removedNonInstagram} hors-Instagram`);
+      const msg = parts.length
+        ? `feat(content): synchronisation miroir Instagram (${parts.join(', ')})`
+        : 'chore(content): mise à jour automatique de la synchronisation Instagram';
+      git('add', '-A', '--', ...SYNC_PATHS);
       git('commit', '-m', msg, '--', ...SYNC_PATHS);
       log(`Commit créé : ${msg}`);
       if (!NO_PUSH) {

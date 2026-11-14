@@ -283,19 +283,20 @@ test('dry-run : detecte et classe sans rien ecrire', async () => {
   assert.equal(fs.existsSync(path.join(TMP, 'assets')), false);
 });
 
-test('sync : Reel -> carte video, carrousels (meme avec video) -> cartes carrousel', async () => {
+test('sync : Reel -> carte video, carrousels (meme avec video) -> cartes carrousel, source exclusive Instagram', async () => {
   const res = await agent.syncInstagram();
   assert.equal(res.success, true);
   assert.equal(res.added, 3);
+  assert.equal(res.removedNonInstagram, 2);
   assert.deepEqual(res.failed, []);
 
   const items = readItems();
-  // Ordre : DanElec, nouveautes (plus recent d'abord), existants, Book de stage en dernier
+  // Source exclusive Instagram : DanElec et Book ont ete purges automatiquement
   assert.deepEqual(items.map((i) => i.title), [
-    'DanElec', 'Mon nouveau Reel 🎬', 'Carrousel photos', 'Carrousel avec une vidéo dedans', 'Deja la', 'Ancien', 'Book'
+    'Mon nouveau Reel 🎬', 'Carrousel photos', 'Carrousel avec une vidéo dedans', 'Deja la', 'Ancien'
   ]);
 
-  const reel = items[1];
+  const reel = items[0];
   assert.equal(reel.type, 'video');
   assert.equal(reel.link, 'https://www.instagram.com/reel/NEWREEL1111/');
   assert.equal(reel.src, 'assets/projets/instagram/NEWREEL1111/video.mp4');
@@ -304,7 +305,7 @@ test('sync : Reel -> carte video, carrousels (meme avec video) -> cartes carrous
   assert.deepEqual([reel.w, reel.h], [720, 1280]);
   assert.equal(fs.readFileSync(path.join(TMP, reel.src), 'utf8'), 'FAKE-/NEWREEL1111/video.mp4');
 
-  const photos = items[2];
+  const photos = items[1];
   assert.equal(photos.type, 'carousel');
   assert.equal(photos.link, 'https://www.instagram.com/p/NEWCAROUS11/');
   assert.equal(photos.slides.length, 3);
@@ -313,7 +314,7 @@ test('sync : Reel -> carte video, carrousels (meme avec video) -> cartes carrous
   // Image la plus grande choisie
   assert.equal(fs.readFileSync(path.join(TMP, photos.slides[0]), 'utf8'), 'FAKE-/NEWCAROUS11/s0-big.jpg');
 
-  const withVideo = items[3];
+  const withVideo = items[2];
   assert.equal(withVideo.type, 'carousel');
   assert.equal(withVideo.slides.length, 2);
   assert.equal(withVideo.video, undefined);
@@ -326,6 +327,8 @@ test('sync : Reel -> carte video, carrousels (meme avec video) -> cartes carrous
   const js = fs.readFileSync(path.join(TMP, 'projects-data.js'), 'utf8');
   assert.match(js, /window\.PORTFOLIO_ITEMS = \[/);
   assert.ok(js.includes('NEWREEL1111'));
+  assert.ok(!js.includes('DanElec'));
+  assert.ok(!js.includes('Book'));
   assert.doesNotMatch(fs.readFileSync(path.join(TMP, 'index.html'), 'utf8'), /\?v=111/);
   // Pas de residu .part / .tmp / verrou
   const leftovers = [];
@@ -342,6 +345,7 @@ test('sync : idempotent (2e passage = rien a ajouter, rien de re-telecharge)', a
   fetched.length = 0;
   const res = await agent.syncInstagram();
   assert.equal(res.added, 0);
+  assert.equal(res.removed, 0);
   assert.deepEqual(res.addedItems, []);
   assert.equal(fs.readFileSync(path.join(TMP, 'data.json'), 'utf8'), before);
   assert.deepEqual(fetched, ['https://www.instagram.com/robinwattier/']);
@@ -349,6 +353,25 @@ test('sync : idempotent (2e passage = rien a ajouter, rien de re-telecharge)', a
   const dryRes = await agent.syncInstagram({ dryRun: true });
   assert.equal(dryRes.dryRun, true);
   assert.deepEqual(dryRes.detected, []);
+});
+
+test('sync miroir : une publication supprimee ou archivee sur Instagram est retiree de Content et du disque', async () => {
+  assert.equal(fs.existsSync(path.join(TMP, 'assets/projets/instagram/NEWCAROUS11')), true);
+  const idx = profileNodes.findIndex((n) => n.code === 'NEWCAROUS11');
+  assert.ok(idx >= 0);
+  const [removedNode] = profileNodes.splice(idx, 1);
+
+  const res = await agent.syncInstagram();
+  assert.equal(res.success, true);
+  assert.equal(res.removed, 1);
+  assert.deepEqual(res.removedCodes, ['NEWCAROUS11']);
+
+  const items = readItems();
+  assert.ok(!items.some((i) => i.link && i.link.includes('NEWCAROUS11')));
+  assert.equal(fs.existsSync(path.join(TMP, 'assets/projets/instagram/NEWCAROUS11')), false);
+
+  // Remettre le noeud pour la suite ou le laisser supprime (deja verifie)
+  void removedNode;
 });
 
 test('sync : un media en echec n\'ajoute JAMAIS un carrousel tronque, les autres posts passent', async () => {

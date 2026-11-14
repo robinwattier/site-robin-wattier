@@ -83,7 +83,8 @@ function loadConfig() {
     autoSyncIntervalMinutes: 60,
     downloadMedia: true,
     excludeStories: true,
-    baselineDate: '2026-10-21T17:04:22+02:00',
+    mirror: true,
+    baselineDate: null,
     baselineCodes: [],
     excludedCodes: []
   };
@@ -986,42 +987,49 @@ function readGalleryItems() {
   }
 }
 
+function extractInstagramCode(item) {
+  if (!item || !item.link) return null;
+  const link = String(item.link);
+  const m = link.match(/instagram\.com\/(?:[A-Za-z0-9_.]+\/)?(?:p|reels?|tv)\/([A-Za-z0-9_-]+)/i);
+  return m ? m[1] : null;
+}
+
 function codesOfItems(items) {
   const codes = new Set();
   items.forEach((it) => {
-    if (it && it.link) {
-      const m = String(it.link).match(/(?:p|reels?|tv)\/([A-Za-z0-9_-]+)/i);
-      if (m) codes.add(m[1]);
-    }
+    const code = extractInstagramCode(it);
+    if (code) codes.add(code);
   });
   return codes;
 }
 
-// Mise a jour de data.json et projects-data.js (DanElec en tete, Book de stage en dernier)
-function updateGalleryWithNewPosts(newItems) {
-  const currentItems = readGalleryItems();
-
-  if (!newItems || newItems.length === 0) {
-    return { added: 0, total: currentItems.length };
+function hasLocalMediaIntact(item) {
+  if (!item || !item.src) return false;
+  const relFiles = new Set([item.src]);
+  if (Array.isArray(item.slides)) {
+    item.slides.forEach((s) => { if (s) relFiles.add(s); });
   }
-
-  console.log(`✨ Ajout de ${newItems.length} nouvelle(s) publication(s) Instagram à la section Content !`);
-
-  const monsItem = currentItems.find((it) => it.link && it.link.includes('Book-stage'));
-  const otherItems = currentItems.filter((it) => !it.link || !it.link.includes('Book-stage'));
-
-  const danelecIndex = otherItems.findIndex((it) => it.link && it.link.includes('danelec.be'));
-  let updatedList;
-  if (danelecIndex >= 0) {
-    const danelecItem = otherItems[danelecIndex];
-    const rest = otherItems.filter((_, idx) => idx !== danelecIndex);
-    updatedList = [danelecItem, ...newItems, ...rest];
-  } else {
-    updatedList = [...newItems, ...otherItems];
+  if (item.slideVideos && typeof item.slideVideos === 'object') {
+    Object.values(item.slideVideos).forEach((v) => { if (v) relFiles.add(v); });
   }
+  for (const rel of relFiles) {
+    const full = path.join(ROOT, rel);
+    if (!fs.existsSync(full)) return false;
+  }
+  return true;
+}
 
-  if (monsItem) updatedList.push(monsItem);
+function removePostMediaDir(code) {
+  if (!code) return false;
+  const dir = path.join(MEDIA_DIR, code);
+  if (fs.existsSync(dir)) {
+    fs.rmSync(dir, { recursive: true, force: true });
+    return true;
+  }
+  return false;
+}
 
+function writeGalleryFiles(updatedList) {
   writeFileAtomic(DATA_JSON_FILE, JSON.stringify(updatedList, null, 2));
 
   const jsContent = `/**
@@ -1050,9 +1058,34 @@ window.PORTFOLIO_ITEMS = ${JSON.stringify(updatedList, null, 2)};
       execSync(`node "${optScript}"`, { stdio: 'ignore', timeout: 60000 });
     }
   } catch (e) { /* non bloquant */ }
+}
+
+// Mise a jour de data.json et projects-data.js (source exclusive : publications Instagram)
+function updateGalleryWithNewPosts(newItems) {
+  const currentItems = readGalleryItems();
+  const instagramItems = currentItems.filter((it) => Boolean(extractInstagramCode(it)));
+  const removedNonInstagram = currentItems.length - instagramItems.length;
+
+  const incoming = Array.isArray(newItems) ? newItems.filter((it) => Boolean(extractInstagramCode(it))) : [];
+  if (incoming.length === 0 && removedNonInstagram === 0) {
+    return { added: 0, removedNonInstagram: 0, total: instagramItems.length };
+  }
+
+  if (incoming.length > 0) {
+    console.log(`✨ Ajout de ${incoming.length} nouvelle(s) publication(s) Instagram à la section Content !`);
+  }
+  if (removedNonInstagram > 0) {
+    console.log(`🧹 Suppression de ${removedNonInstagram} élément(s) hors-Instagram de la section Content.`);
+  }
+
+  const incomingCodes = new Set(incoming.map((it) => extractInstagramCode(it)));
+  const keptInstagram = instagramItems.filter((it) => !incomingCodes.has(extractInstagramCode(it)));
+  const updatedList = [...incoming, ...keptInstagram];
+
+  writeGalleryFiles(updatedList);
 
   console.log('🎉 Section Content mise à jour avec succès dans data.json et projects-data.js !');
-  return { added: newItems.length, total: updatedList.length };
+  return { added: incoming.length, removedNonInstagram, total: updatedList.length };
 }
 
 // ---------------------------------------------------------------------------
@@ -1069,53 +1102,83 @@ async function syncInstagram(options = {}) {
     const config = loadConfig();
     console.log(`\n======================================================`);
     console.log(`📸 SYNCHRONISATION INSTAGRAM : @${config.username}${dryRun ? ' (simulation)' : ''}`);
-    console.log(`🔒 Règle de filtrage : Uniquement les posts après le ${config.baselineDate || 'setup'}`);
+    console.log(`🪞 Mode miroir strict : ${config.mirror !== false ? 'ACTIF (source exclusive Instagram)' : 'INACTIF'}`);
     console.log(`======================================================`);
 
     const { posts, chromePath } = await scrapeInstagramProfile(config.profileUrl);
 
     const currentItems = readGalleryItems();
-    const existingCodes = codesOfItems(currentItems);
+    const existingByCode = new Map();
+    const nonInstagramItems = [];
+    currentItems.forEach((it) => {
+      const code = extractInstagramCode(it);
+      if (code) {
+        if (!existingByCode.has(code)) existingByCode.set(code, it);
+      } else {
+        nonInstagramItems.push(it);
+      }
+    });
     const baselineCodes = new Set(config.baselineCodes || []);
     const excludedCodes = new Set(config.excludedCodes || []);
     const baselineMs = Date.parse(config.baselineDate || '');
+    const mirrorMode = config.mirror !== false;
 
-    const candidates = posts.filter((post) => {
+    const livePosts = posts.filter((post) => !excludedCodes.has(post.code));
+    const liveCodes = new Set(livePosts.map((post) => post.code));
+
+    // Detection des publications Instagram supprimees ou archivees (mode miroir)
+    const removedCodes = [];
+    const keptTailItems = [];
+    if (mirrorMode) {
+      const existingEntries = Array.from(existingByCode.entries());
+      for (let i = 0; i < existingEntries.length; i += 1) {
+        const [code, item] = existingEntries[i];
+        if (liveCodes.has(code) || baselineCodes.has(code)) continue;
+
+        const hasOlderInLive = existingEntries.slice(i + 1).some(([c]) => liveCodes.has(c));
+        if (posts.length < 12 || Boolean(customDomFetcher) || hasOlderInLive) {
+          console.log(`🗑️ [Miroir] Publication Instagram ${code} supprimée ou archivée sur @${config.username}.`);
+          removedCodes.push(code);
+        } else {
+          try {
+            await enrichPostDetails({
+              code,
+              type: item.type === 'video' ? 'video' : 'carousel',
+              permalink: item.link || permalinkFor(code, item.type === 'video' ? 'video' : 'carousel')
+            }, chromePath);
+            keptTailItems.push(item);
+          } catch (e) {
+            console.log(`🗑️ [Miroir] Publication Instagram ${code} introuvable (${e.message}) -> supprimée.`);
+            removedCodes.push(code);
+          }
+        }
+      }
+    }
+
+    if (nonInstagramItems.length > 0) {
+      console.log(`🧹 [Source exclusive] ${nonInstagramItems.length} élément(s) non-Instagram détecté(s) pour suppression.`);
+    }
+
+    const candidates = livePosts.filter((post) => {
       if (baselineCodes.has(post.code)) {
         console.log(`⏭️ [Filtrage] Post existant ${post.code} (${post.type}) ignoré conformément à la règle baseline.`);
         return false;
       }
-      if (existingCodes.has(post.code)) {
+      if (existingByCode.has(post.code) && (dryRun || Boolean(customDomFetcher) || hasLocalMediaIntact(existingByCode.get(post.code)))) {
         console.log(`⏭️ [Filtrage] Post ${post.code} déjà présent dans data.json, ignoré.`);
-        return false;
-      }
-      if (excludedCodes.has(post.code)) {
-        console.log(`⏭️ [Filtrage] Post ${post.code} exclu par configuration.`);
         return false;
       }
       return true;
     });
 
-    if (candidates.length === 0) {
-      console.log(`\n✨ Aucune nouvelle publication Instagram après la date d'installation.`);
-      return {
-        success: true,
-        dryRun,
-        scraped: posts.length,
-        added: 0,
-        addedItems: [],
-        detected: [],
-        failed: [],
-        total: currentItems.length,
-        message: 'Aucun nouveau post publié depuis la mise en place.'
-      };
-    }
-
-    console.log(`\n🆕 ${candidates.length} candidat(s) détecté(s) : ${candidates.map((p) => `${p.code} [${p.type}]`).join(', ')}`);
-
     const failed = [];
     const ready = [];
+    const skippedByBaselineDate = new Set();
     let baselineChanged = false;
+
+    if (candidates.length > 0) {
+      console.log(`\n🆕 ${candidates.length} candidat(s) détecté(s) : ${candidates.map((p) => `${p.code} [${p.type}]`).join(', ')}`);
+    }
 
     for (const post of candidates) {
       try {
@@ -1124,6 +1187,7 @@ async function syncInstagram(options = {}) {
         // Publie avant la mise en place ? (ex. ancien post epingle absent de baselineCodes)
         if (Number.isFinite(baselineMs) && enriched.publishedAt && Date.parse(enriched.publishedAt) < baselineMs) {
           console.log(`⏭️ [Filtrage] ${post.code} publié le ${enriched.publishedAt}, avant la baseline : ignoré.`);
+          skippedByBaselineDate.add(post.code);
           if (!dryRun) {
             config.baselineCodes = Array.from(new Set([...(config.baselineCodes || []), post.code]));
             baselineChanged = true;
@@ -1159,21 +1223,96 @@ async function syncInstagram(options = {}) {
         dryRun: true,
         scraped: posts.length,
         added: 0,
+        removed: removedCodes.length,
+        removedCodes,
+        removedNonInstagram: nonInstagramItems.length,
         detected: ready.map((r) => ({ code: r.post.code, type: r.post.type, title: r.post.title, publishedAt: r.post.publishedAt })),
         failed,
-        total: currentItems.length
+        total: existingByCode.size - removedCodes.length + ready.length
       };
     }
 
     ready.sort((a, b) => newestFirst(a.post, b.post));
-    const result = updateGalleryWithNewPosts(ready.map((r) => r.item));
+    const importedByCode = new Map(ready.filter((r) => r.item).map((r) => [r.post.code, r.item]));
+    const removedSet = new Set(removedCodes);
+
+    let updatedList;
+    if (baselineCodes.size > 0) {
+      const newItems = ready.map((r) => r.item).filter(Boolean);
+      const keptExisting = [];
+      for (const [code, item] of existingByCode.entries()) {
+        if (!removedSet.has(code) && !importedByCode.has(code) && !skippedByBaselineDate.has(code)) {
+          keptExisting.push(item);
+        }
+      }
+      updatedList = [...newItems, ...keptExisting];
+    } else {
+      updatedList = [];
+      const seenCodes = new Set();
+      // Si plusieurs nouveaux posts viennent d'etre importes hors ordre epingle, respecter newestFirst entre nouveaux posts
+      for (const post of livePosts) {
+        if (seenCodes.has(post.code) || removedSet.has(post.code) || skippedByBaselineDate.has(post.code)) continue;
+        if (importedByCode.has(post.code)) {
+          updatedList.push(importedByCode.get(post.code));
+          seenCodes.add(post.code);
+        } else if (existingByCode.has(post.code)) {
+          updatedList.push(existingByCode.get(post.code));
+          seenCodes.add(post.code);
+        }
+      }
+      for (const item of keptTailItems) {
+        const code = extractInstagramCode(item);
+        if (code && !seenCodes.has(code) && !removedSet.has(code)) {
+          updatedList.push(item);
+          seenCodes.add(code);
+        }
+      }
+    }
+
+    const listChanged =
+      ready.length > 0 ||
+      removedCodes.length > 0 ||
+      nonInstagramItems.length > 0 ||
+      JSON.stringify(updatedList) !== JSON.stringify(currentItems);
+
+    if (listChanged) {
+      writeGalleryFiles(updatedList);
+      console.log(
+        `🎉 Section Content synchronisée : +${ready.length} ajouté(s), -${removedCodes.length} supprimé(s)/archivé(s), -${nonInstagramItems.length} hors-Instagram (${updatedList.length} publication(s) au total).`
+      );
+    } else {
+      console.log(`\n✨ Section Content déjà parfaitement synchronisée avec @${config.username} (${updatedList.length} publication(s)).`);
+    }
+
+    // Nettoyage des dossiers media des posts Instagram supprimes/archives et orphelins
+    for (const code of removedCodes) {
+      removePostMediaDir(code);
+    }
+    if (failed.length === 0 && baselineCodes.size === 0 && fs.existsSync(MEDIA_DIR)) {
+      const activeCodes = codesOfItems(updatedList);
+      for (const entry of fs.readdirSync(MEDIA_DIR, { withFileTypes: true })) {
+        if (entry.isDirectory() && !activeCodes.has(entry.name)) {
+          removePostMediaDir(entry.name);
+        }
+      }
+    }
+
     return {
       success: failed.length === 0,
+      dryRun: false,
       scraped: posts.length,
-      ...result,
+      added: ready.length,
+      removed: removedCodes.length,
+      removedCodes,
+      removedNonInstagram: nonInstagramItems.length,
+      total: updatedList.length,
       addedCodes: ready.map((r) => r.post.code),
       addedItems: ready.map((r) => ({ code: r.post.code, type: r.post.type, title: r.post.title })),
-      failed
+      detected: ready.map((r) => ({ code: r.post.code, type: r.post.type, title: r.post.title })),
+      failed,
+      message: listChanged
+        ? 'Synchronisation miroir effectuée.'
+        : 'Aucun changement détecté sur le profil Instagram.'
     };
   });
 }
@@ -1270,7 +1409,7 @@ if (require.main === module) {
     syncSinglePost(arg)
       .then((res) => {
         console.log(`\n✅ Post importé avec succès ! (${res.total} total dans la galerie)`);
-        writeGithubOutput({ sync_status: 'ok', added_count: res.added || 0, total_count: res.total || 0 });
+        writeGithubOutput({ sync_status: 'ok', added_count: res.added || 0, removed_count: 0, total_count: res.total || 0 });
         process.exit(0);
       })
       .catch(fail('Échec import du post'));
@@ -1279,17 +1418,29 @@ if (require.main === module) {
     syncInstagram({ dryRun })
       .then((res) => {
         if (res.dryRun) {
-          console.log(`\n🧪 Simulation terminée : ${res.detected.length} post(s) à importer`);
+          console.log(`\n🧪 Simulation terminée : ${res.detected.length} post(s) à importer, ${res.removed || 0} à supprimer`);
           res.detected.forEach((d) => console.log(`   - ${d.code} [${d.type}] ${d.title}`));
         } else {
-          console.log(`\n✅ Terminé ! (${res.added} ajouté(s), ${res.total} total dans la galerie)`);
+          console.log(`\n✅ Terminé ! (${res.added} ajouté(s), ${res.removed || 0} supprimé(s), ${res.total} total dans la galerie)`);
         }
         if (res.failed && res.failed.length) {
           console.error(`⚠️ ${res.failed.length} post(s) en échec : ${res.failed.map((f) => f.code).join(', ')}`);
-          writeGithubOutput({ sync_status: 'partial', added_count: res.added || 0, total_count: res.total || 0, failed_count: res.failed.length });
+          writeGithubOutput({
+            sync_status: 'partial',
+            added_count: res.added || 0,
+            removed_count: (res.removed || 0) + (res.removedNonInstagram || 0),
+            total_count: res.total || 0,
+            failed_count: res.failed.length
+          });
           process.exit(1);
         }
-        writeGithubOutput({ sync_status: 'ok', added_count: res.added || 0, total_count: res.total || 0, dry_run: !!res.dryRun });
+        writeGithubOutput({
+          sync_status: 'ok',
+          added_count: res.added || 0,
+          removed_count: (res.removed || 0) + (res.removedNonInstagram || 0),
+          total_count: res.total || 0,
+          dry_run: !!res.dryRun
+        });
         process.exit(0);
       })
       .catch((err) => {
@@ -1312,6 +1463,7 @@ module.exports = {
   enrichPostDetails,
   downloadPostMedia,
   updateGalleryWithNewPosts,
+  extractInstagramCode,
   findChromePath,
   loadConfig,
   // Analyse & resilience (tests)

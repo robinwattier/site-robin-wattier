@@ -99,17 +99,25 @@
   }
   .burger-btn {
     color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: transparent !important;
+    background-color: transparent !important;
   }
-  .burger-btn span {
-    background-color: #ffffff !important;
-    border-top: 2px solid #ffffff !important;
+  .burger-btn span,
+  .burger-btn span::before {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
     color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
   }
   .nav-link::before,
   .m-nav-link::before {
-    background-color: #ffffff !important;
-    border-bottom: 2px solid #ffffff !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
     color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
   }
   footer.site-footer {
     background-color: #0c0c0c !important;
@@ -219,7 +227,8 @@ nav.navbar {
   width: max-content;
   padding: 8px 2px;
   background-color: transparent;
-  color: rgba(255, 255, 255, 0.9);
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   border: none;
   border-radius: 0;
   font-family: var(--font-geist);
@@ -232,21 +241,34 @@ nav.navbar {
   outline: none;
   line-height: 1.25;
   white-space: nowrap;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, opacity 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .nav-link::before {
-  content: "";
+  content: "\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588";
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   height: 2px;
-  background-color: #ffffff !important;
-  border-bottom: 2px solid #ffffff !important;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace, sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -4px;
+  white-space: nowrap;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
   color: #ffffff !important;
-  opacity: 1;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  pointer-events: none;
+  user-select: none;
   forced-color-adjust: none;
   transform: scaleX(0);
   transform-origin: center;
@@ -259,6 +281,7 @@ nav.navbar {
 .nav-link.active {
   background-color: transparent;
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   outline: none;
 }
 
@@ -303,20 +326,29 @@ nav.navbar {
   height: 44px;
   min-width: 44px;
   min-height: 44px;
-  background: none;
-  border: none;
-  border-radius: 8px;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
   cursor: pointer;
   padding: 8px;
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-appearance: none;
+  appearance: none;
   forced-color-adjust: none;
-  transition: background 0.15s ease, opacity 0.15s ease;
+  transition: opacity 0.15s ease;
   z-index: 102;
   -webkit-tap-highlight-color: transparent;
 }
 
-.burger-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
+.burger-btn:hover,
+.burger-btn:active,
+.burger-btn:focus {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .burger-btn:focus-visible {
@@ -325,17 +357,39 @@ nav.navbar {
 }
 
 .burger-btn span {
-  display: block;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
   height: 2px;
-  background-color: #ffffff !important;
-  border-top: 2px solid #ffffff !important;
+  overflow: hidden;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   border-radius: 999px;
-  opacity: 1;
+  opacity: 1 !important;
   forced-color-adjust: none;
   transition: transform 0.25s ease, opacity 0.25s ease;
   transform-origin: center;
+}
+
+.burger-btn span::before {
+  content: "\2588\2588\2588\2588\2588\2588\2588\2588";
+  font-family: monospace, sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -4px;
+  white-space: nowrap;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  pointer-events: none;
+  user-select: none;
 }
 
 .burger-btn.open span:nth-child(1) {
@@ -343,7 +397,7 @@ nav.navbar {
 }
 
 .burger-btn.open span:nth-child(2) {
-  opacity: 0;
+  opacity: 0 !important;
 }
 
 .burger-btn.open span:nth-child(3) {
@@ -415,24 +469,38 @@ body.mobile-menu-open nav.navbar {
   border: none;
   outline: none;
   background-color: transparent;
-  color: rgba(255, 255, 255, 0.9);
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, opacity 0.15s ease;
 }
 
 .m-nav-link::before {
-  content: "";
+  content: "\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588\2588";
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   height: 2px;
-  background-color: #ffffff !important;
-  border-bottom: 2px solid #ffffff !important;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace, sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -4px;
+  white-space: nowrap;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
   color: #ffffff !important;
-  opacity: 1;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  pointer-events: none;
+  user-select: none;
   forced-color-adjust: none;
   transform: scaleX(0);
   transform-origin: center;
@@ -442,7 +510,8 @@ body.mobile-menu-open nav.navbar {
 .m-nav-link.m-ghost,
 .m-nav-link.m-solid {
   background-color: transparent;
-  color: rgba(255, 255, 255, 0.9);
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 .m-nav-link:hover,
@@ -456,6 +525,7 @@ body.mobile-menu-open nav.navbar {
 .m-nav-link.m-ghost.active:hover {
   background-color: transparent;
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   font-weight: 500;
   outline: none;
 }

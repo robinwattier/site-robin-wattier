@@ -949,7 +949,7 @@ main.main-content {
 
 /* Logos plats sans relief : transformés en blanc pur sur noir */
 .trusted-logo img[src*="trapcity"],
-.trusted-logo img[src*="chimaera"],
+.trusted-logo img[src*="ch1m3ra"],
 .trusted-logo img[src*="izzy-x"],
 .trusted-logo img[src*="kyller"],
 .trusted-logo img[src*="wavecity"],
@@ -959,13 +959,13 @@ main.main-content {
 }
 
 .trusted-logo:hover img[src*="trapcity"],
-.trusted-logo:hover img[src*="chimaera"],
+.trusted-logo:hover img[src*="ch1m3ra"],
 .trusted-logo:hover img[src*="izzy-x"],
 .trusted-logo:hover img[src*="kyller"],
 .trusted-logo:hover img[src*="wavecity"],
 .trusted-logo:hover img[src*="housecity"],
 .trusted-logo:focus-visible img[src*="trapcity"],
-.trusted-logo:focus-visible img[src*="chimaera"],
+.trusted-logo:focus-visible img[src*="ch1m3ra"],
 .trusted-logo:focus-visible img[src*="izzy-x"],
 .trusted-logo:focus-visible img[src*="kyller"],
 .trusted-logo:focus-visible img[src*="wavecity"],

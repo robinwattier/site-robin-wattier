@@ -1613,6 +1613,12 @@ function extractInstagramCode(item) {
   return m ? m[1] : null;
 }
 
+function isPreservedItem(item, config = {}) {
+  if (!item || !item.link) return false;
+  const preserved = Array.isArray(config.preservedLinks) ? config.preservedLinks : [];
+  return preserved.includes(String(item.link));
+}
+
 function codesOfItems(items) {
   const codes = new Set();
   items.forEach((it) => {
@@ -1679,15 +1685,18 @@ window.PORTFOLIO_ITEMS = ${JSON.stringify(updatedList, null, 2)};
   } catch (e) { /* non bloquant */ }
 }
 
-// Mise a jour de data.json et projects-data.js (source exclusive : publications Instagram)
+// Mise a jour de data.json et projects-data.js (publications Instagram + projets preserves dans preservedLinks)
 function updateGalleryWithNewPosts(newItems) {
+  let cfg = {};
+  try { cfg = loadConfig(); } catch (_) { /* ignore */ }
   const currentItems = readGalleryItems();
   const instagramItems = currentItems.filter((it) => Boolean(extractInstagramCode(it)));
-  const removedNonInstagram = currentItems.length - instagramItems.length;
+  const preservedItems = currentItems.filter((it) => !extractInstagramCode(it) && isPreservedItem(it, cfg));
+  const removedNonInstagram = currentItems.length - instagramItems.length - preservedItems.length;
 
   const incoming = Array.isArray(newItems) ? newItems.filter((it) => Boolean(extractInstagramCode(it))) : [];
   if (incoming.length === 0 && removedNonInstagram === 0) {
-    return { added: 0, removedNonInstagram: 0, total: instagramItems.length };
+    return { added: 0, removedNonInstagram: 0, total: instagramItems.length + preservedItems.length };
   }
 
   if (incoming.length > 0) {
@@ -1699,7 +1708,7 @@ function updateGalleryWithNewPosts(newItems) {
 
   const incomingCodes = new Set(incoming.map((it) => extractInstagramCode(it)));
   const keptInstagram = instagramItems.filter((it) => !incomingCodes.has(extractInstagramCode(it)));
-  const updatedList = [...incoming, ...keptInstagram];
+  const updatedList = [...incoming, ...keptInstagram, ...preservedItems];
 
   writeGalleryFiles(updatedList);
 
@@ -1736,11 +1745,14 @@ async function syncInstagram(options = {}) {
 
     const currentItems = readGalleryItems();
     const existingByCode = new Map();
+    const preservedItems = [];
     const nonInstagramItems = [];
     currentItems.forEach((it) => {
       const code = extractInstagramCode(it);
       if (code) {
         if (!existingByCode.has(code)) existingByCode.set(code, it);
+      } else if (isPreservedItem(it, config)) {
+        preservedItems.push(it);
       } else {
         nonInstagramItems.push(it);
       }
@@ -1856,7 +1868,7 @@ async function syncInstagram(options = {}) {
         profilePic: profilePicResult,
         detected: ready.map((r) => ({ code: r.post.code, type: r.post.type, title: r.post.title, publishedAt: r.post.publishedAt })),
         failed,
-        total: existingByCode.size - removedCodes.length + ready.length
+        total: existingByCode.size - removedCodes.length + ready.length + preservedItems.length
       };
     }
 
@@ -1873,7 +1885,7 @@ async function syncInstagram(options = {}) {
           keptExisting.push(item);
         }
       }
-      updatedList = [...newItems, ...keptExisting];
+      updatedList = [...newItems, ...keptExisting, ...preservedItems];
     } else {
       updatedList = [];
       const seenCodes = new Set();
@@ -1895,6 +1907,7 @@ async function syncInstagram(options = {}) {
           seenCodes.add(code);
         }
       }
+      updatedList.push(...preservedItems);
     }
 
     const listChanged =

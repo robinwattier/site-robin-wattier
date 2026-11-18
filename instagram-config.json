@@ -20,5 +20,8 @@
   "baselineDate": null,
   "baselineCodes": [],
   "excludedCodes": [],
-  "comment": "Synchronisation miroir stricte entre @robinwattier et la section Content : import automatique, suppression synchronisée des publications archivées/supprimées sur Instagram, et source exclusive Instagram."
+  "preservedLinks": [
+    "assets/projets/portfolio-vdm/Book-stage-AA-Pub-juin2023-WATTIER-Robin.pdf"
+  ],
+  "comment": "Synchronisation miroir stricte entre @robinwattier et la section Content : import automatique, suppression synchronisée des publications archivées/supprimées sur Instagram, et conservation des projets épinglés dans preservedLinks."
 }

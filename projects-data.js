@@ -75,23 +75,6 @@ window.PORTFOLIO_ITEMS = [
     "poster": "assets/projets/instagram/DersLAZIAVN/slide_1.jpg"
   },
   {
-    "title": "Night Spa 🌒🏃‍♂️",
-    "type": "carousel",
-    "link": "https://www.instagram.com/p/DehXUZxgjKY/",
-    "featured": true,
-    "hasBadge": true,
-    "w": 1080,
-    "h": 1350,
-    "slides": [
-      "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg",
-      "assets/projets/instagram/DehXUZxgjKY/slide_2.jpg",
-      "assets/projets/instagram/DehXUZxgjKY/slide_3.jpg"
-    ],
-    "src": "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg",
-    "fallbackSrc": "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg",
-    "poster": "assets/projets/instagram/DehXUZxgjKY/slide_1.jpg"
-  },
-  {
     "title": "41 Frozen - @trinsic.music x @robinwattier",
     "type": "video",
     "link": "https://www.instagram.com/p/DV32A1nAakB/",
@@ -182,5 +165,17 @@ window.PORTFOLIO_ITEMS = [
     "fallbackSrc": "assets/projets/instagram/C6TqEWBKVPh/video.mp4",
     "poster": "assets/projets/instagram/C6TqEWBKVPh/poster.webp",
     "posterFallback": "assets/projets/instagram/C6TqEWBKVPh/poster.jpg"
+  },
+  {
+    "src": "assets/projets/portfolio-vdm/cover-mons.webp",
+    "fallbackSrc": "assets/projets/portfolio-vdm/cover-mons.jpg",
+    "title": "Book de stage - Ville de Mons",
+    "type": "pdf",
+    "link": "assets/projets/portfolio-vdm/Book-stage-AA-Pub-juin2023-WATTIER-Robin.pdf",
+    "featured": true,
+    "hasBadge": true,
+    "w": 1024,
+    "h": 1024,
+    "poster": "assets/projets/portfolio-vdm/cover-mons.webp"
   }
 ];
